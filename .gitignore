@@ -1,0 +1,21 @@
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Java / Spring Boot
+target/
+.mvn/
+*.jar
+
+# Dados do PostgreSQL (criados pelo Docker)
+pgdata/
+
+# Logs e arquivos do sistema
+*.log
+.DS_Store
+Thumbs.db
+
+# Configurações locais de IDEs (opcional)
+.vscode/
+.idea/

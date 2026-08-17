@@ -1,0 +1,31 @@
+services:
+  # Banco de Dados PostgreSQL 18 LTS
+  database:
+    image: postgres:18-alpine
+    container_name: manutencao_db
+    environment:
+      POSTGRES_DB: manutencao_db
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+  # Ambiente de Desenvolvimento (Node 24, JDK 21, Angular 21, OpenCode)
+  app:
+    image: thacer/manutencao-app:v1
+    container_name: manutencao_app
+    volumes:
+      # Sincroniza o código local com o container
+      - .:/workspace:cached
+    ports:
+      - "4200:4200" # Angular Dev Server
+      - "8080:8080" # Spring Boot API
+    depends_on:
+      - database
+    stdin_open: true
+    tty: true
+
+volumes:
+  pgdata:
