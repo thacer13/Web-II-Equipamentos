@@ -1,1 +1,33 @@
-/* You can add global styles to this file, and also import other style files */
+body {
+  background-color: #d6d6d6;
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+}
+
+/* Textured paper, fixed behind everything. The mask only fades this layer,
+   never the content above it. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse farthest-corner at 4px 4px, #9a9a9a, #9a9a9a 50%, #d6d6d6 50%);
+  background-size: 4px 4px;
+  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.9) 100%);
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.9) 100%);
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+
+/* Lift all real content above the texture layer. */
+app-root {
+  position: relative;
+  z-index: 1;
+}
