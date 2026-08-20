@@ -16,6 +16,21 @@ pgdata/
 .DS_Store
 Thumbs.db
 
+# Metadados do Windows (NTFS ADS / Zone Identifier)
+*:Zone.Identifier
+desktop.ini
+ehthumbs.db
+ehthumbs_vista.db
+*.lnk
+$RECYCLE.BIN/
+
+# Arquivos duplicados do macOS (AppleDouble)
+._*
+.AppleDouble/
+.fseventsd/
+.Spotlight-V100/
+.TemporaryItems/
+
 # Configurações locais de IDEs (opcional)
 .vscode/
 .idea/
