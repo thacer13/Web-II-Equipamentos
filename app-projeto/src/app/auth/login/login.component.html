@@ -1,0 +1,20 @@
+<div>
+<div class="login-card">
+  <h2>LOGIN</h2>
+
+  <div class="login-fields">
+    <p-floatLabel>
+      <input pInputText id="username" [(ngModel)]="username" type="text"/>
+      <label for="username">Usuário</label>
+    </p-floatLabel>
+
+    <p-floatLabel>
+      <input pInputText id="password" [(ngModel)]="password" type="password"/>
+      <label for="password">Senha</label>
+    </p-floatLabel>
+  </div>
+
+  <button pButton label="Entrar" class="btn-entrar"></button>
+
+  <span class="cadastro-link" routerLink="/auth/cadastro">Cadastre-se</span>
+</div>

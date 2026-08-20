@@ -1,0 +1,59 @@
+.login-card {
+  max-width: 400px;
+  width: 100%;
+  margin: 30px auto;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+h2 {
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.login-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+p-floatLabel {
+  display: block;
+  width: 100%;
+}
+
+::ng-deep p-floatLabel .p-inputtext {
+  width: 100%;
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #bdbdbd;
+}
+
+::ng-deep p-floatLabel .p-inputtext::placeholder {
+  color: #9a9a9a;
+}
+
+::ng-deep p-floatLabel label {
+  color: #6b6b6b;
+}
+
+::ng-deep .btn-entrar {
+  width: 100%;
+  background-color: #16a34a;
+  border: none;
+  color: #ffffff;
+}
+
+::ng-deep .btn-entrar:hover {
+  background-color: #15803d;
+}
+
+.cadastro-link {
+  text-align: center;
+  cursor: pointer;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 0 4px rgba(0, 0, 0, 0.5);
+}
