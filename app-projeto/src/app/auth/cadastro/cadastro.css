@@ -1,0 +1,46 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 450px;
+  margin: 30px auto;
+}
+
+label,
+h3 {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+::ng-deep p-button .p-button {
+  background-color: #16a34a;
+  border: none;
+  color: #ffffff;
+}
+
+::ng-deep p-button .p-button:hover {
+  background-color: #15803d;
+}
+
+::ng-deep p-button .p-button:disabled {
+  background-color: #16a34a;
+  opacity: 0.65;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+::ng-deep p-inputmask .p-inputtext,
+input[pInputText] {
+  width: 100%;
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #bdbdbd;
+}
+
+::ng-deep p-inputmask .p-inputtext::placeholder,
+input[pInputText]::placeholder {
+  color: #9a9a9a;
+}
