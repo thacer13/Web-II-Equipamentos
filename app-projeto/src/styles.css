@@ -1,3 +1,6 @@
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+
 body {
   background-color: #d6d6d6;
   min-height: 100vh;
@@ -8,8 +11,6 @@ body {
   font-family: sans-serif;
 }
 
-/* Textured paper, fixed behind everything. The mask only fades this layer,
-   never the content above it. */
 body::before {
   content: "";
   position: fixed;
@@ -26,7 +27,6 @@ body::before {
   -webkit-mask-repeat: no-repeat;
 }
 
-/* Lift all real content above the texture layer. */
 app-root {
   position: relative;
   z-index: 1;
