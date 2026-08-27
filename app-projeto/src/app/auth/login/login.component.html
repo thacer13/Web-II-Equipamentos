@@ -1,20 +1,29 @@
-<div>
-<div class="login-card">
-  <h2>LOGIN</h2>
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Entrar</h1>
+      <p class="login-subtitle">Acesse sua conta para continuar</p>
+    </div>
 
-  <div class="login-fields">
-    <p-floatLabel>
-      <input pInputText id="username" [(ngModel)]="username" type="text"/>
-      <label for="username">Usuário</label>
-    </p-floatLabel>
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      <div class="login-fields">
+        <p-floatLabel>
+          <input pInputText id="username" [(ngModel)]="username" name="username" type="text" required autocomplete="username"/>
+          <label for="username">Usuário</label>
+        </p-floatLabel>
 
-    <p-floatLabel>
-      <input pInputText id="password" [(ngModel)]="password" type="password"/>
-      <label for="password">Senha</label>
-    </p-floatLabel>
+        <p-floatLabel>
+          <input pInputText id="password" [(ngModel)]="password" name="password" type="password" required autocomplete="current-password"/>
+          <label for="password">Senha</label>
+        </p-floatLabel>
+      </div>
+
+      <button pButton type="submit" label="Entrar" class="btn-primary" [disabled]="loading"></button>
+
+      <div class="login-actions">
+        <a routerLink="/auth/cadastro" class="btn-link cadastro-link">Cadastre-se</a>
+        <a routerLink="/auth/esqueci-senha" class="btn-link esqueceu-link">Esqueceu sua senha?</a>
+      </div>
+    </form>
   </div>
-
-  <button pButton label="Entrar" class="btn-entrar"></button>
-
-  <span class="cadastro-link" routerLink="/auth/cadastro">Cadastre-se</span>
 </div>

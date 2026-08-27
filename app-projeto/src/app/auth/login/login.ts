@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { InputTextModule} from 'primeng/inputtext';
+import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { FormsModule } from '@angular/forms';
@@ -16,4 +16,12 @@ import { RouterModule } from '@angular/router';
 export class LoginComponent {
   username = '';
   password = '';
+  loading = false;
+
+  onSubmit(): void {
+    this.loading = true;
+    setTimeout(() => {
+      this.loading = false;
+    }, 2000);
+  }
 }
