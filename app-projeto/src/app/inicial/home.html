@@ -1,6 +1,21 @@
-<strong>Bem-vindo ao Projeto!</strong>
+<main class="max-w-5xl mx-auto my-10 px-5">
 
-<div class="button-container">
-  <button routerLink="/auth/login" pButton label="Login"></button>
-  <button routerLink="/auth/cadastro" pButton label="Cadastro"></button>
-</div>
+  <div class="flex flex-col items-center justify-center gap-6 text-center py-20">
+    <h1 class="text-2xl font-semibold text-gray-800">
+      Bem-vindo ao Projeto!
+    </h1>
+
+    <div class="flex gap-2">
+      <a routerLink="/auth/login"
+         class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-5 py-2.5 font-medium transition-colors">
+        Login </a>
+      
+        <a routerLink="/auth/cadastro"
+         class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-5 py-2.5 font-medium transition-colors">
+        Cadastro </a>
+    
+    </div>
+  
+  </div>
+
+</main>
