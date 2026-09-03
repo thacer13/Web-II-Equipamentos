@@ -1,59 +1,63 @@
-# AppProjeto
+# Manutenção de Equipamentos
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.21.
+Sistema de controle de manutenção de equipamentos desenvolvido para a disciplina de
+Desenvolvimento WEB-II (UFPR - SEPT - TADS). O sistema gerencia solicitações de serviço,
+desde a abertura pelo cliente até a finalização pelo funcionário, mantendo o histórico
+completo de cada alteração de estado.
 
-## Development server
+## Perfis de acesso
 
-To start a local development server, run:
+- **Cliente**: abre solicitações, acompanha status, aprova/rejeita orçamentos e paga serviços.
+- **Funcionário**: efetua orçamentos, realiza manutenções, redireciona solicitações e gera relatórios.
 
+## Funcionalidades principais
+
+- Autocadastro de clientes com preenchimento automático de endereço via API ViaCEP
+- Login unificado (cliente/funcionário identificados automaticamente)
+- Fluxo completo de solicitação: aberta → orçada → aprovada/rejeitada → arrumada → paga → finalizada
+- Histórico de todas as mudanças de estado, com data/hora e responsável
+- Redirecionamento de manutenção entre funcionários
+- CRUD de categorias de equipamento e de funcionários
+- Relatórios de receita em PDF (por período e por categoria)
+
+## Tecnologias
+
+**Front-end**
+- Angular 17+ (componentes standalone)
+- Tailwind CSS
+- PrimeNG
+
+**Back-end**
+- Spring Boot
+- API REST
+- Banco de dados relacional (PostgreSQL)
+
+## Como rodar o projeto
+
+### Pré-requisitos
+- Node.js e Angular CLI
+- Java 17+ e Maven
+- PostgreSQL
+
+### Front-end
 ```bash
+cd frontend
+npm install
 ng serve
 ```
+Acesse em `http://localhost:4200`
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+### Back-end
 ```bash
-ng generate component component-name
+cd backend
+mvn spring-boot:run
 ```
+API disponível em `http://localhost:8080`
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Estrutura do repositório
 
-```bash
-ng generate --help
 ```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
+├── frontend/     # Aplicação Angular
+├── backend/      # API Spring Boot
+└── docs/         # Documentação e suposições do projeto
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
