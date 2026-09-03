@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { InputTextModule } from 'primeng/inputtext';
+import { validarCpf } from './cpf.validator';
 import { InputMaskModule } from 'primeng/inputmask';
 import { ButtonModule } from 'primeng/button';
 
@@ -21,7 +22,7 @@ export class CadastroComponent {
   constructor() {
     this.cadastroForm = this.fb.group({
       nome: ['', Validators.required],
-      cpf: ['', Validators.required],
+      cpf: ['', [Validators.required, validarCpf()]],
       email: ['', [Validators.required, Validators.email]],
       telefone: ['', Validators.required],
       cep: ['', Validators.required],
