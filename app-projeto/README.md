@@ -1,63 +1,173 @@
-# Manutenção de Equipamentos
+Controle de Manutenção de Equipamentos
 
-Sistema de controle de manutenção de equipamentos desenvolvido para a disciplina de
-Desenvolvimento WEB-II (UFPR - SEPT - TADS). O sistema gerencia solicitações de serviço,
-desde a abertura pelo cliente até a finalização pelo funcionário, mantendo o histórico
-completo de cada alteração de estado.
+Sobre o projeto
 
-## Perfis de acesso
+O projeto Controle de Manutenção de Equipamentos tem como objetivo desenvolver uma aplicação web para o gerenciamento de solicitações de manutenção de equipamentos.
 
-- **Cliente**: abre solicitações, acompanha status, aprova/rejeita orçamentos e paga serviços.
-- **Funcionário**: efetua orçamentos, realiza manutenções, redireciona solicitações e gera relatórios.
+O sistema possui dois perfis de acesso:
 
-## Funcionalidades principais
+Cliente
 
-- Autocadastro de clientes com preenchimento automático de endereço via API ViaCEP
-- Login unificado (cliente/funcionário identificados automaticamente)
-- Fluxo completo de solicitação: aberta → orçada → aprovada/rejeitada → arrumada → paga → finalizada
-- Histórico de todas as mudanças de estado, com data/hora e responsável
-- Redirecionamento de manutenção entre funcionários
-- CRUD de categorias de equipamento e de funcionários
-- Relatórios de receita em PDF (por período e por categoria)
+Funcionário
 
-## Tecnologias
+O cliente pode cadastrar solicitações de manutenção, acompanhar o andamento do serviço e consultar informações relacionadas às suas solicitações.
 
-**Front-end**
-- Angular 17+ (componentes standalone)
-- Tailwind CSS
-- PrimeNG
+O funcionário pode visualizar solicitações, realizar orçamentos, registrar manutenções, redirecionar serviços e finalizar atendimentos.
 
-**Back-end**
-- Spring Boot
-- API REST
-- Banco de dados relacional (PostgreSQL)
+Tecnologias utilizadas
 
-## Como rodar o projeto
+Angular
 
-### Pré-requisitos
-- Node.js e Angular CLI
-- Java 17+ e Maven
-- PostgreSQL
+TypeScript
 
-### Front-end
-```bash
-cd frontend
+HTML
+
+CSS / Tailwind CSS
+
+Java
+
+Spring Boot
+
+API REST
+
+PostgreSQL
+
+Git e GitHub
+
+(mais coisas..)
+Estrutura do projeto
+
+Web-II-Equipamentos/
+│
+├── app-projeto/        # Front-end Angular
+├── []         # Back-end Spring Boot
+├── []         # Arquivos relacionados ao banco de dados
+└── README.md
+
+Funcionalidades
+
+Entre as funcionalidades previstas no sistema estão:
+
+Autocadastro de clientes;
+
+Login de clientes e funcionários;
+
+Cadastro de solicitações de manutenção;
+
+Consulta das solicitações do cliente;
+
+Orçamento de serviços;
+
+Aprovação ou rejeição de orçamento;
+
+Registro da manutenção realizada;
+
+Redirecionamento de solicitações entre funcionários;
+
+Finalização de serviços;
+
+Gerenciamento de categorias;
+
+Gerenciamento de funcionários;
+
+Relatórios.
+
+[] Indique quais dessas funcionalidades já estão implementadas.
+
+Como executar o projeto
+
+Pré-requisitos
+
+Antes de executar o projeto, é necessário possuir instalado:
+
+Node.js
+
+npm
+
+Angular CLI
+
+Java JDK 17
+
+PostgreSQL
+
+Git
+
+Clonar o repositório
+
+git clone []
+cd Web-II-Equipamentos
+
+Executar o front-end
+
+Entre na pasta do projeto Angular:
+
+cd app-projeto
+
+Instale as dependências:
+
 npm install
+
+Execute o projeto:
+
 ng serve
-```
-Acesse em `http://localhost:4200`
 
-### Back-end
-```bash
-cd backend
-mvn spring-boot:run
-```
-API disponível em `http://localhost:8080`
+Depois, acesse no navegador:
 
-## Estrutura do repositório
+http://localhost:4200
 
-```
-├── frontend/     # Aplicação Angular
-├── backend/      # API Spring Boot
-└── docs/         # Documentação e suposições do projeto
-```
+Executar o back-end
+
+[]
+
+Informe aqui o nome da pasta do back-end e o comando realmente utilizado pela equipe para iniciar o Spring Boot.
+
+Banco de dados
+
+O projeto utiliza PostgreSQL.
+
+[]
+
+Adicione aqui:
+
+nome do banco;
+
+forma de criação do banco;
+
+arquivo SQL utilizado, se houver;
+
+configurações necessárias para conexão;
+
+dados de teste que podem ser utilizados.
+
+Não coloque senhas pessoais ou credenciais reais no README.
+
+Rotas do front-end
+
+[]
+
+Liste somente as rotas que realmente existem no arquivo app.routes.ts.
+
+Exemplo:
+
+/                 Página inicial
+/auth/login       Login
+/auth/cadastro    Cadastro
+/cliente          Área do cliente
+
+Organização da equipe
+
+[]
+
+Adicione os integrantes da equipe e, se necessário, suas responsabilidades no projeto.
+
+Controle de versão
+
+O projeto utiliza Git e GitHub para controle de versão.
+
+Antes de iniciar alterações, recomenda-se atualizar a branch utilizada pela equipe:
+
+git pull
+
+Para verificar os arquivos alterados:
+
+git status
