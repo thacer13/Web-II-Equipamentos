@@ -1,28 +1,32 @@
-<div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <h1>Entrar</h1>
-      <p class="login-subtitle">Acesse sua conta para continuar</p>
+<div class="login-container min-h-screen flex items-center justify-center px-4 py-8 bg-[var(--surface-ground)]">
+  <div class="login-card w-full max-w-[420px] bg-[var(--surface-card)] rounded-2xl px-8 py-10 border border-[var(--surface-border)] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] max-[480px]:px-6 max-[480px]:py-8 max-[480px]:rounded-xl">
+
+    <div class="text-center mb-8">
+      <h1 class="m-0 mb-2 text-[1.75rem] font-bold text-[var(--text-color)] tracking-[-0.02em] [text-shadow:0_1px_2px_rgba(0,0,0,0.7),0_0_4px_rgba(0,0,0,0.5)] max-[480px]:text-2xl">Entrar</h1>
+      <p class="m-0 text-[0.95rem] text-[#6b6b6b] font-normal">Acesse sua conta para continuar</p>
     </div>
 
-    <form class="login-form" (ngSubmit)="onSubmit()">
-      <div class="login-fields">
-        <p-floatLabel>
+    <form class="flex flex-col gap-6" (ngSubmit)="onSubmit()">
+      <div class="flex flex-col gap-5">
+        <p-floatLabel class="block w-full">
           <input pInputText id="username" [(ngModel)]="username" name="username" type="text" required autocomplete="username"/>
           <label for="username">Usuário</label>
         </p-floatLabel>
 
-        <p-floatLabel>
+        <p-floatLabel class="block w-full">
           <input pInputText id="password" [(ngModel)]="password" name="password" type="password" required autocomplete="current-password"/>
           <label for="password">Senha</label>
         </p-floatLabel>
       </div>
 
-      <button pButton type="submit" label="Entrar" class="btn-primary" [disabled]="loading"></button>
+      <button pButton type="submit" label="Entrar" [disabled]="loading"
+        class="w-full h-12 text-base font-semibold bg-green-600 border-none rounded-[10px] text-white transition-all duration-200 shadow-[0_2px_4px_rgba(22,163,74,0.3)] enabled:hover:bg-green-700 enabled:hover:-translate-y-px enabled:hover:shadow-[0_4px_12px_rgba(22,163,74,0.4)] enabled:active:translate-y-0 enabled:active:shadow-[0_2px_4px_rgba(22,163,74,0.3)] disabled:bg-green-600 disabled:opacity-65 disabled:cursor-not-allowed"></button>
 
-      <div class="login-actions">
-        <a routerLink="/auth/cadastro" class="btn-link cadastro-link">Cadastre-se</a>
-        <a routerLink="/auth/esqueci-senha" class="btn-link esqueceu-link">Esqueceu sua senha?</a>
+      <div class="login-actions flex justify-between items-center pt-2 gap-4 flex-wrap max-[480px]:flex-col max-[480px]:gap-3 max-[480px]:text-center">
+        <a routerLink="/auth/cadastro"
+          class="relative text-[0.9rem] font-medium no-underline py-1.5 transition-all duration-200 text-green-600 hover:text-green-700 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-600 focus-visible:outline-offset-2 focus-visible:rounded-sm after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-current after:rounded-[1px] after:transition-[width] after:duration-200 hover:after:w-full max-[480px]:w-full max-[480px]:text-center">Cadastre-se</a>
+        <a routerLink="/auth/esqueci-senha"
+          class="relative text-[0.9rem] font-medium no-underline py-1.5 transition-all duration-200 text-green-600 hover:text-green-700 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-600 focus-visible:outline-offset-2 focus-visible:rounded-sm after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-current after:rounded-[1px] after:transition-[width] after:duration-200 hover:after:w-full max-[480px]:w-full max-[480px]:text-center">Esqueceu sua senha?</a>
       </div>
     </form>
   </div>
