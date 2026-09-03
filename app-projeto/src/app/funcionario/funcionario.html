@@ -43,18 +43,23 @@
                                     (click)="onOrcamentoClick()">
                                 </p-button>
                             </div>
-                        </td>
-                        <td class="whitespace-nowrap px-6 py-4 text-gray-600">
-                            <time datetime="2026-08-26T10:30">xx/xx/xx - xx:xx</time>
-                        </td>
-                        <td class="px-6 py-4 font-medium text-gray-800">
-                            Nome
-                        </td>
-                        <td class="px-6 py-4 text-gray-600">
+                                            </td>
+                    <td class="whitespace-nowrap px-6 py-4 text-gray-600">
+                        <time datetime="2026-08-26T10:30">xx/xx/xx - xx:xx</time>
+                    </td>
+                    <td class="px-6 py-4 font-medium text-gray-800">
+                        Nome
+                    </td>
+                    <td class="px-6 py-4 text-gray-600">
+                        <div class="flex items-center gap-2">
                             <div class="max-w-[250px] truncate" title="Notebook Dell Inspiron 15 - Tela Quebrada">
-                                Produto
+                                Notebook Dell Inspiron 15 - Tela Quebrada
                             </div>
-                        </td>
+                            <i class="pi pi-plus-circle cursor-pointer text-blue-600 hover:text-blue-800 text-lg" 
+   (click)="onDescricaoClick()">
+</i>
+                        </div>
+                    </td>
                     </tr>
                 </tbody>
             </table>
@@ -70,5 +75,11 @@
             placeholder="Digite o orçamento aqui..." 
             autofocus>
         </textarea>
+    </div>
+</p-dialog>
+
+<p-dialog header="Descrição do Produto" [(visible)]="showDescricaoDialog" [modal]="true" [closable]="true">
+    <div class="flex flex-column gap-2 mt-2">
+        <p>Notebook Dell Inspiron 15 - Tela Quebrada</p>
     </div>
 </p-dialog>
