@@ -4,10 +4,17 @@
     <h1 class="text-2xl font-semibold text-gray-800">
       Minhas Solicitações
     </h1>
-    <button class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-5 py-2.5 font-medium transition-colors">
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-5 py-2.5 font-medium transition-colors"
+    (click)="abrirFormulario()">
       Nova Solicitação
     </button>
   </header>
+
+    @if(mostrarFormulario) {
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+        <app-cliente-solicitacao (aoCancelar)="fecharFormulario()"></app-cliente-solicitacao>
+      </div>
+    }
 
   <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
     <table class="w-full text-left border-collapse">
