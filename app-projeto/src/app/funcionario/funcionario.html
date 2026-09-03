@@ -1,13 +1,13 @@
-<div class="min-h-screen bg-gray-100 p-6">
-    <div class="mb-6 flex items-center justify-between">
+<div class="min-h-screen w-full bg-gray-100 p-4 sm:p-6">
+    <div class="mb-6 flex w-full items-center justify-between">
         <span class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
             Funcionário
         </span>
     </div>
 
-    <div class="overflow-hidden rounded-lg bg-white shadow-md">
+    <div class="w-full overflow-hidden rounded-lg bg-white shadow-md">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
-            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <h2 class="flex items-center gap-2 text-lg font-semibold text-gray-800">
                 <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd"
                         d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -17,40 +17,58 @@
             </h2>
         </div>
 
-        <table class="w-full border-collapse text-left text-sm">
-            <thead class="bg-gray-50 text-gray-600">
-                <tr>
-                    <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Data/Hora</th>
-                    <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Cliente</th>
-                    <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Produto (Descrição)</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4">
-                        <div class="flex flex-col items-start gap-2">
-                            <span
-                                class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-800">
-                                <span class="mr-1.5 h-2 w-2 rounded-full bg-red-600"></span>
-                                xxxxxxxx
-                            </span>
-                            <p-button class="p-button-sm mt-2">Orcamento</p-button>
-                        </div>
-                    </td>
-                    <td class="whitespace-nowrap px-6 py-4 text-gray-600">
-                        <time datetime="2026-08-26T10:30">xx/xx/xx - xx:xx</time>
-                    </td>
-                    <td class="px-6 py-4 font-medium text-gray-800">
-                        Nome
-                    </td>
-                    <td class="px-6 py-4 text-gray-600">
-                        <div class="max-w-[250px] truncate" title="Notebook Dell Inspiron 15 - Tela Quebrada">
-                            Produto
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="w-full overflow-x-auto">
+            <table class="w-full min-w-full border-collapse text-left text-sm">
+                <thead class="bg-gray-50 text-gray-600">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Data/Hora</th>
+                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Cliente</th>
+                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Produto (Descrição)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr class="transition-colors hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col items-start gap-2">
+                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-bold text-red-800">
+                                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-red-600"></span>
+                                    xxxxxxxx
+                                </span>
+                                
+                               <p-button 
+                                    type="button" 
+                                    label="Orçamento" 
+                                    class="p-button-sm "
+                                    (click)="onOrcamentoClick()">
+                                </p-button>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-gray-600">
+                            <time datetime="2026-08-26T10:30">xx/xx/xx - xx:xx</time>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-gray-800">
+                            Nome
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">
+                            <div class="max-w-[250px] truncate" title="Notebook Dell Inspiron 15 - Tela Quebrada">
+                                Produto
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<p-dialog header="Orçamento" [(visible)]="showOrcamentoInput" [modal]="true" [closable]="true">
+    <div class="flex flex-column gap-2 mt-2">
+        <textarea 
+          class="p-inputtext p-component" 
+            style="width: 100%; min-height: 120px; resize: none;"
+            placeholder="Digite o orçamento aqui..." 
+            autofocus>
+        </textarea>
+    </div>
+</p-dialog>

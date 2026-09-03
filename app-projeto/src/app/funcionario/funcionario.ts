@@ -1,9 +1,24 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
+
 @Component({
   selector: 'app-funcionario',
   standalone: true,
-  imports: [ButtonModule],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    InputTextModule,
+    DialogModule
+  ],
   templateUrl: './funcionario.html',
 })
-export class FuncionarioComponent {}
+export class FuncionarioComponent {
+  showOrcamentoInput: boolean = false;
+
+  onOrcamentoClick() {
+    this.showOrcamentoInput = true;
+  }
+}

@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import{LoginComponent} from './auth/login/login';
-import { HomeComponent } from './inicial/home';
 import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ClienteComponent } from './cliente/cliente.component';
 import { FuncionarioComponent } from './funcionario/funcionario';
@@ -17,7 +16,8 @@ export const routes: Routes = [
     },
     {
         path: '',
-        component: HomeComponent
+        redirectTo: 'auth/login',
+        pathMatch: 'full'
     
     },
     {

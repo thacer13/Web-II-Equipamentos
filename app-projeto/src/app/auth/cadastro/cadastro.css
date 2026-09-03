@@ -1,46 +1,24 @@
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  max-width: 450px;
-  margin: 30px auto;
-}
-
-label,
-h3 {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7), 0 0 4px rgba(0, 0, 0, 0.5);
-}
-
-::ng-deep p-button .p-button {
-  background-color: #16a34a;
-  border: none;
-  color: #ffffff;
-}
-
-::ng-deep p-button .p-button:hover {
-  background-color: #15803d;
-}
-
-::ng-deep p-button .p-button:disabled {
-  background-color: #16a34a;
-  opacity: 0.65;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-::ng-deep p-inputmask .p-inputtext,
-input[pInputText] {
+::ng-deep .p-inputmask .p-inputtext {
   width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
   background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #bdbdbd;
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-::ng-deep p-inputmask .p-inputtext::placeholder,
-input[pInputText]::placeholder {
-  color: #9a9a9a;
+::ng-deep .p-inputmask .p-inputtext:hover {
+  border-color: #6366f1;
+}
+
+::ng-deep .p-inputmask .p-inputtext:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+::ng-deep .p-inputmask .p-inputtext::placeholder {
+  color: #9ca3af;
 }
