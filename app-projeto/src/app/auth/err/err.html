@@ -1,0 +1,50 @@
+<div class="card p-4 shadow-1 border-round surface-card" style="max-width: 400px; margin: 2rem auto;">
+  <div class="text-center mb-4">
+    <h2 class="text-2xl font-bold text-900 m-0">Recuperar Senha</h2>
+    <p class="text-600 mt-2 text-sm">Informe seu e-mail cadastrado para receber as instruções.</p>
+  </div>
+
+  <div class="p-message-info p-2 mb-3 border-round text-sm surface-100 border-1 surface-border">
+    <span>Caso não lembre seus dados, entre em contato com o administrador do sistema.</span>
+  </div>
+
+  <form>
+    <div class="form-group flex flex-column gap-2 mb-3">
+      <label for="email" class="font-medium text-900">E-mail</label>
+      <input 
+        id="email" 
+        type="email" 
+        pInputText 
+        placeholder="seu@email.com" 
+        class="w-full" 
+      />
+      <small class="text-500">Enviaremos uma senha nova para este endereço.</small>
+    </div>
+
+    <div class="form-group flex flex-column gap-2 mb-4">
+      <label for="phone" class="font-medium text-900">Telefone (opcional)</label>
+      <p-inputMask 
+        id="phone" 
+        mask="(99) 99999-9999" 
+        placeholder="(00) 00000-0000" 
+        styleClass="w-full"
+      ></p-inputMask>
+      <small class="text-500">Ou receba um código de verificação via SMS.</small>
+    </div>
+
+    <p-button 
+      label="Enviar" 
+      type="submit" 
+      styleClass="w-full"
+    ></p-button>
+
+    <div class="flex justify-content-between align-items-center mt-4">
+      <a href="/login" class="text-primary font-medium no-underline hover:underline text-sm">
+        Voltar para o Login
+      </a>
+      <a href="/suporte" class="text-600 font-medium no-underline hover:underline text-sm">
+        Ajuda
+      </a>
+    </div>
+  </form>
+</div>
