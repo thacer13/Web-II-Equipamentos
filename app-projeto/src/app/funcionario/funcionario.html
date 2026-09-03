@@ -43,23 +43,57 @@
                                     (click)="onOrcamentoClick()">
                                 </p-button>
                             </div>
-                                            </td>
-                    <td class="whitespace-nowrap px-6 py-4 text-gray-600">
-                        <time datetime="2026-08-26T10:30">xx/xx/xx - xx:xx</time>
-                    </td>
-                    <td class="px-6 py-4 font-medium text-gray-800">
-                        Nome
-                    </td>
-                    <td class="px-6 py-4 text-gray-600">
-                        <div class="flex items-center gap-2">
-                            <div class="max-w-[250px] truncate" title="Notebook Dell Inspiron 15 - Tela Quebrada">
-                                Notebook Dell Inspiron 15 - Tela Quebrada
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-gray-600">
+                            <time datetime="2026-08-26T10:30">xx/xx/xx - xx:xx</time>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-gray-800">
+                            Nome
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">
+                            <div class="flex items-center gap-2">
+                                <div class="max-w-[250px] truncate" title="Notebook Dell Inspiron 15 - Tela Quebrada">
+                                    Notebook Dell Inspiron 15 - Tela Quebrada
+                                </div>
+                                <i class="pi pi-plus-circle cursor-pointer text-blue-600 hover:text-blue-800 text-lg" 
+                                   (click)="onDescricaoClick()">
+                                </i>
                             </div>
-                            <i class="pi pi-plus-circle cursor-pointer text-blue-600 hover:text-blue-800 text-lg" 
-   (click)="onDescricaoClick()">
-</i>
-                        </div>
-                    </td>
+                        </td>
+                    </tr>
+
+                    <tr class="transition-colors hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col items-start gap-2">
+                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-bold text-red-800">
+                                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-red-600"></span>
+                                    xxxxxxxx
+                                </span>
+                                
+                               <p-button 
+                                    type="button" 
+                                    label="Orçamento" 
+                                    class="p-button-sm "
+                                    (click)="onOrcamentoClick()">
+                                </p-button>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-gray-600">
+                            <time datetime="2026-08-27T14:15">xx/xx/xx - xx:xx</time>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-gray-800">
+                            Nome
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">
+                            <div class="flex items-center gap-2">
+                                <div class="max-w-[250px] truncate" title="Desktop Gamer - Placa-mãe com Defeito">
+                                    Desktop Gamer - Placa-mãe com Defeito
+                                </div>
+                                <i class="pi pi-plus-circle cursor-pointer text-blue-600 hover:text-blue-800 text-lg" 
+                                   (click)="onDescricaoDesktopClick()">
+                                </i>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -80,6 +114,22 @@
 
 <p-dialog header="Descrição do Produto" [(visible)]="showDescricaoDialog" [modal]="true" [closable]="true">
     <div class="flex flex-column gap-2 mt-2">
-        <p>Notebook Dell Inspiron 15 - Tela Quebrada</p>
+        <p class="font-semibold text-gray-800">Notebook Dell Inspiron 15</p>
+        <p class="text-gray-600">
+            Cliente relatou que o notebook caiu de uma mesa durante o transporte, 
+            resultando em rachadura na tela e falha de exibição em parte da imagem. 
+            Aparelho ligando normalmente, apenas com problema visual na tela.
+        </p>
+    </div>
+</p-dialog>
+
+<p-dialog header="Descrição do Produto" [(visible)]="showDescricaoDesktopDialog" [modal]="true" [closable]="true">
+    <div class="flex flex-column gap-2 mt-2">
+        <p class="font-semibold text-gray-800">Desktop Gamer - Placa-mãe com Defeito</p>
+        <p class="text-gray-600">
+            Cliente relatou que o computador desligava sozinho durante o uso e, após algumas tentativas, 
+            parou de ligar completamente. Testes indicaram falha na placa-mãe, possivelmente causada por 
+            oscilação de energia.
+        </p>
     </div>
 </p-dialog>
