@@ -22,6 +22,12 @@
           placeholder="999.999.999-99"
           styleClass="w-full"
         ></p-inputMask>
+        @if (cadastroForm.get('cpf')?.touched && cadastroForm.get('cpf')?.hasError('required')) {
+          <small class="text-sm text-red-600">Informe o CPF.</small>
+        }
+        @if (cadastroForm.get('cpf')?.dirty && cadastroForm.get('cpf')?.hasError('cpfInvalido')) {
+          <small class="text-sm text-red-600">CPF inválido. Verifique os números digitados.</small>
+        }
       </div>
 
       <div class="flex flex-col gap-1.5">
