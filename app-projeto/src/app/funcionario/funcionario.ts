@@ -17,18 +17,8 @@ import { DialogModule } from 'primeng/dialog';
 })
 export class FuncionarioComponent {
   showOrcamentoInput: boolean = false;
-  showDescricaoDialog: boolean = false;
-  showDescricaoDesktopDialog: boolean = false;
 
   onOrcamentoClick() {
     this.showOrcamentoInput = true;
-  }
-
-  onDescricaoClick() {
-    this.showDescricaoDialog = true;
-  }
-
-  onDescricaoDesktopClick() {
-    this.showDescricaoDesktopDialog = true;
   }
 }
