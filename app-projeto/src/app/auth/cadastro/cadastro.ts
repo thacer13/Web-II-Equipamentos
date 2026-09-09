@@ -1,25 +1,34 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { InputTextModule } from 'primeng/inputtext';
 import { validarCpf } from './cpf.validator';
 import { InputMaskModule } from 'primeng/inputmask';
 import { ButtonModule } from 'primeng/button';
+import { Router, RouterModule } from '@angular/router';
+import { ViacepService } from '../../shared/services/viacep.service';
+import { UsuarioService } from '../../shared/services/usuario.service';
+import { Cliente } from '../../shared/models/cliente.model';
 
 @Component({
   selector: 'app-cadastro',
   templateUrl: './cadastro.html',
   styleUrls: ['./cadastro.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, InputTextModule, InputMaskModule, ButtonModule]
+  imports: [RouterModule, ReactiveFormsModule, InputTextModule, InputMaskModule, ButtonModule]
 })
-export class CadastroComponent {
-  cadastroForm: FormGroup;
+export class CadastroComponent implements OnInit {
+  cadastroForm!: FormGroup;
 
   private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
+  private viaCepService = inject(ViacepService);
+  private usuarioService = inject(UsuarioService);
+  private router = inject(Router);
 
-  constructor() {
+  ngOnInit(): void {
+    this.inicializarFormulario();   
+  }
+
+  private inicializarFormulario(): void {
     this.cadastroForm = this.fb.group({
       nome: ['', Validators.required],
       cpf: ['', [Validators.required, validarCpf()]],
@@ -34,19 +43,21 @@ export class CadastroComponent {
     });
   }
 
-  buscarCep() {
+  buscarCep(): void {
     const cep = this.cadastroForm.get('cep')?.value?.replace(/\D/g, '');
     if (cep && cep.length === 8) {
-      this.http.get<any>(`https://viacep.com.br/ws/${cep}/json/`).subscribe({
+      this.viaCepService.consultarCep(cep).subscribe({
         next: (dados) => {
-          if (!dados.erro) {
+          if (dados) {
             this.cadastroForm.patchValue({
               logradouro: dados.logradouro,
               bairro: dados.bairro,
-              cidade: dados.localidade,
-              estado: dados.uf
+              cidade: dados.cidade,
+              estado: dados.estado
             });
             document.getElementById('numero')?.focus();
+          } else {
+            alert('CEP não encontrado.');
           }
         },
         error: (err) => console.error('Erro ao buscar CEP', err)
@@ -56,19 +67,45 @@ export class CadastroComponent {
 
   onSubmit() {
     if (this.cadastroForm.invalid) {
+      this.cadastroForm.markAllAsTouched();
+      alert('Preencha todos os campos obrigatórios corretamente.');
       return;
     }
 
-    const dados = {
-      ...this.cadastroForm.value,
-      cpf: this.cadastroForm.value.cpf.replace(/\D/g, ''),
-      telefone: this.cadastroForm.value.telefone.replace(/\D/g, ''),
-      cep: this.cadastroForm.value.cep.replace(/\D/g, '')
+    const dadosForm = this.cadastroForm.value;
+    const cpfLimpo = dadosForm.cpf.replace(/\D/g, '');
+    const telefoneLimpo = dadosForm.telefone.replace(/\D/g, '');
+    const cepLimpo = dadosForm.cep.replace(/\D/g, '');
+
+    if(this.usuarioService.buscarPorEmail(dadosForm.email)) {
+      alert('E-mail já cadastrado.');
+      return;
+    }
+
+    if(this.usuarioService.buscarPorCpf(dadosForm.cpf)) {
+      alert('CPF já cadastrado.');
+      return;
+    }
+
+    const novoCliente: Cliente = { // Mapeamento dos dados para o model
+      nome: dadosForm.nome,
+      email: dadosForm.email,
+      cpf: cpfLimpo,
+      telefone: telefoneLimpo,
+      perfil: 'CLIENTE',
+      endereco: {
+        cep: cepLimpo,
+        logradouro: dadosForm.logradouro,
+        numero: dadosForm.numero,
+        bairro: dadosForm.bairro,
+        cidade: dadosForm.cidade,
+        estado: dadosForm.estado
+      }
     };
 
-    this.http.post('http://localhost:8080/api/cadastro', dados).subscribe({
-      next: (res) => console.log('Cadastrado com sucesso', res),
-      error: (err) => console.error('Erro ao cadastrar', err)
-    });
+    this.usuarioService.cadastrarCliente(novoCliente);
+
+    alert('Cadastro realizado com sucesso! Sua senha de 4 dígitos foi enviada para o e-mail cadastrado.');
+    this.router.navigate(['/auth/login']);
   }
 }
