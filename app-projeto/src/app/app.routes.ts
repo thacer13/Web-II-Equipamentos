@@ -1,9 +1,12 @@
 import { Routes } from '@angular/router';
-import{LoginComponent} from './auth/login/login';
+import { LoginComponent } from './auth/login/login';
 import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
 import { FuncionarioComponent } from './funcionario/funcionario';
+
+// NOVO - import da tela RF012
+import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
 
 export const routes: Routes = [
     {
@@ -13,7 +16,6 @@ export const routes: Routes = [
     {
         path: 'auth/cadastro',
         component: CadastroComponent
-    
     },
     {
         path: 'login',
@@ -23,7 +25,6 @@ export const routes: Routes = [
         path: '',
         redirectTo: 'auth/login',
         pathMatch: 'full'
-    
     },
     {
         path: 'auth/err',
@@ -36,5 +37,11 @@ export const routes: Routes = [
     {
         path: 'funcionario',
         component: FuncionarioComponent
+    },
+
+    // NOVO - rota da tela RF012
+    {
+        path: 'efetuar-orcamento/:id',
+        component: EfetuarOrcamentoComponent
     }
-]
+];
