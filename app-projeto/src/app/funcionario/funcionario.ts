@@ -37,13 +37,16 @@ export class FuncionarioComponent {
   showOrcamentoInput: boolean = false;
 
   showDescricaoDialog: boolean = false;
-
   showDescricaoDesktopDialog: boolean = false;
-
+  showAdicionarFuncionario: boolean = false;
 
   constructor(private router: Router) {}
+   
+ 
 
-
+  onAdicionarFuncionario() {
+    this.showAdicionarFuncionario = true;
+  }
   onOrcamentoClick() {
 
     const solicitacao = {
@@ -108,20 +111,6 @@ export class FuncionarioComponent {
       }
 
     );
-
-  }
-
-
-  onDescricaoClick() {
-
-    this.showDescricaoDialog = true;
-
-  }
-
-
-  onDescricaoDesktopClick() {
-
-    this.showDescricaoDesktopDialog = true;
 
   }
 
