@@ -18,6 +18,7 @@ export class ManutencaoComponent {
   cliente: string = 'Nome do Cliente';
   produto: string = 'Notebook Dell Inspiron 15';
   descricaoProblema: string = 'Tela quebrada';
+  dataSolicitacao: string = '26/08/2026 - 10:30';
 
   funcionarioLogado: string = 'Funcionário Exemplo';
 
@@ -25,10 +26,12 @@ export class ManutencaoComponent {
   orientacoesCliente: string = '';
 
   onConfirmarManutencao() {
+    const dataHoraManutencao = new Date();
+
     console.log('Descrição:', this.descricaoManutencao);
     console.log('Orientações:', this.orientacoesCliente);
     console.log('Funcionário:', this.funcionarioLogado);
-    console.log('Data/Hora:', new Date());
+    console.log('Data/Hora da Manutenção:', dataHoraManutencao);
     console.log('Status: ARRUMADA');
   }
 

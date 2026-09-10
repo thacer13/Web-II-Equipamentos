@@ -4,6 +4,8 @@ import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
 import { FuncionarioComponent } from './funcionario/funcionario';
+import { ManutencaoComponent } from './funcionario/manutencao/manutencao';
+
 
 export const routes: Routes = [
     {
@@ -36,5 +38,10 @@ export const routes: Routes = [
     {
         path: 'funcionario',
         component: FuncionarioComponent
+    },
+     {
+        path: 'manutencao',
+        component: ManutencaoComponent
     }
 ]
+
