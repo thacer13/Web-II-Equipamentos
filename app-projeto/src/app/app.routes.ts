@@ -40,19 +40,15 @@ export const routes: Routes = [
         path: 'funcionario',
         component: FuncionarioComponent
     },
-<<<<<<< HEAD
      {
         path: 'manutencao',
         component: ManutencaoComponent
-    }
-]
-
-=======
-
-    // NOVO - rota da tela RF012
+    },
+        // NOVO - rota da tela RF012
     {
         path: 'efetuar-orcamento/:id',
         component: EfetuarOrcamentoComponent
     }
-];
->>>>>>> 135a031f5795dbcc32b5d85c8367a38c18407711
+
+]
+
