@@ -1,11 +1,14 @@
 import { Routes } from '@angular/router';
-import{LoginComponent} from './auth/login/login';
+import { LoginComponent } from './auth/login/login';
 import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
 import { FuncionarioComponent } from './funcionario/funcionario';
 import { ManutencaoComponent } from './funcionario/manutencao/manutencao';
 
+
+// NOVO - import da tela RF012
+import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
 
 export const routes: Routes = [
     {
@@ -15,7 +18,6 @@ export const routes: Routes = [
     {
         path: 'auth/cadastro',
         component: CadastroComponent
-    
     },
     {
         path: 'login',
@@ -25,7 +27,6 @@ export const routes: Routes = [
         path: '',
         redirectTo: 'auth/login',
         pathMatch: 'full'
-    
     },
     {
         path: 'auth/err',
@@ -39,9 +40,19 @@ export const routes: Routes = [
         path: 'funcionario',
         component: FuncionarioComponent
     },
+<<<<<<< HEAD
      {
         path: 'manutencao',
         component: ManutencaoComponent
     }
 ]
 
+=======
+
+    // NOVO - rota da tela RF012
+    {
+        path: 'efetuar-orcamento/:id',
+        component: EfetuarOrcamentoComponent
+    }
+];
+>>>>>>> 135a031f5795dbcc32b5d85c8367a38c18407711
