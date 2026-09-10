@@ -16,9 +16,9 @@ import { DialogModule } from 'primeng/dialog';
   templateUrl: './funcionario.html',
 })
 export class FuncionarioComponent {
-  showOrcamentoInput: boolean = false;
+  showAdicionarFuncionario: boolean = false;
 
-  onOrcamentoClick() {
-    this.showOrcamentoInput = true;
+  onAdicionarFuncionario() {
+    this.showAdicionarFuncionario = true;
   }
 }

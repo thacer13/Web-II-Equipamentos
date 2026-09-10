@@ -3,6 +3,10 @@
         <span class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
             Funcionário
         </span>
+        <p-button type="button" label="Adicionar Novo Funcionário" (click)="onAdicionarFuncionario()"
+            class="p-button-sm">
+        </p-button>
+
     </div>
 
     <div class="w-full overflow-hidden rounded-lg bg-white shadow-md">
@@ -24,24 +28,20 @@
                         <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Data/Hora</th>
                         <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Cliente</th>
-                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Produto (Descrição)</th>
+                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Produto (Descrição)
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     <tr class="transition-colors hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="flex flex-col items-start gap-2">
-                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-bold text-red-800">
+                                <span
+                                    class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-bold text-red-800">
                                     <span class="mr-2 h-2.5 w-2.5 rounded-full bg-red-600"></span>
                                     xxxxxxxx
                                 </span>
-                                
-                               <p-button 
-                                    type="button" 
-                                    label="Orçamento" 
-                                    class="p-button-sm "
-                                    (click)="onOrcamentoClick()">
-                                </p-button>
+                                <p-button type="button" label="Orçamento" class="p-button-sm "></p-button>
                             </div>
                         </td>
                         <td class="whitespace-nowrap px-6 py-4 text-gray-600">
@@ -50,50 +50,62 @@
                         <td class="px-6 py-4 font-medium text-gray-800">
                             Nome
                         </td>
-                       <td class="px-6 py-4 text-gray-600">
-    <div class="font-medium text-gray-800">Notebook Dell Inspiron 15</div>
-    <div class="text-sm text-gray-600">Tela quebrada</div>
-</td>
+                        <td class="px-6 py-4 text-gray-600">
+                            <div class="font-medium text-gray-800">Notebook Dell Inspiron 15</div>
+                            <div class="text-sm text-gray-600">Tela quebrada</div>
+                        </td>
                     <tr class="transition-colors hover:bg-gray-50">
-    <td class="px-6 py-4">
-        <div class="flex flex-col items-start gap-2">
-            <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-bold text-red-800">
-                <span class="mr-2 h-2.5 w-2.5 rounded-full bg-red-600"></span>
-                xxxxxxxx
-            </span>
-            
-           <p-button 
-                type="button" 
-                label="Orçamento" 
-                class="p-button-sm "
-                (click)="onOrcamentoClick()">
-            </p-button>
-        </div>
-    </td>
-    <td class="whitespace-nowrap px-6 py-4 text-gray-600">
-        <time datetime="2026-08-27T14:15">xx/xx/xx - xx:xx</time>
-    </td>
-    <td class="px-6 py-4 font-medium text-gray-800">
-        Nome
-    </td>
-    <td class="px-6 py-4 text-gray-600">
-        <div class="font-medium text-gray-800">Desktop Gamer</div>
-        <div class="text-sm text-gray-600">Placa-mãe com defeito</div>
-    </td>
-</tr>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col items-start gap-2">
+                                <span
+                                    class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-bold text-red-800">
+                                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-red-600"></span>
+                                    xxxxxxxx
+                                </span>
+
+                                <p-button type="button" label="Orçamento" class="p-button-sm "></p-button>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-gray-600">
+                            <time datetime="2026-08-27T14:15">xx/xx/xx - xx:xx</time>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-gray-800">
+                            Nome
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">
+                            <div class="font-medium text-gray-800">Desktop Gamer</div>
+                            <div class="text-sm text-gray-600">Placa-mãe com defeito</div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<p-dialog header="Orçamento" [(visible)]="showOrcamentoInput" [modal]="true" [closable]="true">
-    <div class="flex flex-column gap-2 mt-2">
-        <textarea 
-          class="p-inputtext p-component" 
-            style="width: 100%; min-height: 120px; resize: none;"
-            placeholder="Digite o orçamento aqui..." 
-            autofocus>
-        </textarea>
+<p-dialog header="Adicionar Funcionário" [(visible)]="showAdicionarFuncionario" [modal]="true" [closable]="true"
+    [style]="{ width: '300px' }">
+    <div class="mt-3">
+        <form class="grid formgrid p-fluid">
+            <div class="field col-12 md:col-6 mb-3">
+                <label for="nome" class="block mb-2">Nome:</label>
+                <input id="nome" type="text" pInputText />
+            </div>
+            <div class="field col-12 md:col-6 mb-3">
+                <label for="email" class="block mb-2">Email:</label>
+                <input id="email" type="email" pInputText />
+            </div>
+            <div class="field col-12 md:col-6 mb-3">
+                <label for="dataNascimento" class="block mb-2">Data de Nascimento:</label>
+                <input id="dataNascimento" type="date" pInputText />
+            </div>
+            <div class="field col-12 md:col-6 mb-3">
+                <label for="senha" class="block mb-2">Senha:</label>
+                <input id="senha" type="password" pInputText />
+            </div>
+        </form>
     </div>
+    <ng-template pTemplate="footer">
+        <p-button type="button" label="Enviar" styleClass="p-button-sm"></p-button>
+    </ng-template>
 </p-dialog>
