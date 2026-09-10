@@ -49,6 +49,5 @@ export const routes: Routes = [
         path: 'efetuar-orcamento/:id',
         component: EfetuarOrcamentoComponent
     }
-
 ]
 
