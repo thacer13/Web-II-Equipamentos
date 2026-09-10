@@ -1,0 +1,60 @@
+<div class="min-h-screen w-full bg-gray-100 p-4 sm:p-6">
+    <div class="mb-6 flex w-full items-center justify-between">
+        <span class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
+            Funcionário
+        </span>
+    </div>
+
+    <div class="w-full max-w-lg overflow-hidden rounded-lg bg-white shadow-md">
+        <div class="border-b border-gray-200 bg-white px-6 py-4">
+            <h2 class="text-lg font-semibold text-gray-800">
+                Manutenção da Solicitação
+            </h2>
+        </div>
+
+        <div class="flex flex-col gap-3 border-b border-gray-200 p-6 text-sm text-gray-800">
+            <p><span class="font-medium">Cliente:</span> {{ cliente }}</p>
+            <p><span class="font-medium">Produto:</span> {{ produto }}</p>
+            <p><span class="font-medium">Problema:</span> {{ descricaoProblema }}</p>
+        </div>
+
+        <form class="flex flex-col gap-4 p-6">
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-semibold text-gray-700">Descrição da Manutenção</label>
+                <textarea
+                    class="p-inputtext p-component"
+                    style="width: 100%; min-height: 80px; resize: none;"
+                    placeholder="Digite a descrição da manutenção..."
+                    [(ngModel)]="descricaoManutencao"
+                    name="descricaoManutencao">
+                </textarea>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-semibold text-gray-700">Orientações para o Cliente</label>
+                <textarea
+                    class="p-inputtext p-component"
+                    style="width: 100%; min-height: 80px; resize: none;"
+                    placeholder="Digite as orientações..."
+                    [(ngModel)]="orientacoesCliente"
+                    name="orientacoesCliente">
+                </textarea>
+            </div>
+
+            <div class="flex gap-3">
+                <p-button
+                    type="button"
+                    label="Efetuar Manutenção"
+                    (click)="onConfirmarManutencao()">
+                </p-button>
+
+                <p-button
+                    type="button"
+                    label="Redirecionar"
+                    styleClass="p-button-secondary"
+                    (click)="onRedirecionarClick()">
+                </p-button>
+            </div>
+        </form>
+    </div>
+</div>
