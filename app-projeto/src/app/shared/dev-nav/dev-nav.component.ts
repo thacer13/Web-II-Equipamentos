@@ -14,9 +14,6 @@ interface DevLink {
   imports: [RouterLink, RouterLinkActive],
   template: `
     <nav class="devnav" [class.collapsed]="collapsed">
-      <button class="devnav-toggle" (click)="collapsed = !collapsed" title="Prototype nav — delete shared/dev-nav to remove">
-        {{ collapsed ? '☰ screens' : '✕ dev' }}
-      </button>
       @if (!collapsed) {
         <div class="devnav-list">
           @for (link of links; track link.path) {
@@ -29,14 +26,19 @@ interface DevLink {
           }
         </div>
       }
+      <button class="devnav-toggle" (click)="collapsed = !collapsed">
+        {{ collapsed ? '☰ telas' : '✕ dev' }}
+      </button>
     </nav>
   `,
   styles: [`
-    .devnav { position: fixed; right: 12px; top: 12px; z-index: 9999; background: #111827; color: #f9fafb;
-      border-radius: 10px; padding: 8px; font-size: 13px; max-width: 220px; box-shadow: 0 4px 16px rgba(0,0,0,.35); opacity: .95; }
+    .devnav { position: fixed; right: 12px; bottom: 12px; z-index: 9999; background: #111827; color: #f9fafb;
+      border-radius: 10px; padding: 8px; font-size: 13px; max-width: 220px; box-shadow: 0 4px 16px rgba(0,0,0,.35); opacity: .95;
+      display: flex; flex-direction: column; pointer-events: none; }
     .devnav-toggle { background: #374151; color: #fff; border: 0; border-radius: 6px; padding: 4px 10px;
-      cursor: pointer; width: 100%; font-size: 12px; }
-    .devnav-list { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; max-height: 70vh; overflow: auto; }
+      cursor: pointer; width: 100%; font-size: 12px; pointer-events: auto; }
+    .devnav-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; max-height: 70vh; overflow: auto;
+      pointer-events: auto; }
     .devnav-section { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #9ca3af;
       margin: 8px 4px 2px; }
     .devnav-link { color: #e5e7eb; text-decoration: none; padding: 4px 8px; border-radius: 6px; }
@@ -46,7 +48,7 @@ interface DevLink {
   `],
 })
 export class DevNavComponent {
-  collapsed = false;
+  collapsed = true;
   links: (DevLink & { showHeader: boolean })[];
 
   constructor() {
@@ -60,7 +62,7 @@ export class DevNavComponent {
       if (r.data?.['hideDevNav']) continue;
       const hasParam = path.includes(':');
       const devLabel: string | undefined = r.data?.['devLabel'] ?? (typeof r.title === 'string' ? r.title : undefined);
-      if (hasParam && !devLabel) continue; // keep box concise: param screens opt in via devLabel
+      if (hasParam && !devLabel) continue; // telas com parâmetro só entram via devLabel
       if (seen.has(path)) continue;
       seen.add(path);
 

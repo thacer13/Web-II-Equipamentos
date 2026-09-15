@@ -1,117 +1,117 @@
-import { Component } from '@angular/core';
-
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { Router } from '@angular/router';
-
+import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-
 import { InputTextModule } from 'primeng/inputtext';
-
 import { DialogModule } from 'primeng/dialog';
+import { SolicitacaoService, ESTADO_COR } from '../shared/services/solicitacao.service';
+import { EstadoSolicitacao, Solicitacao } from '../shared/models/solicitacao.model';
 
 @Component({
-
   selector: 'app-funcionario',
-
   standalone: true,
-
   imports: [
-
     CommonModule,
-
+    FormsModule,
     ButtonModule,
-
     InputTextModule,
-
     DialogModule
-
   ],
-
   templateUrl: './funcionario.html',
-
 })
-
 export class FuncionarioComponent {
+  private solicitacaoService = inject(SolicitacaoService);
+
+  funcionarioAtual = 'Mário';
+  filtro = 'TODAS';
+  dataInicio = '';
+  dataFim = '';
+  solicitacoes: Solicitacao[] = [];
 
   showOrcamentoInput: boolean = false;
-
   showDescricaoDialog: boolean = false;
   showDescricaoDesktopDialog: boolean = false;
   showAdicionarFuncionario: boolean = false;
 
-  constructor(private router: Router) {}
-   
- 
+  constructor() {
+    this.solicitacoes = this.solicitacaoService.listar();
+  }
+
+  get solicitacoesFiltradas(): Solicitacao[] {
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    return this.solicitacoes
+      .filter((solicitacao) => {
+        if (solicitacao.estado === 'REDIRECIONADA') {
+          return solicitacao.funcionarioDestino === this.funcionarioAtual;
+        }
+
+        return true;
+      })
+      .filter((solicitacao) => {
+        const dataAbertura = solicitacao.dataHora.slice(0, 10);
+
+        if (this.filtro === 'HOJE') {
+          return dataAbertura === hoje;
+        }
+
+        if (this.filtro === 'PERIODO') {
+          const depoisDoInicio = !this.dataInicio || dataAbertura >= this.dataInicio;
+          const antesDoFim = !this.dataFim || dataAbertura <= this.dataFim;
+          return depoisDoInicio && antesDoFim;
+        }
+
+        return true;
+      })
+      .sort((a, b) => a.dataHora.localeCompare(b.dataHora));
+  }
+
+  corEstado(estado: EstadoSolicitacao): string {
+    return ESTADO_COR[estado];
+  }
+
+  labelEstado(estado: EstadoSolicitacao): string {
+    const labels: Record<EstadoSolicitacao, string> = {
+      ABERTA: 'Aberta',
+      'ORÇADA': 'Orçada',
+      APROVADA: 'Aprovada',
+      REJEITADA: 'Rejeitada',
+      REDIRECIONADA: 'Redirecionada',
+      ARRUMADA: 'Arrumada',
+      PAGA: 'Paga',
+      FINALIZADA: 'Finalizada',
+    };
+
+    return labels[estado];
+  }
+
+  acaoDoEstado(estado: EstadoSolicitacao): string | null {
+    if (estado === 'ABERTA') return 'Efetuar Orçamento';
+    if (estado === 'APROVADA' || estado === 'REDIRECIONADA') return 'Efetuar Manutenção';
+    if (estado === 'PAGA') return 'Finalizar Solicitação';
+    return null;
+  }
+
+  executarAcao(solicitacao: Solicitacao): void {
+    const acao = this.acaoDoEstado(solicitacao.estado);
+    if (acao) {
+      alert(`${acao}: solicitação ${solicitacao.id}`);
+    }
+  }
 
   onAdicionarFuncionario() {
     this.showAdicionarFuncionario = true;
   }
+
   onOrcamentoClick() {
-
-    const solicitacao = {
-
-      id: 1,
-
-      dataHora: '2026-09-08T10:30:00',
-
-      equipamento: 'Notebook Dell Inspiron 15',
-
-      categoria: 'Notebook',
-
-      descricaoDefeito: 'A tela fica piscando e algumas vezes apaga completamente.',
-
-      estado: 'ABERTA',
-
-      cliente: {
-
-        id: 1,
-
-        nome: 'João Lino',
-
-        cpf: '868.255.910-29',
-
-        email: 'joaolino@email.com',
-
-        telefone: '(46) 3421-9601',
-
-        endereco: {
-
-          logradouro: 'Rua das Flores',
-
-          numero: '123',
-
-          bairro: 'Centro',
-
-          cidade: 'Curitiba',
-
-          uf: 'PR',
-
-          cep: '80000-000'
-
-        }
-
-      }
-
-    };
-
-
-    this.router.navigate(
-
-      ['/efetuar-orcamento', solicitacao.id],
-
-      {
-
-        state: {
-
-          solicitacao: solicitacao
-
-        }
-
-      }
-
-    );
-
+    this.showOrcamentoInput = true;
   }
 
+  onDescricaoClick() {
+    this.showDescricaoDialog = true;
+  }
+
+  onDescricaoDesktopClick() {
+    this.showDescricaoDesktopDialog = true;
+  }
 }

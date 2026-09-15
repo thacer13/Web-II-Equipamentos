@@ -8,6 +8,7 @@ import { DevNavComponent } from './shared/dev-nav/dev-nav.component';
   standalone: true,
   providers: [],
   templateUrl: './app.html',
+  styleUrl: './app.css'
 })
 
 export class App {

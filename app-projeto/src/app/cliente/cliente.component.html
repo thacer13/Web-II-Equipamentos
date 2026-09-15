@@ -5,16 +5,27 @@
       Minhas Solicitações
     </h1>
     <button class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-5 py-2.5 font-medium transition-colors"
-    (click)="abrirFormulario()">
+      (click)="abrirFormulario()">
       Nova Solicitação
     </button>
   </header>
 
-    @if(mostrarFormulario) {
-      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
-        <app-cliente-solicitacao (aoCancelar)="fecharFormulario()"></app-cliente-solicitacao>
-      </div>
-    }
+  @if (mostrarFormulario) {
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+      <app-cliente-solicitacao (aoCancelar)="fecharFormulario()"></app-cliente-solicitacao>
+    </div>
+  }
+
+  <!-- RF005 / RF007 - painel inline de orçamento -->
+  @if (solicitacaoEmOrcamento) {
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+      <app-cliente-orcamento
+        [solicitacao]="solicitacaoEmOrcamento"
+        (aoResponder)="processarOrcamento($event)"
+        (aoCancelar)="fecharOrcamento()">
+      </app-cliente-orcamento>
+    </div>
+  }
 
   <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
     <table class="w-full text-left border-collapse">
@@ -26,29 +37,174 @@
           <th class="px-6 py-4 text-sm font-medium text-gray-600">Ações</th>
         </tr>
       </thead>
-
       <tbody>
-        <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-          <td class="px-6 py-4 text-sm text-gray-700">00/00/0000 00:00</td>
-          <td class="px-6 py-4 text-sm text-gray-700">Xxxxxxx Yyyyyyy</td>
-          <td class="px-6 py-4 text-sm">
-            <span class="inline-block bg-amber-100 text-amber-700 text-xs font-medium px-3 py-1 rounded-full">
-              XXXXXXX
-            </span>
-          </td>
-          <td class="px-6 py-4 text-sm">
-            <div class="flex gap-2">
-              <button class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                Visualizar Serviço
-              </button>
-              <button class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                Xxxxxxx Serviço
-              </button>
-            </div>
-          </td>
-        </tr>
+        @for (solicitacao of solicitacoes; track solicitacao.id) {
+          <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+
+            <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+              {{ formatarDataHora(solicitacao.dataHora) }}
+            </td>
+
+            <!-- Descrição (Limitada a 30 caracteres - RF003) -->
+            <td class="px-6 py-4 text-sm text-gray-700" [title]="solicitacao.descricaoEquipamento">
+              {{ truncar(solicitacao.descricaoEquipamento) }}
+            </td>
+
+            <td class="px-6 py-4 text-sm">
+              <span [class]="corEstado(solicitacao.estado)">
+                {{ labelEstado(solicitacao.estado) }}
+              </span>
+            </td>
+
+            <!-- Ações (RF003) -->
+            <td class="px-6 py-4 text-sm">
+              <div class="flex gap-2">
+                <!-- Botão sempre visível (RF008) -->
+                <button (click)="abrirVisualizar(solicitacao)"
+                  class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                  Visualizar Serviço
+                </button>
+
+                @if (solicitacao.estado === 'ORÇADA') {
+                  <button (click)="abrirOrcamento(solicitacao)"
+                    class="bg-blue-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                    Aprovar/Rejeitar Serviço
+                  </button>
+                }
+                @else if (solicitacao.estado === 'REJEITADA') {
+                  <button (click)="resgatar(solicitacao)"
+                    class="bg-orange-600 hover:bg-orange-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                    Resgatar Serviço
+                  </button>
+                }
+                @else if (solicitacao.estado === 'ARRUMADA') {
+                  <button (click)="abrirPagar(solicitacao)"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                    Pagar Serviço
+                  </button>
+                }
+              </div>
+            </td>
+
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">
+              Nenhuma solicitação encontrada.
+            </td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>
 
 </main>
+
+<!-- RF008 - Visualizar Serviço -->
+<p-dialog header="Visualizar Serviço" [(visible)]="showVisualizar" [modal]="true" [style]="{ width: 'min(620px, 92vw)' }">
+  @if (selecionada) {
+    <div class="flex flex-col gap-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Data/Hora</span>
+          <p class="text-sm text-gray-800">{{ formatarDataHora(selecionada.dataHora) }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Categoria</span>
+          <p class="text-sm text-gray-800">{{ selecionada.categoriaEquipamento }}</p>
+        </div>
+        <div class="sm:col-span-2">
+          <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Equipamento</span>
+          <p class="text-sm text-gray-800">{{ selecionada.descricaoEquipamento }}</p>
+        </div>
+        <div class="sm:col-span-2">
+          <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Descrição do Defeito</span>
+          <p class="text-sm text-gray-800">{{ selecionada.descricaoDefeito }}</p>
+        </div>
+        @if (selecionada.precoOrcado) {
+          <div class="sm:col-span-2">
+            <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Valor Orçado</span>
+            <p class="text-lg font-semibold text-indigo-600">{{ formatarValor(selecionada.precoOrcado) }}</p>
+          </div>
+        }
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold text-gray-800 mb-3">Histórico</h3>
+        <ol class="flex flex-col gap-4">
+          @for (h of selecionada.historico; track $index) {
+            <li class="flex gap-3">
+              <span class="mt-1.5 h-3 w-3 shrink-0 rounded-full bg-indigo-500"></span>
+              <div>
+                <p class="text-sm font-medium text-gray-800">{{ labelEstado(h.estado) }}</p>
+                <p class="text-xs text-gray-500">
+                  {{ formatarDataHora(h.dataHora) }}
+                  @if (h.funcionario) {
+                    · {{ h.funcionario }}
+                  }
+                </p>
+                @if (h.observacao) {
+                  <p class="text-xs text-gray-600 mt-1">{{ h.observacao }}</p>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+      </div>
+
+      @if (acaoParaEstado(selecionada.estado); as acao) {
+        <div class="flex justify-end border-t border-gray-100 pt-3">
+          <button (click)="executarAcao(selecionada)"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-5 py-2.5 text-sm font-medium transition-colors">
+            {{ acao }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+</p-dialog>
+
+<!-- RF010 - Pagar Serviço -->
+<p-dialog header="Pagar Serviço" [(visible)]="showPagar" [modal]="true" [style]="{ width: 'min(520px, 92vw)' }">
+  @if (selecionada) {
+    <div class="flex flex-col gap-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Data/Hora</span>
+          <p class="text-sm text-gray-800">{{ formatarDataHora(selecionada.dataHora) }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Categoria</span>
+          <p class="text-sm text-gray-800">{{ selecionada.categoriaEquipamento }}</p>
+        </div>
+        <div class="sm:col-span-2">
+          <span class="block text-xs font-medium uppercase tracking-wide text-gray-500">Equipamento</span>
+          <p class="text-sm text-gray-800">{{ selecionada.descricaoEquipamento }}</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50 px-5 py-4">
+        <span class="text-sm font-medium text-emerald-900">Valor a Pagar</span>
+        <span class="text-2xl font-bold text-emerald-700">{{ formatarValor(selecionada.precoOrcado ?? 0) }}</span>
+      </div>
+
+      <div class="flex justify-end border-t border-gray-100 pt-3">
+        <button (click)="confirmarPagamento()"
+          class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-5 py-2.5 text-sm font-medium transition-colors">
+          Confirmar Pagamento
+        </button>
+      </div>
+    </div>
+  }
+</p-dialog>
+
+<!-- Mensagens do RF009 / RF010 -->
+<p-dialog header="Aviso" [(visible)]="showMensagem" [modal]="true" [style]="{ width: 'min(400px, 92vw)' }">
+  <p class="text-sm text-gray-800">{{ mensagem }}</p>
+  <div class="flex justify-end pt-4">
+    <button (click)="fecharMensagem()"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-6 py-2.5 text-sm font-medium transition-colors">
+      OK
+    </button>
+  </div>
+</p-dialog>

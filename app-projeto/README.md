@@ -1,173 +1,59 @@
-Controle de Manutenção de Equipamentos
+# AppProjeto
 
-Sobre o projeto
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.21.
 
-O projeto Controle de Manutenção de Equipamentos tem como objetivo desenvolver uma aplicação web para o gerenciamento de solicitações de manutenção de equipamentos.
+## Development server
 
-O sistema possui dois perfis de acesso:
+To start a local development server, run:
 
-Cliente
-
-Funcionário
-
-O cliente pode cadastrar solicitações de manutenção, acompanhar o andamento do serviço e consultar informações relacionadas às suas solicitações.
-
-O funcionário pode visualizar solicitações, realizar orçamentos, registrar manutenções, redirecionar serviços e finalizar atendimentos.
-
-Tecnologias utilizadas
-
-Angular
-
-TypeScript
-
-HTML
-
-CSS / Tailwind CSS
-
-Java
-
-Spring Boot
-
-API REST
-
-PostgreSQL
-
-Git e GitHub
-
-(mais coisas..)
-Estrutura do projeto
-
-Web-II-Equipamentos/
-│
-├── app-projeto/        # Front-end Angular
-├── []         # Back-end Spring Boot
-├── []         # Arquivos relacionados ao banco de dados
-└── README.md
-
-Funcionalidades
-
-Entre as funcionalidades previstas no sistema estão:
-
-Autocadastro de clientes;
-
-Login de clientes e funcionários;
-
-Cadastro de solicitações de manutenção;
-
-Consulta das solicitações do cliente;
-
-Orçamento de serviços;
-
-Aprovação ou rejeição de orçamento;
-
-Registro da manutenção realizada;
-
-Redirecionamento de solicitações entre funcionários;
-
-Finalização de serviços;
-
-Gerenciamento de categorias;
-
-Gerenciamento de funcionários;
-
-Relatórios.
-
-[] Indique quais dessas funcionalidades já estão implementadas.
-
-Como executar o projeto
-
-Pré-requisitos
-
-Antes de executar o projeto, é necessário possuir instalado:
-
-Node.js
-
-npm
-
-Angular CLI
-
-Java JDK 17
-
-PostgreSQL
-
-Git
-
-Clonar o repositório
-
-git clone []
-cd Web-II-Equipamentos
-
-Executar o front-end
-
-Entre na pasta do projeto Angular:
-
-cd app-projeto
-
-Instale as dependências:
-
-npm install
-
-Execute o projeto:
-
+```bash
 ng serve
+```
 
-Depois, acesse no navegador:
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-http://localhost:4200
+## Code scaffolding
 
-Executar o back-end
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
-[]
+```bash
+ng generate component component-name
+```
 
-Informe aqui o nome da pasta do back-end e o comando realmente utilizado pela equipe para iniciar o Spring Boot.
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
-Banco de dados
+```bash
+ng generate --help
+```
 
-O projeto utiliza PostgreSQL.
+## Building
 
-[]
+To build the project run:
 
-Adicione aqui:
+```bash
+ng build
+```
 
-nome do banco;
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-forma de criação do banco;
+## Running unit tests
 
-arquivo SQL utilizado, se houver;
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
 
-configurações necessárias para conexão;
+```bash
+ng test
+```
 
-dados de teste que podem ser utilizados.
+## Running end-to-end tests
 
-Não coloque senhas pessoais ou credenciais reais no README.
+For end-to-end (e2e) testing, run:
 
-Rotas do front-end
+```bash
+ng e2e
+```
 
-[]
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
-Liste somente as rotas que realmente existem no arquivo app.routes.ts.
+## Additional Resources
 
-Exemplo:
-
-/                 Página inicial
-/auth/login       Login
-/auth/cadastro    Cadastro
-/cliente          Área do cliente
-
-Organização da equipe
-
-[]
-
-Adicione os integrantes da equipe e, se necessário, suas responsabilidades no projeto.
-
-Controle de versão
-
-O projeto utiliza Git e GitHub para controle de versão.
-
-Antes de iniciar alterações, recomenda-se atualizar a branch utilizada pela equipe:
-
-git pull
-
-Para verificar os arquivos alterados:
-
-git status
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
