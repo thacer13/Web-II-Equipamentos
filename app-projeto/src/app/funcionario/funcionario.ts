@@ -109,12 +109,30 @@ export class FuncionarioComponent {
 
   executarAcao(solicitacao: Solicitacao): void {
     if (solicitacao.estado === 'ABERTA') {
-
       this.router.navigate(
         ['/efetuar-orcamento', solicitacao.id],
         {
           state: {
-            solicitacao: solicitacao
+            solicitacao: {
+              ...solicitacao,
+              equipamento: solicitacao.descricaoEquipamento,
+              categoria: solicitacao.categoriaEquipamento,
+              cliente: {
+                id: 1,
+                nome: 'Glauco Lucio',
+                cpf: '081.679.750-10',
+                email: 'glauco.lucio703@hotmail.com',
+                telefone: '(41) 2819-5983',
+                endereco: {
+                  logradouro: 'Rua Oito',
+                  numero: '1446',
+                  bairro: 'Angelim',
+                  cidade: 'Teresina',
+                  uf: 'PI',
+                  cep: '64041-280'
+                }
+              }
+            }
           }
         }
       );
