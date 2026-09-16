@@ -33,7 +33,6 @@ export class FuncionarioComponent {
   showOrcamentoInput: boolean = false;
   showDescricaoDialog: boolean = false;
   showDescricaoDesktopDialog: boolean = false;
-  showAdicionarFuncionario: boolean = false;
 
   constructor() {
     this.solicitacoes = this.solicitacaoService.listar();
@@ -58,8 +57,12 @@ export class FuncionarioComponent {
         }
 
         if (this.filtro === 'PERIODO') {
-          const depoisDoInicio = !this.dataInicio || dataAbertura >= this.dataInicio;
-          const antesDoFim = !this.dataFim || dataAbertura <= this.dataFim;
+          const depoisDoInicio =
+            !this.dataInicio || dataAbertura >= this.dataInicio;
+
+          const antesDoFim =
+            !this.dataFim || dataAbertura <= this.dataFim;
+
           return depoisDoInicio && antesDoFim;
         }
 
@@ -89,13 +92,24 @@ export class FuncionarioComponent {
 
   acaoDoEstado(estado: EstadoSolicitacao): string | null {
     if (estado === 'ABERTA') return 'Efetuar Orçamento';
-    if (estado === 'APROVADA' || estado === 'REDIRECIONADA') return 'Efetuar Manutenção';
-    if (estado === 'PAGA') return 'Finalizar Solicitação';
+
+    if (
+      estado === 'APROVADA' ||
+      estado === 'REDIRECIONADA'
+    ) {
+      return 'Efetuar Manutenção';
+    }
+
+    if (estado === 'PAGA') {
+      return 'Finalizar Solicitação';
+    }
+
     return null;
   }
 
   executarAcao(solicitacao: Solicitacao): void {
     if (solicitacao.estado === 'ABERTA') {
+
       this.router.navigate(
         ['/efetuar-orcamento', solicitacao.id],
         {
@@ -115,8 +129,12 @@ export class FuncionarioComponent {
     }
   }
 
-  onAdicionarFuncionario() {
-    this.showAdicionarFuncionario = true;
+  abrirCategorias() {
+    this.router.navigate(['/funcionario/categorias']);
+  }
+
+  abrirFuncionarios() {
+    this.router.navigate(['/funcionario/funcionarios']);
   }
 
   onOrcamentoClick() {

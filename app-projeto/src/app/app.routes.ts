@@ -5,6 +5,8 @@ import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
 import { FuncionarioComponent } from './funcionario/funcionario';
 import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
+import { CategoriasComponent } from './funcionario/categorias/categorias';
+import { FuncionariosComponent } from './funcionario/funcionarios/funcionarios';
 
 export const routes: Routes = [
     {
@@ -14,7 +16,6 @@ export const routes: Routes = [
     {
         path: 'auth/cadastro',
         component: CadastroComponent
-    
     },
     {
         path: 'login',
@@ -24,7 +25,6 @@ export const routes: Routes = [
         path: '',
         redirectTo: 'auth/login',
         pathMatch: 'full'
-    
     },
     {
         path: 'auth/err',
@@ -37,6 +37,14 @@ export const routes: Routes = [
     {
         path: 'funcionario',
         component: FuncionarioComponent
+    },
+    {
+        path: 'funcionario/categorias',
+        component: CategoriasComponent
+    },
+    {
+        path: 'funcionario/funcionarios',
+        component: FuncionariosComponent
     },
     {
         path: 'efetuar-orcamento/:id',
