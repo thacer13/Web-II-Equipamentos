@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -21,6 +22,7 @@ import { EstadoSolicitacao, Solicitacao } from '../shared/models/solicitacao.mod
 })
 export class FuncionarioComponent {
   private solicitacaoService = inject(SolicitacaoService);
+  private router = inject(Router);
 
   funcionarioAtual = 'Mário';
   filtro = 'TODAS';
@@ -93,7 +95,21 @@ export class FuncionarioComponent {
   }
 
   executarAcao(solicitacao: Solicitacao): void {
+    if (solicitacao.estado === 'ABERTA') {
+      this.router.navigate(
+        ['/efetuar-orcamento', solicitacao.id],
+        {
+          state: {
+            solicitacao: solicitacao
+          }
+        }
+      );
+
+      return;
+    }
+
     const acao = this.acaoDoEstado(solicitacao.estado);
+
     if (acao) {
       alert(`${acao}: solicitação ${solicitacao.id}`);
     }

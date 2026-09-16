@@ -10,31 +10,32 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 
 interface Endereco {
-  logradouro: string;
-  numero: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  cep: string;
+  logradouro?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  uf?: string;
+  cep?: string;
 }
 
 interface Cliente {
-  id: number;
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  endereco: Endereco;
+  id?: number;
+  nome?: string;
+  cpf?: string;
+  email?: string;
+  telefone?: string;
+  endereco?: Endereco;
 }
 
 interface Solicitacao {
   id: number;
-  dataHora: string;
-  equipamento: string;
-  categoria: string;
-  descricaoDefeito: string;
-  estado: string;
-  cliente: Cliente;
+  dataHora?: string;
+  equipamento?: string;
+  descricaoEquipamento?: string;
+  categoria?: string;
+  descricaoDefeito?: string;
+  estado?: string;
+  cliente?: Cliente;
 }
 
 @Component({
@@ -138,15 +139,6 @@ export class EfetuarOrcamentoComponent implements OnInit {
 
     const idSolicitacao = this.solicitacao.id;
     const valor = this.valorOrcamento;
-
-    /*
-      Por enquanto é apenas uma simulação.
-
-      Quando o backend estiver pronto,
-      aqui será feita a chamada para salvar
-      o orçamento e alterar a solicitação
-      de ABERTA para ORCADA.
-    */
 
     this.router.navigate(
       ['/funcionario'],

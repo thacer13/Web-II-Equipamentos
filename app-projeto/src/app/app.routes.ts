@@ -4,6 +4,7 @@ import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
 import { FuncionarioComponent } from './funcionario/funcionario';
+import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
 
 export const routes: Routes = [
     {
@@ -36,5 +37,9 @@ export const routes: Routes = [
     {
         path: 'funcionario',
         component: FuncionarioComponent
+    },
+    {
+        path: 'efetuar-orcamento/:id',
+        component: EfetuarOrcamentoComponent
     }
 ]
