@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
-import{LoginComponent} from './auth/login/login';
+import { LoginComponent } from './auth/login/login';
 import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
 import { FuncionarioComponent } from './funcionario/solicitacoes/solicitacao-funcionario';
+import { ManutencaoComponent } from './funcionario/manutencao/manutencao';
 import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
 import { CategoriasComponent } from './funcionario/categorias/categorias';
 import { FuncionariosComponent } from './funcionario/lista-funcionarios/funcionarios';
@@ -42,6 +43,10 @@ export const routes: Routes = [
         component: FuncionarioComponent
     },
     {
+        path: 'manutencao',
+        component: ManutencaoComponent
+    },
+    {
         path: 'funcionario/categorias',
         component: CategoriasComponent
     },
@@ -65,4 +70,4 @@ export const routes: Routes = [
         path: 'efetuar-orcamento/:id',
         component: EfetuarOrcamentoComponent
     }
-]
+];

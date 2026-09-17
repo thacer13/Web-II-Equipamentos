@@ -121,7 +121,11 @@ export class FuncionariosComponent {
     if (this.editandoId === null) {
       const proximoId =
         this.funcionarios.length > 0
-          ? Math.max(...this.funcionarios.map((funcionario) => funcionario.id)) + 1
+          ? Math.max(
+              ...this.funcionarios.map(
+                (funcionario) => funcionario.id
+              )
+            ) + 1
           : 1;
 
       this.funcionarios.push({
@@ -134,7 +138,9 @@ export class FuncionariosComponent {
       });
     } else {
       const funcionario =
-        this.funcionarios.find((item) => item.id === this.editandoId);
+        this.funcionarios.find(
+          (item) => item.id === this.editandoId
+        );
 
       if (funcionario) {
         funcionario.nome = nome;
@@ -157,7 +163,9 @@ export class FuncionariosComponent {
       return false;
     }
 
-    return this.funcionarios.filter((item) => item.ativo).length > 1;
+    return this.funcionarios.filter(
+      (item) => item.ativo
+    ).length > 1;
   }
 
   pedirDesativacao(funcionario: FuncionarioCrud): void {
@@ -203,7 +211,10 @@ export class FuncionariosComponent {
   private carregar(): void {
     if (typeof localStorage === 'undefined') {
       this.funcionarios =
-        FUNCIONARIOS_INICIAIS.map((funcionario) => ({ ...funcionario }));
+        FUNCIONARIOS_INICIAIS.map(
+          (funcionario) => ({ ...funcionario })
+        );
+
       return;
     }
 
@@ -211,7 +222,9 @@ export class FuncionariosComponent {
 
     this.funcionarios = dados
       ? JSON.parse(dados)
-      : FUNCIONARIOS_INICIAIS.map((funcionario) => ({ ...funcionario }));
+      : FUNCIONARIOS_INICIAIS.map(
+          (funcionario) => ({ ...funcionario })
+        );
 
     this.salvarLocal();
   }

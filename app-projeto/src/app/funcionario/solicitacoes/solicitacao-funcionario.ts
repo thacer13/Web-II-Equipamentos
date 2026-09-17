@@ -5,8 +5,14 @@ import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { SolicitacaoService, ESTADO_COR } from '../../shared/services/solicitacao.service';
-import { EstadoSolicitacao, Solicitacao } from '../../shared/models/solicitacao.model';
+import {
+  SolicitacaoService,
+  ESTADO_COR
+} from '../../shared/services/solicitacao.service';
+import {
+  EstadoSolicitacao,
+  Solicitacao
+} from '../../shared/models/solicitacao.model';
 
 @Component({
   selector: 'app-funcionario',
@@ -21,77 +27,119 @@ import { EstadoSolicitacao, Solicitacao } from '../../shared/models/solicitacao.
   templateUrl: './solicitacao-funcionario.html',
 })
 export class FuncionarioComponent {
+
   private solicitacaoService = inject(SolicitacaoService);
   private router = inject(Router);
 
   funcionarioAtual = 'Mário';
+
   filtro = 'TODAS';
+
   dataInicio = '';
   dataFim = '';
+
   solicitacoes: Solicitacao[] = [];
 
-  showOrcamentoInput: boolean = false;
-  showDescricaoDialog: boolean = false;
-  showDescricaoDesktopDialog: boolean = false;
-  showReceitas: boolean = false;
+  showOrcamentoInput = false;
+  showDescricaoDialog = false;
+  showDescricaoDesktopDialog = false;
+  showReceitas = false;
 
   constructor() {
     this.solicitacoes = this.solicitacaoService.listar();
   }
 
   get solicitacoesFiltradas(): Solicitacao[] {
-    const hoje = new Date().toISOString().slice(0, 10);
+
+    const hoje = new Date()
+      .toISOString()
+      .slice(0, 10);
 
     return this.solicitacoes
+
       .filter((solicitacao) => {
+
         if (solicitacao.estado === 'REDIRECIONADA') {
-          return solicitacao.funcionarioDestino === this.funcionarioAtual;
+          return (
+            solicitacao.funcionarioDestino ===
+            this.funcionarioAtual
+          );
         }
 
         return true;
       })
+
       .filter((solicitacao) => {
-        const dataAbertura = solicitacao.dataHora.slice(0, 10);
+
+        const dataAbertura =
+          solicitacao.dataHora.slice(0, 10);
 
         if (this.filtro === 'HOJE') {
           return dataAbertura === hoje;
         }
 
         if (this.filtro === 'PERIODO') {
+
           const depoisDoInicio =
-            !this.dataInicio || dataAbertura >= this.dataInicio;
+            !this.dataInicio ||
+            dataAbertura >= this.dataInicio;
 
           const antesDoFim =
-            !this.dataFim || dataAbertura <= this.dataFim;
+            !this.dataFim ||
+            dataAbertura <= this.dataFim;
 
           return depoisDoInicio && antesDoFim;
         }
 
         return true;
       })
-      .sort((a, b) => a.dataHora.localeCompare(b.dataHora));
+
+      .sort(
+        (a, b) =>
+          a.dataHora.localeCompare(b.dataHora)
+      );
   }
 
-  corEstado(estado: EstadoSolicitacao): string {
+  corEstado(
+    estado: EstadoSolicitacao
+  ): string {
+
     return ESTADO_COR[estado];
   }
 
-  labelEstado(estado: EstadoSolicitacao): string {
-    const labels: Record<EstadoSolicitacao, string> = {
+  labelEstado(
+    estado: EstadoSolicitacao
+  ): string {
+
+    const labels: Record<
+      EstadoSolicitacao,
+      string
+    > = {
+
       ABERTA: 'Aberta',
+
       'ORÇADA': 'Orçada',
+
       APROVADA: 'Aprovada',
+
       REJEITADA: 'Rejeitada',
+
       REDIRECIONADA: 'Redirecionada',
+
       ARRUMADA: 'Arrumada',
+
       PAGA: 'Paga',
-      FINALIZADA: 'Finalizada',
+
+      FINALIZADA: 'Finalizada'
     };
 
     return labels[estado];
   }
 
-  acaoDoEstado(estado: EstadoSolicitacao): string | null {
+  acaoDoEstado(
+    estado: EstadoSolicitacao
+  ): string | null {
+
     if (estado === 'ABERTA') {
       return 'Efetuar Orçamento';
     }
@@ -110,29 +158,61 @@ export class FuncionarioComponent {
     return null;
   }
 
-  executarAcao(solicitacao: Solicitacao): void {
+  executarAcao(
+    solicitacao: Solicitacao
+  ): void {
+
     if (solicitacao.estado === 'ABERTA') {
+
       this.router.navigate(
-        ['/efetuar-orcamento', solicitacao.id],
+        [
+          '/efetuar-orcamento',
+          solicitacao.id
+        ],
         {
           state: {
             solicitacao: {
               ...solicitacao,
-              equipamento: solicitacao.descricaoEquipamento,
-              categoria: solicitacao.categoriaEquipamento,
+
+              equipamento:
+                solicitacao.descricaoEquipamento,
+
+              categoria:
+                solicitacao.categoriaEquipamento,
+
               cliente: {
+
                 id: 1,
+
                 nome: 'Glauco Lucio',
+
                 cpf: '081.679.750-10',
-                email: 'glauco.lucio703@hotmail.com',
-                telefone: '(41) 2819-5983',
+
+                email:
+                  'glauco.lucio703@hotmail.com',
+
+                telefone:
+                  '(41) 2819-5983',
+
                 endereco: {
-                  logradouro: 'Rua Oito',
-                  numero: '1446',
-                  bairro: 'Angelim',
-                  cidade: 'Teresina',
-                  uf: 'PI',
-                  cep: '64041-280'
+
+                  logradouro:
+                    'Rua Oito',
+
+                  numero:
+                    '1446',
+
+                  bairro:
+                    'Angelim',
+
+                  cidade:
+                    'Teresina',
+
+                  uf:
+                    'PI',
+
+                  cep:
+                    '64041-280'
                 }
               }
             }
@@ -143,44 +223,82 @@ export class FuncionarioComponent {
       return;
     }
 
-    const acao = this.acaoDoEstado(solicitacao.estado);
+    if (
+      solicitacao.estado === 'APROVADA' ||
+      solicitacao.estado === 'REDIRECIONADA'
+    ) {
 
-    if (acao) {
-      alert(`${acao}: solicitação ${solicitacao.id}`);
+      this.router.navigate(
+        ['/manutencao'],
+        {
+          state: {
+            solicitacao
+          }
+        }
+      );
+
+      return;
+    }
+
+    if (solicitacao.estado === 'PAGA') {
+
+      alert(
+        `Finalizar Solicitação: solicitação ${solicitacao.id}`
+      );
+
+      return;
     }
   }
 
   abrirCategorias(): void {
-    this.router.navigate(['/funcionario/categorias']);
+
+    this.router.navigate([
+      '/funcionario/categorias'
+    ]);
   }
 
   abrirFuncionarios(): void {
-    this.router.navigate(['/funcionario/lista-funcionarios']);
+
+    this.router.navigate([
+      '/funcionario/lista-funcionarios'
+    ]);
   }
 
   abrirReceitas(): void {
+
     this.showReceitas = true;
   }
 
   abrirReceitaPeriodo(): void {
+
     this.showReceitas = false;
-    this.router.navigate(['/funcionario/receitas/periodo']);
+
+    this.router.navigate([
+      '/funcionario/receitas/periodo'
+    ]);
   }
 
   abrirReceitaCategoria(): void {
+
     this.showReceitas = false;
-    this.router.navigate(['/funcionario/receitas/categoria']);
+
+    this.router.navigate([
+      '/funcionario/receitas/categoria'
+    ]);
   }
 
   onOrcamentoClick(): void {
+
     this.showOrcamentoInput = true;
   }
 
   onDescricaoClick(): void {
+
     this.showDescricaoDialog = true;
   }
 
   onDescricaoDesktopClick(): void {
+
     this.showDescricaoDesktopDialog = true;
   }
 }
