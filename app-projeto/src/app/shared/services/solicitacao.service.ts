@@ -108,6 +108,19 @@ const DADOS_INICIAIS: Solicitacao[] = [
       { dataHora: '2026-03-17T08:30:00', estado: 'REDIRECIONADA', funcionario: 'Mário', observacao: 'Solicitação redirecionada para Mário.' },
     ],
   },
+  {
+    id: 7,
+    dataHora: '2026-09-16T08:30:00',
+    funcionarioDestino: 'Joe',
+    descricaoEquipamento: 'Xbox Series X',
+    categoriaEquipamento: 'Hardware',
+    descricaoDefeito: 'Não liga.',
+    estado: 'PAGA',
+    precoOrcado: 380.0,
+    historico: [
+      { dataHora: '2026-09-16T08:30:00', estado: 'PAGA', funcionario: 'Joe', observacao: 'Observação.' },
+    ],
+  },
 ];
 
 @Injectable({
