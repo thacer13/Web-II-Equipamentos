@@ -1,0 +1,135 @@
+<div class="min-h-screen w-full bg-gray-100 p-4 sm:p-6">
+  <div class="mx-auto max-w-6xl">
+
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <span
+        class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
+        Funcionário
+      </span>
+
+      <p-button
+        type="button"
+        label="Voltar"
+        severity="secondary"
+        (click)="voltar()">
+      </p-button>
+    </div>
+
+    <div class="overflow-hidden rounded-lg bg-white shadow-md">
+
+      <div
+        class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 px-6 py-5">
+
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">
+            Receita por Categoria
+          </h2>
+
+          <p class="mt-1 text-sm text-gray-500">
+            Receita acumulada da empresa agrupada por categoria de equipamento.
+          </p>
+        </div>
+
+        <p-button
+          type="button"
+          label="Gerar PDF"
+          icon="pi pi-file-pdf"
+          (click)="gerarPdf()">
+        </p-button>
+
+      </div>
+
+      <div class="grid gap-4 border-b border-gray-200 p-6 sm:grid-cols-2">
+
+        <div class="rounded-lg border border-gray-200 bg-gray-50 p-5">
+          <span class="text-sm text-gray-500">
+            Total de Serviços
+          </span>
+
+          <p class="mt-2 text-2xl font-bold text-gray-800">
+            {{ totalServicos }}
+          </p>
+        </div>
+
+        <div class="rounded-lg border border-gray-200 bg-gray-50 p-5">
+          <span class="text-sm text-gray-500">
+            Receita Total
+          </span>
+
+          <p class="mt-2 text-2xl font-bold text-gray-800">
+            {{ formatarMoeda(totalReceita) }}
+          </p>
+        </div>
+
+      </div>
+
+      <div class="w-full overflow-x-auto">
+
+        <table class="w-full min-w-full border-collapse text-left text-sm">
+
+          <thead class="bg-gray-50 text-gray-600">
+            <tr>
+              <th class="px-6 py-4 font-semibold">
+                Categoria
+              </th>
+
+              <th class="px-6 py-4 font-semibold">
+                Quantidade de Serviços
+              </th>
+
+              <th class="px-6 py-4 font-semibold">
+                Receita
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-gray-200">
+
+            @for (item of receitas; track item.categoria) {
+
+              <tr class="transition-colors hover:bg-gray-50">
+
+                <td class="px-6 py-4 font-medium text-gray-800">
+                  {{ item.categoria }}
+                </td>
+
+                <td class="px-6 py-4 text-gray-600">
+                  {{ item.quantidade }}
+                </td>
+
+                <td class="px-6 py-4 font-semibold text-gray-800">
+                  {{ formatarMoeda(item.receita) }}
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+          <tfoot class="border-t-2 border-gray-200 bg-gray-50">
+
+            <tr>
+              <td class="px-6 py-4 font-bold text-gray-800">
+                Total
+              </td>
+
+              <td class="px-6 py-4 font-bold text-gray-800">
+                {{ totalServicos }}
+              </td>
+
+              <td class="px-6 py-4 font-bold text-gray-800">
+                {{ formatarMoeda(totalReceita) }}
+              </td>
+            </tr>
+
+          </tfoot>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

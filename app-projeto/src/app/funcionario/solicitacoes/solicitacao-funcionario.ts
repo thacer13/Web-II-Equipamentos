@@ -33,6 +33,7 @@ export class FuncionarioComponent {
   showOrcamentoInput: boolean = false;
   showDescricaoDialog: boolean = false;
   showDescricaoDesktopDialog: boolean = false;
+  showReceitas: boolean = false;
 
   constructor() {
     this.solicitacoes = this.solicitacaoService.listar();
@@ -91,7 +92,9 @@ export class FuncionarioComponent {
   }
 
   acaoDoEstado(estado: EstadoSolicitacao): string | null {
-    if (estado === 'ABERTA') return 'Efetuar Orçamento';
+    if (estado === 'ABERTA') {
+      return 'Efetuar Orçamento';
+    }
 
     if (
       estado === 'APROVADA' ||
@@ -147,23 +150,37 @@ export class FuncionarioComponent {
     }
   }
 
-  abrirCategorias() {
+  abrirCategorias(): void {
     this.router.navigate(['/funcionario/categorias']);
   }
 
-  abrirFuncionarios() {
-    this.router.navigate(['/funcionario/funcionarios']);
+  abrirFuncionarios(): void {
+    this.router.navigate(['/funcionario/lista-funcionarios']);
   }
 
-  onOrcamentoClick() {
+  abrirReceitas(): void {
+    this.showReceitas = true;
+  }
+
+  abrirReceitaPeriodo(): void {
+    this.showReceitas = false;
+    this.router.navigate(['/funcionario/receitas/periodo']);
+  }
+
+  abrirReceitaCategoria(): void {
+    this.showReceitas = false;
+    this.router.navigate(['/funcionario/receitas/categoria']);
+  }
+
+  onOrcamentoClick(): void {
     this.showOrcamentoInput = true;
   }
 
-  onDescricaoClick() {
+  onDescricaoClick(): void {
     this.showDescricaoDialog = true;
   }
 
-  onDescricaoDesktopClick() {
+  onDescricaoDesktopClick(): void {
     this.showDescricaoDesktopDialog = true;
   }
 }
