@@ -3,10 +3,11 @@ import{LoginComponent} from './auth/login/login';
 import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
-import { FuncionarioComponent } from './funcionario/funcionario';
+import { FuncionarioComponent } from './funcionario/solicitacoes/solicitacao-funcionario';
 import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
 import { CategoriasComponent } from './funcionario/categorias/categorias';
-import { FuncionariosComponent } from './funcionario/funcionarios/funcionarios';
+import { FuncionariosComponent } from './funcionario/lista-funcionarios/funcionarios';
+import { LoginFuncionarioComponent } from './funcionario/login-funcionario/login-funcionario';
 
 export const routes: Routes = [
     {
@@ -43,11 +44,15 @@ export const routes: Routes = [
         component: CategoriasComponent
     },
     {
-        path: 'funcionario/funcionarios',
+        path: 'funcionario/lista-funcionarios',
         component: FuncionariosComponent
     },
     {
         path: 'efetuar-orcamento/:id',
         component: EfetuarOrcamentoComponent
+    },
+    {
+        path: 'funcionario/login-funcionario',
+        component: LoginFuncionarioComponent
     }
 ]

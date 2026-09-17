@@ -5,8 +5,8 @@ import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { SolicitacaoService, ESTADO_COR } from '../shared/services/solicitacao.service';
-import { EstadoSolicitacao, Solicitacao } from '../shared/models/solicitacao.model';
+import { SolicitacaoService, ESTADO_COR } from '../../shared/services/solicitacao.service';
+import { EstadoSolicitacao, Solicitacao } from '../../shared/models/solicitacao.model';
 
 @Component({
   selector: 'app-funcionario',
@@ -18,7 +18,7 @@ import { EstadoSolicitacao, Solicitacao } from '../shared/models/solicitacao.mod
     InputTextModule,
     DialogModule
   ],
-  templateUrl: './funcionario.html',
+  templateUrl: './solicitacao-funcionario.html',
 })
 export class FuncionarioComponent {
   private solicitacaoService = inject(SolicitacaoService);
