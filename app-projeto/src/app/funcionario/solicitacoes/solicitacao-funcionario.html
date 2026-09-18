@@ -1,4 +1,4 @@
-<div class="min-h-screen w-full bg-gray-100 p-4 sm:p-6">
+<div class="min-h-screen w-full bg-gray-100 p-4 sm:p-6 overflow-y-scroll">
 
   <div class="mb-6 flex w-full items-center justify-between">
 
@@ -107,105 +107,112 @@
 
     </div>
 
-    <div class="w-full overflow-x-auto">
 
-      <table
-        class="w-full min-w-full border-collapse text-left text-sm">
+  <div class="max-w-5xl w-full mx-auto">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="w-full overflow-x-auto">
 
-        <thead class="bg-gray-50 text-gray-600">
+        <table
+          class="w-full min-w-full border-collapse text-left text-sm table-fixed">
 
-          <tr>
-            <th class="px-6 py-4 font-semibold">
-              Estado
-            </th>
-
-            <th class="px-6 py-4 font-semibold">
-              Data/Hora
-            </th>
-
-            <th class="px-6 py-4 font-semibold">
-              Equipamento
-            </th>
-
-            <th class="px-6 py-4 font-semibold">
-              Ação
-            </th>
-          </tr>
-
-        </thead>
-
-        <tbody class="divide-y divide-gray-200">
-
-          @for (solicitacao of solicitacoesFiltradas; track solicitacao.id) {
-
-            <tr class="transition-colors hover:bg-gray-50">
-
-              <td class="px-6 py-4">
-
-                <span
-                  class="inline-flex rounded-full px-3 py-1.5 text-sm font-semibold"
-                  [class]="corEstado(solicitacao.estado)">
-
-                  {{ labelEstado(solicitacao.estado) }}
-
-                </span>
-
-              </td>
-
-              <td
-                class="whitespace-nowrap px-6 py-4 text-gray-600">
-
-                {{ solicitacao.dataHora | date:'dd/MM/yyyy HH:mm' }}
-
-              </td>
-
-              <td class="px-6 py-4 text-gray-800">
-
-                {{ solicitacao.descricaoEquipamento }}
-
-              </td>
-
-              <td class="px-6 py-4">
-
-                @if (acaoDoEstado(solicitacao.estado); as acao) {
-
-                  <p-button
-                    type="button"
-                    [label]="acao"
-                    class="p-button-sm"
-                    (click)="executarAcao(solicitacao)">
-                  </p-button>
-
-                } @else {
-
-                  <span class="text-gray-400">
-                    Sem ação
-                  </span>
-
-                }
-
-              </td>
-
-            </tr>
-
-          } @empty {
+          <thead class="bg-gray-50 text-gray-600">
 
             <tr>
-              <td
-                colspan="4"
-                class="px-6 py-8 text-center text-gray-500">
+              <th class="w-2/12 px-6 py-4 font-semibold">
+                Estado
+              </th>
 
-                Nenhuma solicitação encontrada.
+              <th class="w-3/12 px-6 py-4 font-semibold">
+                Data/Hora
+              </th>
 
-              </td>
+              <th class="w-4/12 px-6 py-4 font-semibold">
+                Equipamento
+              </th>
+
+              <th class="w-3/12 px-6 py-4 font-semibold">
+                Ação
+              </th>
             </tr>
 
-          }
+          </thead>
 
-        </tbody>
+          <tbody class="divide-y divide-gray-200">
 
-      </table>
+            @for (solicitacao of solicitacoesFiltradas; track solicitacao.id) {
 
+              <tr class="transition-colors hover:bg-gray-50">
+
+                <td class="px-6 py-4">
+
+                  <span
+                    class="inline-flex rounded-full px-3 py-1.5 text-sm font-semibold"
+                    [class]="corEstado(solicitacao.estado)">
+
+                    {{ labelEstado(solicitacao.estado) }}
+
+                  </span>
+
+                </td>
+
+                <td
+                  class="whitespace-nowrap px-6 py-4 text-gray-600">
+
+                  {{ solicitacao.dataHora | date:'dd/MM/yyyy HH:mm' }}
+
+                </td>
+
+                <td class="px-6 py-4 text-gray-800 truncate" [title]="solicitacao.descricaoEquipamento">
+
+                  {{ solicitacao.descricaoEquipamento }}
+
+                </td>
+
+                <td class="px-6 py-4">
+
+                  @if (acaoDoEstado(solicitacao.estado); as acao) {
+
+                    <p-button
+                      type="button"
+                      [label]="acao"
+                      class="p-button-sm"
+                      (click)="executarAcao(solicitacao)">
+                    </p-button>
+
+                  } @else {
+
+                    <span class="text-gray-400">
+                      Sem ação
+                    </span>
+
+                  }
+
+                </td>
+
+              </tr>
+
+            } @empty {
+              <tr class="h-64">
+                <td
+                  colspan="4"
+                  class="px-4 py-6 text-center align-middle text-gray-500">
+                  
+                  <div class="w-12/12 flex flex-col items-center justify-center h-full gap-2">
+                    <i class="pi pi-inbox text-4xl text-gray-300"></i>
+                    <span>Nenhuma solicitação encontrada.</span>
+                  </div>
+
+                </td>
+              </tr>
+  }
+
+          </tbody>
+
+        </table>
+
+      </div>
+    </div>
+    
     </div>
 
   </div>
