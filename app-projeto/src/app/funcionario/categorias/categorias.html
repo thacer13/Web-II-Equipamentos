@@ -34,28 +34,35 @@
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      (click)="abrirEditar(categoria)"
-                      class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                      Editar
-                    </button>
-                    @if (categoria.ativo) {
-                      <button
-                        type="button"
-                        (click)="pedirDesativacao(categoria)"
-                        class="bg-orange-600 hover:bg-orange-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                        Desativar
-                      </button>
-                    } @else {
-                      <button
-                        type="button"
-                        (click)="ativar(categoria)"
-                        class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                        Ativar
-                      </button>
-                    }
-                  </div>
+    <p-button
+        type="button"
+        icon="pi pi-pencil"
+        [rounded]="true"
+        [text]="true"
+        severity="info"
+        (click)="abrirEditar(categoria)">
+    </p-button>
+
+    @if (categoria.ativo) {
+        <p-button
+            type="button"
+            icon="pi pi-ban"
+            [rounded]="true"
+            [text]="true"
+            severity="warn"
+            (click)="pedirDesativacao(categoria)">
+        </p-button>
+    } @else {
+        <p-button
+            type="button"
+            icon="pi pi-check"
+            [rounded]="true"
+            [text]="true"
+            severity="success"
+            (click)="ativar(categoria)">
+        </p-button>
+    }
+</div>
                 </td>
               </tr>
             }
