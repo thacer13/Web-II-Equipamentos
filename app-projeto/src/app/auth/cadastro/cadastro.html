@@ -1,156 +1,166 @@
-<div class="min-h-screen flex items-center justify-center bg-white px-4 py-10">
+<div class="app-shell">
 
-  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-10">
+  <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()" class="app-shell__medium flex flex-col gap-6">
 
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-800 tracking-tight">
-        Cadastro
-      </h1>
-      <p class="text-sm text-gray-500 mt-2">
-        Preencha seus dados para criar sua conta
-      </p>
+    <div class="app-card p-10">
+
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 tracking-tight">
+          Cadastro
+        </h1>
+        <p class="text-sm text-gray-500 mt-2">
+          Preencha seus dados para criar sua conta
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-5">
+
+        <div class="flex flex-col gap-1.5">
+          <label for="cpf" class="text-sm font-medium text-gray-500">CPF</label>
+          <p-inputMask
+            id="cpf"
+            formControlName="cpf"
+            mask="999.999.999-99"
+            placeholder="999.999.999-99"
+            styleClass="w-full"
+          ></p-inputMask>
+          @if (cadastroForm.get('cpf')?.touched && cadastroForm.get('cpf')?.hasError('required')) {
+            <small class="text-sm text-red-600">Informe o CPF.</small>
+          }
+          @if (cadastroForm.get('cpf')?.dirty && cadastroForm.get('cpf')?.hasError('cpfInvalido')) {
+            <small class="text-sm text-red-600">CPF inválido. Verifique os números digitados.</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="nome" class="text-sm font-medium text-gray-500">Nome completo</label>
+          <input
+            id="nome"
+            type="text"
+            formControlName="nome"
+            pInputText
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="email" class="text-sm font-medium text-gray-500">E-mail</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            pInputText
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="telefone" class="text-sm font-medium text-gray-500">Telefone</label>
+          <p-inputMask
+            id="telefone"
+            formControlName="telefone"
+            mask="(99) 99999-9999"
+            placeholder="(99) 99999-9999"
+            styleClass="w-full"
+          ></p-inputMask>
+        </div>
+
+      </div>
+
     </div>
 
-    <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+    <div class="app-card p-10">
 
-      <div class="flex flex-col gap-1.5">
-        <label for="cpf" class="text-sm font-medium text-gray-500">CPF</label>
-        <p-inputMask
-          id="cpf"
-          formControlName="cpf"
-          mask="999.999.999-99"
-          placeholder="999.999.999-99"
-          styleClass="w-full"
-        ></p-inputMask>
-        @if (cadastroForm.get('cpf')?.touched && cadastroForm.get('cpf')?.hasError('required')) {
-          <small class="text-sm text-red-600">Informe o CPF.</small>
-        }
-        @if (cadastroForm.get('cpf')?.dirty && cadastroForm.get('cpf')?.hasError('cpfInvalido')) {
-          <small class="text-sm text-red-600">CPF inválido. Verifique os números digitados.</small>
-        }
+      <h3 class="text-lg font-semibold text-gray-800 mb-6">Endereço</h3>
+
+      <div class="flex flex-col gap-5">
+
+        <div class="flex flex-col gap-1.5">
+          <label for="cep" class="text-sm font-medium text-gray-500">CEP</label>
+          <p-inputMask
+            id="cep"
+            formControlName="cep"
+            mask="99999-999"
+            placeholder="99999-999"
+            styleClass="w-full"
+            (onBlur)="buscarCep()"
+          ></p-inputMask>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="logradouro" class="text-sm font-medium text-gray-500">Rua/Logradouro</label>
+          <input
+            id="logradouro"
+            type="text"
+            formControlName="logradouro"
+            pInputText
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="numero" class="text-sm font-medium text-gray-500">Número</label>
+          <input
+            id="numero"
+            type="text"
+            formControlName="numero"
+            pInputText
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="bairro" class="text-sm font-medium text-gray-500">Bairro</label>
+          <input
+            id="bairro"
+            type="text"
+            formControlName="bairro"
+            pInputText
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="cidade" class="text-sm font-medium text-gray-500">Cidade</label>
+          <input
+            id="cidade"
+            type="text"
+            formControlName="cidade"
+            pInputText
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="estado" class="text-sm font-medium text-gray-500">Estado</label>
+          <input
+            id="estado"
+            type="text"
+            formControlName="estado"
+            pInputText
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="cadastroForm.invalid"
+          class="w-full h-12 mt-2 bg-green-600 hover:bg-green-700 text-white text-base font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-65 disabled:cursor-not-allowed disabled:hover:bg-green-600"
+        >
+          Cadastrar
+        </button>
+
+        <div class="text-center">
+          <span class="text-sm text-gray-500">Já tem uma conta? </span>
+          <a routerLink="/auth/login" class="text-sm font-medium text-green-700 hover:text-green-600 hover:underline transition-colors cursor-pointer">
+            Fazer Login
+          </a>
+        </div>
+
       </div>
 
-      <div class="flex flex-col gap-1.5">
-        <label for="nome" class="text-sm font-medium text-gray-500">Nome completo</label>
-        <input
-          id="nome"
-          type="text"
-          formControlName="nome"
-          pInputText
-          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-indigo-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-      </div>
+    </div>
 
-      <div class="flex flex-col gap-1.5">
-        <label for="email" class="text-sm font-medium text-gray-500">E-mail</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          pInputText
-          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-indigo-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-      </div>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="telefone" class="text-sm font-medium text-gray-500">Telefone</label>
-        <p-inputMask
-          id="telefone"
-          formControlName="telefone"
-          mask="(99) 99999-9999"
-          placeholder="(99) 99999-9999"
-          styleClass="w-full"
-        ></p-inputMask>
-      </div>
-
-      <hr class="border-gray-200 my-2" />
-
-      <h3 class="text-lg font-semibold text-gray-800">Endereço</h3>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="cep" class="text-sm font-medium text-gray-500">CEP</label>
-        <p-inputMask
-          id="cep"
-          formControlName="cep"
-          mask="99999-999"
-          placeholder="99999-999"
-          styleClass="w-full"
-          (onBlur)="buscarCep()"
-        ></p-inputMask>
-      </div>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="logradouro" class="text-sm font-medium text-gray-500">Rua/Logradouro</label>
-        <input
-          id="logradouro"
-          type="text"
-          formControlName="logradouro"
-          pInputText
-          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-indigo-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-      </div>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="numero" class="text-sm font-medium text-gray-500">Número</label>
-        <input
-          id="numero"
-          type="text"
-          formControlName="numero"
-          pInputText
-          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-indigo-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-      </div>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="bairro" class="text-sm font-medium text-gray-500">Bairro</label>
-        <input
-          id="bairro"
-          type="text"
-          formControlName="bairro"
-          pInputText
-          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-indigo-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-      </div>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="cidade" class="text-sm font-medium text-gray-500">Cidade</label>
-        <input
-          id="cidade"
-          type="text"
-          formControlName="cidade"
-          pInputText
-          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-indigo-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-      </div>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="estado" class="text-sm font-medium text-gray-500">Estado</label>
-        <input
-          id="estado"
-          type="text"
-          formControlName="estado"
-          pInputText
-          class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-indigo-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-      </div>
-
-      <button
-        type="submit"
-        [disabled]="cadastroForm.invalid"
-        class="w-full h-12 mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-base font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-65 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
-      >
-        Cadastrar
-      </button>
-
-      <div class="mt-4 text-center">
-        <span class="text-sm text-gray-500">Já tem uma conta? </span>
-        <a routerLink="/auth/login" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 hover:underline transition-colors cursor-pointer">
-          Fazer Login
-        </a>
-      </div>
-
-    </form>
-
-  </div>
+  </form>
 
 </div>

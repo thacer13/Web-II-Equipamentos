@@ -10,13 +10,13 @@
 }
 
 ::ng-deep .p-inputmask .p-inputtext:hover {
-  border-color: #6366f1;
+  border-color: #16a34a;
 }
 
 ::ng-deep .p-inputmask .p-inputtext:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
 }
 
 ::ng-deep .p-inputmask .p-inputtext::placeholder {

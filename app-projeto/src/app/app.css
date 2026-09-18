@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 strong {
@@ -13,17 +14,4 @@ strong {
 .button-container {
   display: flex;
   gap: 15px;
-}
-
-
-::ng-deep .p-button {
-    padding: 12px 24px;
-    font-size: 16px;
-    background-color: #007bff;
-    border: none;
-    border-radius: 5px;
-}
-
-::ng-deep .p-button:hover {
-    background-color: #0056b3;
 }

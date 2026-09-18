@@ -1,5 +1,5 @@
-<div class="min-h-screen w-full bg-gray-100 p-4 sm:p-6">
-  <div class="mx-auto max-w-6xl">
+<div class="app-shell">
+  <div>
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
       <span
@@ -11,11 +11,12 @@
         type="button"
         label="Voltar"
         severity="secondary"
+        [outlined]="true"
         (click)="voltar()">
       </p-button>
     </div>
 
-    <div class="overflow-hidden rounded-lg bg-white shadow-md">
+    <div class="app-card overflow-hidden">
 
       <div
         class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 px-6 py-5">
