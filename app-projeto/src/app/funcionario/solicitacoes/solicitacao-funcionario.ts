@@ -15,7 +15,7 @@ import {
 } from '../../shared/models/solicitacao.model';
 
 @Component({
-  selector: 'app-funcionario',
+  selector: 'app-solicitacao-funcionario',
   standalone: true,
   imports: [
     CommonModule,
@@ -26,7 +26,7 @@ import {
   ],
   templateUrl: './solicitacao-funcionario.html',
 })
-export class FuncionarioComponent {
+export class SolicitacaoFuncionarioComponent {
 
   private solicitacaoService = inject(SolicitacaoService);
   private router = inject(Router);

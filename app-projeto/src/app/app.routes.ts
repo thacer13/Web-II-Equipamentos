@@ -3,7 +3,7 @@ import{LoginComponent} from './auth/login/login';
 import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
-import { FuncionarioComponent } from './funcionario/solicitacoes/solicitacao-funcionario';
+import { SolicitacaoFuncionarioComponent } from './funcionario/solicitacoes/solicitacao-funcionario';
 import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
 import { CategoriasComponent } from './funcionario/categorias/categorias';
 import { FuncionariosComponent } from './funcionario/lista-funcionarios/funcionarios';
@@ -40,8 +40,8 @@ export const routes: Routes = [
         component: ClienteComponent
     },
     {
-        path: 'funcionario',
-        component: FuncionarioComponent
+        path: 'funcionario/solicitacoes',
+        component: SolicitacaoFuncionarioComponent
     },
     {
         path: 'funcionario/categorias',
