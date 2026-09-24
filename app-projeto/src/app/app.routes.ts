@@ -68,11 +68,11 @@ export const routes: Routes = [
         component: EfetuarOrcamentoComponent
     },
     {
-        path: 'manutencao',
+        path: 'manutencao/:id',
         component: ManutencaoComponent
     },
     {
-        path: 'redirecionamento',
+        path: 'redirecionamento/:id',
         component: RedirecionamentoComponent
     }
 ]

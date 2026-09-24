@@ -9,10 +9,8 @@ import {
   SolicitacaoService,
   ESTADO_COR
 } from '../../shared/services/solicitacao.service';
-import {
-  EstadoSolicitacao,
-  Solicitacao
-} from '../../shared/models/solicitacao.model';
+import { Solicitacao } from '../../shared/models/solicitacao.model';
+import { EstadoSolicitacao } from '../../shared/models/estado-solicitacao.model';
 
 @Component({
   selector: 'app-funcionario',
@@ -173,13 +171,6 @@ export class FuncionarioComponent {
           state: {
             solicitacao: {
               ...solicitacao,
-
-              equipamento:
-                solicitacao.descricaoEquipamento,
-
-              categoria:
-                solicitacao.categoriaEquipamento,
-
               cliente: {
 
                 id: 1,
@@ -229,7 +220,7 @@ export class FuncionarioComponent {
     ) {
 
       this.router.navigate(
-        ['/manutencao'],
+        ['/manutencao', solicitacao.id],
         {
           state: {
             solicitacao

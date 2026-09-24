@@ -1,16 +1,16 @@
 <div class="app-shell">
-    <div class="app-shell__narrow app-card overflow-hidden">
+    <div *ngIf="solicitacao" class="app-shell__narrow app-card overflow-hidden">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
             <h2 class="text-lg font-semibold text-gray-800">
-                Manutenção da Solicitação
+                Manutenção da Solicitação #{{ solicitacao.id }}
             </h2>
         </div>
 
         <div class="flex flex-col gap-2 border-b border-gray-200 p-6 text-sm text-gray-800">
-            <p><span class="font-medium">Data/Hora:</span> {{ dataSolicitacao }}</p>
-            <p><span class="font-medium">Cliente:</span> {{ cliente }}</p>
-            <p><span class="font-medium">Produto:</span> {{ produto }}</p>
-            <p><span class="font-medium">Problema:</span> {{ descricaoProblema }}</p>
+            <p><span class="font-medium">Data/Hora:</span> {{ solicitacao.dataHora | date:'dd/MM/yyyy HH:mm' }}</p>
+            <p><span class="font-medium">Cliente:</span> {{ solicitacao.cliente?.nome || 'Não informado' }}</p>
+            <p><span class="font-medium">Produto:</span> {{ solicitacao.descricaoEquipamento }}</p>
+            <p><span class="font-medium">Problema:</span> {{ solicitacao.descricaoDefeito }}</p>
         </div>
 
         <form class="flex flex-col gap-4 p-6">
@@ -39,15 +39,20 @@
             <div class="flex gap-3">
                 <p-button
                     type="button"
-                    label="Efetuar Manutenção"
-                    (click)="onConfirmarManutencao()">
+                    label="Voltar"
+                    styleClass="p-button-secondary"
+                    (click)="voltar()">
                 </p-button>
-
                 <p-button
                     type="button"
                     label="Redirecionar"
                     styleClass="p-button-secondary"
                     (click)="onRedirecionarClick()">
+                </p-button>
+                <p-button
+                    type="button"
+                    label="Efetuar Manutenção"
+                    (click)="onConfirmarManutencao()">
                 </p-button>
             </div>
         </form>

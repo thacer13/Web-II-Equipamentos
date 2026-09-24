@@ -4,7 +4,8 @@ import { DialogModule } from 'primeng/dialog';
 import { ClienteSolicitacaoComponent } from "./cliente-solicitacao/cliente-solicitacao.component";
 import { ClienteOrcamentoComponent } from './cliente-orcamento/cliente-orcamento.component';
 import { ESTADO_COR, ESTADO_LABEL, SolicitacaoService } from '../shared/services/solicitacao.service';
-import { EstadoSolicitacao, Solicitacao } from '../shared/models/solicitacao.model';
+import { Solicitacao } from '../shared/models/solicitacao.model';
+import { EstadoSolicitacao } from '../shared/models/estado-solicitacao.model';
 
 @Component({
   selector: 'app-cliente',
