@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { EstadoSolicitacao, Solicitacao } from '../models/solicitacao.model';
+import { Solicitacao } from '../models/solicitacao.model';
+import { EstadoSolicitacao } from '../models/estado-solicitacao.model';
 
 const LS_CHAVE = 'solicitacoes';
 

@@ -1,42 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
+import { Solicitacao } from '../shared/models/solicitacao.model';
+import { SolicitacaoService } from '../shared/services/solicitacao.service';
+
 import { ConfirmationService } from 'primeng/api';
-
-interface Endereco {
-  logradouro?: string;
-  numero?: string;
-  bairro?: string;
-  cidade?: string;
-  uf?: string;
-  cep?: string;
-}
-
-interface Cliente {
-  id?: number;
-  nome?: string;
-  cpf?: string;
-  email?: string;
-  telefone?: string;
-  endereco?: Endereco;
-}
-
-interface Solicitacao {
-  id: number;
-  dataHora?: string;
-  equipamento?: string;
-  descricaoEquipamento?: string;
-  categoria?: string;
-  descricaoDefeito?: string;
-  estado?: string;
-  cliente?: Cliente;
-}
 
 @Component({
   selector: 'app-efetuar-orcamento',
@@ -54,6 +27,7 @@ interface Solicitacao {
   templateUrl: './efetuar-orcamento.component.html'
 })
 export class EfetuarOrcamentoComponent implements OnInit {
+  private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
 
   solicitacao: Solicitacao | null = null;
 
@@ -64,31 +38,43 @@ export class EfetuarOrcamentoComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private solicitacaoService: SolicitacaoService,
   ) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
+    const idParam = this.route.snapshot.paramMap.get('id');
 
-    const id = Number(
-      this.route.snapshot.paramMap.get('id')
-    );
+    if (!idParam) {
+      if (isPlatformBrowser(this.platformId)) {
+        this.router.navigate(['/funcionario']);
+      }
+      return;
+    }
 
-    const solicitacaoRecebida =
-      typeof history !== 'undefined'
-        ? history.state.solicitacao as Solicitacao
-        : null;
+    const id = Number(idParam);
+    let solicitacaoRecebida: Solicitacao | null = null;
 
-    if (
-      solicitacaoRecebida &&
-      solicitacaoRecebida.id === id
-    ) {
+    // Tenta capturar do history.state APENAS se estiver rodando no navegador
+    if (isPlatformBrowser(this.platformId)) {
+      solicitacaoRecebida = history.state?.solicitacao as Solicitacao;
+    }
 
+    // Cenário 1: Chegou via navegação com state no navegador
+    if (solicitacaoRecebida && solicitacaoRecebida.id === id) {
       this.solicitacao = solicitacaoRecebida;
+    } 
+    // Cenário 2: SSR ou F5 (busca no serviço)
+    else {
+      const listagem = this.solicitacaoService.listar();
+      const solicitacaoEncontrada = listagem.find(s => s.id === id);
 
-    } else if (typeof history !== 'undefined') {
-
-      this.router.navigate(['/funcionario']);
-
+      if (solicitacaoEncontrada) {
+        this.solicitacao = solicitacaoEncontrada;
+      } else if (isPlatformBrowser(this.platformId)) {
+        // Redireciona somente no browser se o item realmente não existir no serviço
+        this.router.navigate(['/funcionario']);
+      }
     }
   }
 

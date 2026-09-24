@@ -69,13 +69,13 @@
 
           <ng-container *ngIf="solicitacao.cliente?.endereco; else enderecoTeste">
 
-            {{ solicitacao.cliente?.endereco?.logradouro || 'XXXXXXXX' }},
+            {{ solicitacao.cliente?.endereco?.logradouro }},
             {{ solicitacao.cliente?.endereco?.numero || 'XXXXXXXX' }} -
 
             {{ solicitacao.cliente?.endereco?.bairro || 'XXXXXXXX' }},
 
             {{ solicitacao.cliente?.endereco?.cidade || 'XXXXXXXX' }}/
-            {{ solicitacao.cliente?.endereco?.uf || 'XX' }}
+            {{ solicitacao.cliente?.endereco?.estado }}
 
             - CEP
             {{ solicitacao.cliente?.endereco?.cep || 'XXXXXXXX' }}
@@ -119,7 +119,7 @@
               Categoria:
             </span>
 
-            {{ solicitacao.categoria || 'XXXXXXXX' }}
+            {{ solicitacao.categoriaEquipamento || 'XXXXXXXX' }}
           </div>
 
           <div class="sm:col-span-2">
@@ -128,9 +128,7 @@
               Equipamento:
             </span>
 
-            {{ solicitacao.equipamento ||
-               solicitacao.descricaoEquipamento ||
-               'XXXXXXXX' }}
+            {{ solicitacao.descricaoEquipamento || 'XXXXXXXX' }}
 
           </div>
 
