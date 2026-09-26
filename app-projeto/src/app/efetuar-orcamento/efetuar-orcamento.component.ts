@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -28,6 +28,7 @@ import { ConfirmationService } from 'primeng/api';
 })
 export class EfetuarOrcamentoComponent implements OnInit {
   private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
+  private location = inject(Location); 
 
   solicitacao: Solicitacao | null = null;
 
@@ -42,12 +43,12 @@ export class EfetuarOrcamentoComponent implements OnInit {
     private solicitacaoService: SolicitacaoService,
   ) {}
 
-ngOnInit(): void {
+  ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
 
     if (!idParam) {
       if (isPlatformBrowser(this.platformId)) {
-        this.router.navigate(['/funcionario']);
+        this.router.navigate(['/funcionario/solicitacoes']);
       }
       return;
     }
@@ -73,7 +74,7 @@ ngOnInit(): void {
         this.solicitacao = solicitacaoEncontrada;
       } else if (isPlatformBrowser(this.platformId)) {
         // Redireciona somente no browser se o item realmente não existir no serviço
-        this.router.navigate(['/funcionario']);
+        this.router.navigate(['/funcionario/solicitacoes']);
       }
     }
   }
@@ -85,8 +86,7 @@ ngOnInit(): void {
   }
 
   voltar(): void {
-
-    this.router.navigate(['/funcionario']);
+    this.location.back();
   }
 
   pedirConfirmacao(): void {

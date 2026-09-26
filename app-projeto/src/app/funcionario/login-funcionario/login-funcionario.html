@@ -37,7 +37,10 @@
                                     <span class="mr-2 h-2.5 w-2.5 rounded-full bg-gray-600"></span>
                                     Aberta
                                 </span>
-                                 <a pButton label="Orçamento" class="p-button-sm" routerLink="['/efetuar-orcamento:id']"></a>
+                                <p-button
+                                    label="Orçamento"
+                                    (onClick)="onOrcamentoClick()">
+                                </p-button>
                             </div>
                         </td>
                         <td class="whitespace-nowrap px-6 py-4 text-gray-600">
@@ -60,7 +63,10 @@
                                     <span class="mr-2 h-2.5 w-2.5 rounded-full bg-gray-600"></span>
                                     Aberto
                                 </span>
-                                <a pButton label="Orçamento" class="p-button-sm" routerLink="['/efetuar-orcamento:id']"></a>
+                                <p-button
+                                    label="Orçamento"
+                                    (onClick)="onOrcamentoClick()">
+                                </p-button>
                             </div>
                         </td>
                         <td class="whitespace-nowrap px-6 py-4 text-gray-600">

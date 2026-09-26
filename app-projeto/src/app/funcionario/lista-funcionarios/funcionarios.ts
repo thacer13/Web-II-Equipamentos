@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -50,6 +50,7 @@ const FUNCIONARIOS_INICIAIS: FuncionarioCrud[] = [
 })
 export class FuncionariosComponent {
   private router = inject(Router);
+  private location = inject(Location);
 
   funcionarioAtual = 'Mário';
 
@@ -73,7 +74,7 @@ export class FuncionariosComponent {
   }
 
   voltar(): void {
-    this.router.navigate(['/funcionario']);
+    this.location.back();
   }
 
   abrirNovo(): void {

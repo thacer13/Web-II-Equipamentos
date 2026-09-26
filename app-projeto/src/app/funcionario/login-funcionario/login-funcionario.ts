@@ -1,8 +1,5 @@
-
-
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-<<<<<<< HEAD
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -10,8 +7,6 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Solicitacao } from '../../shared/models/solicitacao.model';
-=======
->>>>>>> c6f726e7cca9409da111753e2c5b1fd979750fc1
 
 @Component({
   selector: 'app-funcionario',
@@ -25,8 +20,6 @@ import { Solicitacao } from '../../shared/models/solicitacao.model';
   ],
   templateUrl: './login-funcionario.html',
 })
-
-
 
 export class LoginFuncionarioComponent {
   private solicitacaoService = inject(SolicitacaoService);
@@ -76,6 +69,5 @@ export class LoginFuncionarioComponent {
     return;
   }
   this.router.navigate(['/efetuar-orcamento', this.solicitacao.id]);
-
-}
+  }
 }
