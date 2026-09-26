@@ -36,43 +36,8 @@ export class ManutencaoComponent {
   funcionarioLogado: string = 'Funcionário Exemplo';
   descricaoManutencao: string = '';
   orientacoesCliente: string = '';
-// ngOnInit(): void {
-//     const idParam = this.route.snapshot.paramMap.get('id');
 
-//     if (!idParam) {
-//       if (isPlatformBrowser(this.platformId)) {
-//         this.router.navigate(['/funcionario']);
-//       }
-//       return;
-//     }
-
-//     const id = Number(idParam);
-//     let solicitacaoRecebida: Solicitacao | null = null;
-
-//     // Tenta capturar do history.state APENAS se estiver rodando no navegador
-//     if (isPlatformBrowser(this.platformId)) {
-//       solicitacaoRecebida = history.state?.solicitacao as Solicitacao;
-//     }
-
-//     // Cenário 1: Chegou via navegação com state no navegador
-//     if (solicitacaoRecebida && solicitacaoRecebida.id === id) {
-//       this.solicitacao = solicitacaoRecebida;
-//     } 
-//     // Cenário 2: SSR ou F5 (busca no serviço)
-//     else {
-//       const listagem = this.solicitacaoService.listar();
-//       const solicitacaoEncontrada = listagem.find(s => s.id === id);
-
-//       if (solicitacaoEncontrada) {
-//         this.solicitacao = solicitacaoEncontrada;
-//       } else if (isPlatformBrowser(this.platformId)) {
-//         // Redireciona somente no browser se o item realmente não existir no serviço
-//         this.router.navigate(['/funcionario']);
-//       }
-//     }
-//   }
-
-    ngOnInit(): void {
+  ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
 
     if (!idParam) {
