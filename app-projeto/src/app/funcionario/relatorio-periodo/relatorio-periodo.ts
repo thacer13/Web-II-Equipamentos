@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -23,6 +23,7 @@ interface ReceitaDia {
 })
 export class RelatorioPeriodoComponent {
   private router = inject(Router);
+  private location = inject(Location);
 
   dataInicio = '';
   dataFim = '';
@@ -247,6 +248,6 @@ export class RelatorioPeriodoComponent {
   }
 
   voltar(): void {
-    this.router.navigate(['/funcionario']);
+    this.location.back();
   }
 }

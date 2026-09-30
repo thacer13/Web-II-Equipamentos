@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { jsPDF } from 'jspdf';
@@ -18,6 +18,7 @@ interface ReceitaCategoria {
 })
 export class RelatorioCategoriasComponent {
   private router = inject(Router);
+  private location = inject(Location);
 
   receitas: ReceitaCategoria[] = [
     { categoria: 'Notebook', quantidade: 4, receita: 1250 },
@@ -163,6 +164,6 @@ export class RelatorioCategoriasComponent {
   }
 
   voltar(): void {
-    this.router.navigate(['/funcionario']);
+    this.location.back();
   }
 }

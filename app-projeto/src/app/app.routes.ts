@@ -40,6 +40,10 @@ export const routes: Routes = [
         component: ClienteComponent
     },
     {
+        path: 'funcionario',
+        redirectTo: 'funcionario/login-funcionario'
+    },
+    {
         path: 'funcionario/solicitacoes',
         component: SolicitacaoFuncionarioComponent
     },
