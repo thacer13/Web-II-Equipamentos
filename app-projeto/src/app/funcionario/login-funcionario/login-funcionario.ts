@@ -32,7 +32,9 @@ export class LoginFuncionarioComponent {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
 
-  funcionarioAtual = 'Mario';
+  usuarioEncontrado = this.usuarioService.obterUsuarioLogado();
+  funcionarioAtual = this.usuarioEncontrado?.nome;
+
   linhas: LinhaSolicitacao[] = [];
 
   constructor() {
@@ -51,24 +53,22 @@ export class LoginFuncionarioComponent {
       return s.cliente.nome;
     }
 
-    const clienteId = s.clienteId ?? s.cliente?.id;
-
     // localStorage só existe no navegador (não no SSR)
-    if (clienteId !== undefined && isPlatformBrowser(this.platformId)) {
+    if (s.cliente?.id !== undefined && isPlatformBrowser(this.platformId)) {
       const usuario = this.usuarioService
         .listarTodos()
-        .find((u) => u.id === clienteId);
+        .find((u) => u.id === s.cliente?.id);
 
       if (usuario?.nome) {
         return usuario.nome;
       }
     }
 
-    return s.clienteNome ?? '';
+    return s.cliente?.nome ?? '';
   }
 
-  onManutencaoClick(solicitacao: Solicitacao): void {
-    this.router.navigate(['/manutencao', solicitacao.id], {
+  onOrcamentoClick(solicitacao: Solicitacao): void {
+    this.router.navigate(['/efetuar-orcamento', solicitacao.id], {
       state: { solicitacao },
     });
   }

@@ -1,8 +1,39 @@
 import { Injectable } from '@angular/core';
 import { Usuario } from '../models/usuario.model';
 import { Cliente } from '../models/cliente.model';
+import { Funcionario } from '../models/funcionario.model';
 
 const LS_CHAVE = "usuarios"
+const LS_USUARIO_LOGADO = "usuarioLogado";
+
+export const DADOS_INICIAIS_USUARIOS: Usuario[] = [
+  {
+    id: 1,
+    nome: 'Joe Cliente',
+    email: 'cliente@teste.com',
+    cpf: '10110110110',
+    telefone: '47999999999',
+    senha: '123',
+    perfil: 'CLIENTE',
+    endereco: {
+      cep: '80060000',
+      logradouro: 'Rua XV de Novembro',
+      numero: '100',
+      bairro: 'Centro',
+      cidade: 'Curitiba',
+      estado: 'PR'
+    },
+  } as Cliente,
+  {
+    id: 2,
+    nome: 'Maria Funcionária',
+    email: 'funcionario@teste.com',
+    senha: '123',
+    perfil: 'FUNCIONARIO',
+    dataNascimento: '09/09/2009',
+    ativo: true,
+  } as Funcionario
+];
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +41,25 @@ const LS_CHAVE = "usuarios"
 export class UsuarioService {
     listarTodos(): Usuario[] {
       const usuarios = localStorage[LS_CHAVE];
-      return usuarios ? JSON.parse(usuarios) : [];
+      // Se não houver usuários, salva os dados iniciais para ter com quem testar
+      if (!usuarios) {
+        localStorage[LS_CHAVE] = JSON.stringify(DADOS_INICIAIS_USUARIOS);
+        return DADOS_INICIAIS_USUARIOS;
+      }
+      return JSON.parse(usuarios);
+    }
+
+    salvarUsuarioLogado(usuario: Usuario): void {
+      localStorage.setItem(LS_USUARIO_LOGADO, JSON.stringify(usuario));
+    }
+
+    obterUsuarioLogado(): Usuario | null {
+      const usr = localStorage.getItem(LS_USUARIO_LOGADO);
+      return usr ? JSON.parse(usr) : null;
+    }
+
+    logout(): void {
+      localStorage.removeItem(LS_USUARIO_LOGADO);
     }
 
     cadastrarCliente(cliente: Cliente): void { // Inserir

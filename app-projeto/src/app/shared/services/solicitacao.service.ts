@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Solicitacao } from '../models/solicitacao.model';
 import { EstadoSolicitacao } from '../models/estado-solicitacao.model';
+import { Cliente } from '../models/cliente.model';
+import { UsuarioService, DADOS_INICIAIS_USUARIOS } from './usuario.service';
 
 const LS_CHAVE = 'solicitacoes';
 
@@ -27,11 +29,13 @@ export const ESTADO_COR: Record<EstadoSolicitacao, string> = {
   FINALIZADA: 'bg-green-100 text-green-700',
 };
 
+const CLIENTE_MOCK = DADOS_INICIAIS_USUARIOS[0] as Cliente;
+
 const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 1,
     dataHora: '2026-03-10T16:45:00',
-    clienteNome: 'Glauco Lucio',
+    cliente: CLIENTE_MOCK,
     descricaoEquipamento: 'Monitor LG Ultrawide 29 polegadas',
     categoriaEquipamento: 'Monitor',
     descricaoDefeito: 'Linha verde na vertical.',
@@ -46,7 +50,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 2,
     dataHora: '2026-03-12T11:20:00',
-    clienteNome: 'Maria Souza',
+    cliente: CLIENTE_MOCK,
     descricaoEquipamento: 'Placa Mãe Asus B550M',
     categoriaEquipamento: 'Hardware',
     descricaoDefeito: 'Pinos do processador tortos.',
@@ -62,7 +66,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 3,
     dataHora: '2026-03-14T09:15:00',
-    clienteNome: 'João Pereira',
+    cliente: CLIENTE_MOCK,
     descricaoEquipamento: 'Impressora HP Ink Tank 415',
     categoriaEquipamento: 'Impressora',
     descricaoDefeito: 'Não puxa papel.',
@@ -78,7 +82,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 4,
     dataHora: '2026-03-15T14:30:00',
-    clienteNome: 'Ana Ribeiro',
+    cliente: CLIENTE_MOCK,
     descricaoEquipamento: 'Notebook Dell Inspiron 15 3000 com tela piscando e superaquecimento',
     categoriaEquipamento: 'Notebook',
     descricaoDefeito: 'Tela piscando.',
@@ -92,7 +96,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 5,
     dataHora: '2026-03-16T10:00:00',
-    clienteNome: 'Carlos Mendes',
+    cliente: CLIENTE_MOCK,
     descricaoEquipamento: 'Placa de Vídeo RTX 3060',
     categoriaEquipamento: 'Hardware',
     descricaoDefeito: 'Não dá vídeo, fans não giram.',
@@ -104,7 +108,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 6,
     dataHora: '2026-03-17T08:30:00',
-    clienteNome: 'Fernanda Lima',
+    cliente: CLIENTE_MOCK,
     funcionarioDestino: 'Mário',
     descricaoEquipamento: 'Celular Samsung Galaxy',
     categoriaEquipamento: 'Celular',
@@ -118,15 +122,15 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 7,
     dataHora: '2026-09-16T08:30:00',
-    clienteNome: 'Ricardo Alves',
-    funcionarioDestino: 'Joe',
+    cliente: CLIENTE_MOCK,
+    funcionarioDestino: 'Johnny',
     descricaoEquipamento: 'Xbox Series X',
     categoriaEquipamento: 'Hardware',
     descricaoDefeito: 'Não liga.',
     estado: 'PAGA',
     precoOrcado: 380.0,
     historico: [
-      { dataHora: '2026-09-16T08:30:00', estado: 'PAGA', funcionario: 'Joe', observacao: 'Observação.' },
+      { dataHora: '2026-09-16T08:30:00', estado: 'PAGA', funcionario: 'Johnny', observacao: 'Observação.' },
     ],
   },
 ];
@@ -136,6 +140,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
 })
 export class SolicitacaoService {
   private solicitacoes: Solicitacao[] | null = null;
+  private usuarioService = inject(UsuarioService);
 
   listar(): Solicitacao[] {
     if (!this.solicitacoes) {
@@ -148,18 +153,19 @@ export class SolicitacaoService {
   /** Cria uma solicitação vinculada ao cliente logado (grava o clienteId). */
   criar(
     dados: Pick<Solicitacao, 'descricaoEquipamento' | 'categoriaEquipamento' | 'descricaoDefeito'>,
-    clienteId: number
   ): Solicitacao {
     this.listar();
     const lista = this.solicitacoes ?? [];
     const agora = new Date().toISOString();
 
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado() as Cliente;
+
     const nova: Solicitacao = {
       ...dados,
       id: lista.length ? Math.max(...lista.map((s) => s.id)) + 1 : 1,
       dataHora: agora,
+      cliente: usuarioLogado,
       estado: 'ABERTA',
-      clienteId,
       historico: [
         { dataHora: agora, estado: 'ABERTA', observacao: 'Solicitação aberta pelo cliente.' },
       ],
@@ -197,16 +203,7 @@ export class SolicitacaoService {
       return null;
     }
 
-    const lista = JSON.parse(json) as Solicitacao[];
-
-    // Migração: dados salvos antes de existir o vínculo com o cliente
-    return lista.map((s) => {
-      if (s.clienteId !== undefined || s.clienteNome || s.cliente?.nome) {
-        return s;
-      }
-      const inicial = DADOS_INICIAIS.find((d) => d.id === s.id);
-      return inicial?.clienteNome ? { ...s, clienteNome: inicial.clienteNome } : s;
-    });
+    return JSON.parse(json) as Solicitacao[];
   }
 
   private salvar(lista: Solicitacao[]): void {

@@ -6,6 +6,13 @@
     </div>
 
     <form class="login-form" (ngSubmit)="onSubmit()">
+      
+      @if (mensagemErro) {
+        <div class="text-sm font-semibold mb-4" style="color: red; text-align: center;">
+          {{ mensagemErro }}
+        </div>
+      }
+      
       <div class="login-fields">
         <p-floatLabel>
           <input pInputText id="username" [(ngModel)]="username" name="username" type="text" required autocomplete="username"/>

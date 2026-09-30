@@ -13,7 +13,5 @@ export interface Solicitacao {
   precoOrcado?: number;
   justificativaRejeicao?: string;
   historico: HistoricoSolicitacao[];
-  clienteId?: number;     // id do usuário salvo no localStorage
-  clienteNome?: string;   // nome de exemplo (dados iniciais) / fallback
   cliente?: Cliente;
 }

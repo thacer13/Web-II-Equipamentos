@@ -25,11 +25,6 @@ export class RedirecionamentoComponent {
   private location = inject(Location); 
 
   solicitacao: Solicitacao | null = null;
-  // Dados da solicitação (viriam do backend)
-  // cliente: string = 'Nome do Cliente';
-  // produto: string = 'Notebook Dell Inspiron 15';
-  // descricaoProblema: string = 'Tela quebrada';
-  // dataSolicitacao: string = '26/08/2026 - 10:30';
 
   funcionarioOrigem: string = 'Funcionário Exemplo';
 

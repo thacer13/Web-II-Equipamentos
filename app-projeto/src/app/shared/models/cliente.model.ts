@@ -5,5 +5,4 @@ export interface Cliente extends Usuario { // Usuário que forem cliente armazen
     cpf: string;
     telefone: string;
     endereco: Endereco;
-    nome:string;
 }

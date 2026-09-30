@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import{LoginComponent} from './auth/login/login';
+import {LoginComponent} from './auth/login/login.component';
 import { CadastroComponent } from './auth/cadastro/cadastro';
 import { ErrComponent } from './auth/err/err';
 import { ClienteComponent } from './cliente/cliente.component';
