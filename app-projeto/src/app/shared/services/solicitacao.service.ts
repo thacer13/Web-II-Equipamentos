@@ -31,6 +31,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 1,
     dataHora: '2026-03-10T16:45:00',
+    clienteNome: 'Glauco Lucio',
     descricaoEquipamento: 'Monitor LG Ultrawide 29 polegadas',
     categoriaEquipamento: 'Monitor',
     descricaoDefeito: 'Linha verde na vertical.',
@@ -45,6 +46,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 2,
     dataHora: '2026-03-12T11:20:00',
+    clienteNome: 'Maria Souza',
     descricaoEquipamento: 'Placa Mãe Asus B550M',
     categoriaEquipamento: 'Hardware',
     descricaoDefeito: 'Pinos do processador tortos.',
@@ -60,6 +62,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 3,
     dataHora: '2026-03-14T09:15:00',
+    clienteNome: 'João Pereira',
     descricaoEquipamento: 'Impressora HP Ink Tank 415',
     categoriaEquipamento: 'Impressora',
     descricaoDefeito: 'Não puxa papel.',
@@ -75,6 +78,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 4,
     dataHora: '2026-03-15T14:30:00',
+    clienteNome: 'Ana Ribeiro',
     descricaoEquipamento: 'Notebook Dell Inspiron 15 3000 com tela piscando e superaquecimento',
     categoriaEquipamento: 'Notebook',
     descricaoDefeito: 'Tela piscando.',
@@ -88,6 +92,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 5,
     dataHora: '2026-03-16T10:00:00',
+    clienteNome: 'Carlos Mendes',
     descricaoEquipamento: 'Placa de Vídeo RTX 3060',
     categoriaEquipamento: 'Hardware',
     descricaoDefeito: 'Não dá vídeo, fans não giram.',
@@ -99,6 +104,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 6,
     dataHora: '2026-03-17T08:30:00',
+    clienteNome: 'Fernanda Lima',
     funcionarioDestino: 'Mário',
     descricaoEquipamento: 'Celular Samsung Galaxy',
     categoriaEquipamento: 'Celular',
@@ -112,6 +118,7 @@ const DADOS_INICIAIS: Solicitacao[] = [
   {
     id: 7,
     dataHora: '2026-09-16T08:30:00',
+    clienteNome: 'Ricardo Alves',
     funcionarioDestino: 'Joe',
     descricaoEquipamento: 'Xbox Series X',
     categoriaEquipamento: 'Hardware',
@@ -138,6 +145,32 @@ export class SolicitacaoService {
     return [...this.solicitacoes].sort((a, b) => a.dataHora.localeCompare(b.dataHora));
   }
 
+  /** Cria uma solicitação vinculada ao cliente logado (grava o clienteId). */
+  criar(
+    dados: Pick<Solicitacao, 'descricaoEquipamento' | 'categoriaEquipamento' | 'descricaoDefeito'>,
+    clienteId: number
+  ): Solicitacao {
+    this.listar();
+    const lista = this.solicitacoes ?? [];
+    const agora = new Date().toISOString();
+
+    const nova: Solicitacao = {
+      ...dados,
+      id: lista.length ? Math.max(...lista.map((s) => s.id)) + 1 : 1,
+      dataHora: agora,
+      estado: 'ABERTA',
+      clienteId,
+      historico: [
+        { dataHora: agora, estado: 'ABERTA', observacao: 'Solicitação aberta pelo cliente.' },
+      ],
+    };
+
+    lista.push(nova);
+    this.solicitacoes = lista;
+    this.salvar(lista);
+    return nova;
+  }
+
   atualizarEstado(
     solicitacao: Solicitacao,
     novoEstado: EstadoSolicitacao,
@@ -160,7 +193,20 @@ export class SolicitacaoService {
       return null;
     }
     const json = localStorage[LS_CHAVE];
-    return json ? (JSON.parse(json) as Solicitacao[]) : null;
+    if (!json) {
+      return null;
+    }
+
+    const lista = JSON.parse(json) as Solicitacao[];
+
+    // Migração: dados salvos antes de existir o vínculo com o cliente
+    return lista.map((s) => {
+      if (s.clienteId !== undefined || s.clienteNome || s.cliente?.nome) {
+        return s;
+      }
+      const inicial = DADOS_INICIAIS.find((d) => d.id === s.id);
+      return inicial?.clienteNome ? { ...s, clienteNome: inicial.clienteNome } : s;
+    });
   }
 
   private salvar(lista: Solicitacao[]): void {

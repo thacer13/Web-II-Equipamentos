@@ -1,9 +1,11 @@
 <div class="app-shell">
-    <div class="flex w-full items-center justify-between">
-        <span class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
-            Funcionário
-        </span>
-    </div>
+  <div class="flex w-full items-center justify-between">
+    <span class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
+        <i class="pi pi-user" style="font-size: 1.5rem"></i>
+        Olá, {{ funcionarioAtual }}
+    </span>
+</div>
+
     <div class="app-card w-full overflow-hidden">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
             <h2 class="flex items-center gap-2 text-lg font-semibold text-gray-800">
@@ -23,35 +25,11 @@
                         <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Data/Hora</th>
                         <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Cliente</th>
-                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Produto (Descrição)
-                        </th>
+                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Produto (Descrição)</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-
-                    <tr class="transition-colors hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col items-start gap-2">
-                                <span
-                                    class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm font-bold text-gray-800 border border-gray-200">
-                                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-gray-600"></span>
-                                    Aberta
-                                </span>
-                                 <a pButton label="Orçamento" class="p-button-sm" routerLink="['/efetuar-orcamento:id']"></a>
-                            </div>
-                        </td>
-                        <td class="whitespace-nowrap px-6 py-4 text-gray-600">
-                            <time datetime="2026-08-26T10:30">xx/xx/xx - xx:xx</time>
-                        </td>
-                        <td class="px-6 py-4 font-medium text-gray-800">
-                            Nome
-                        </td>
-                        <td class="px-6 py-4 text-gray-600">
-                            <div class="font-medium text-gray-800">Notebook Dell Inspiron 15</div>
-                            <div class="text-sm text-gray-600">Tela quebrada</div>
-                        </td>
-                    </tr>
-
+                    @for (linha of linhas; track linha.solicitacao.id) {
                     <tr class="transition-colors hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="flex flex-col items-start gap-2">
@@ -60,21 +38,31 @@
                                     <span class="mr-2 h-2.5 w-2.5 rounded-full bg-gray-600"></span>
                                     Aberto
                                 </span>
-                                <a pButton label="Orçamento" class="p-button-sm" routerLink="['/efetuar-orcamento:id']"></a>
+                                <button pButton type="button" label="Orçamento" class="p-button-sm"
+                                    (click)="onManutencaoClick(linha.solicitacao)">
+                                </button>
                             </div>
                         </td>
                         <td class="whitespace-nowrap px-6 py-4 text-gray-600">
-                            <time datetime="2026-08-27T14:15">xx/xx/xx - xx:xx</time>
+                            <time [attr.datetime]="linha.solicitacao.dataHora">
+                                {{ linha.solicitacao.dataHora | date: 'dd/MM/yyyy - HH:mm' }}
+                            </time>
                         </td>
                         <td class="px-6 py-4 font-medium text-gray-800">
-                            Nome
+                            {{ linha.nomeCliente || 'Cliente não identificado' }}
                         </td>
                         <td class="px-6 py-4 text-gray-600">
-                            <div class="font-medium text-gray-800">Desktop Gamer</div>
-                            <div class="text-sm text-gray-600">Placa-mãe com defeito</div>
+                            <div class="font-medium text-gray-800">{{ linha.solicitacao.descricaoEquipamento }}</div>
+                            <div class="text-sm text-gray-600">{{ linha.solicitacao.descricaoDefeito }}</div>
                         </td>
                     </tr>
-
+                    } @empty {
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                            Nenhuma solicitação aberta.
+                        </td>
+                    </tr>
+                    }
                 </tbody>
             </table>
         </div>

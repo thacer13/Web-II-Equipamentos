@@ -1,17 +1,18 @@
-
-
-import { InputTextModule } from 'primeng/inputtext';
-import { DialogModule } from 'primeng/dialog';
-<<<<<<< HEAD
-import { SolicitacaoService } from '../../shared/services/solicitacao.service';
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { Router, ActivatedRoute } from '@angular/router';
+import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
+import { SolicitacaoService } from '../../shared/services/solicitacao.service';
+import { UsuarioService } from '../../shared/services/usuario.service';
 import { Solicitacao } from '../../shared/models/solicitacao.model';
-=======
->>>>>>> c6f726e7cca9409da111753e2c5b1fd979750fc1
+
+interface LinhaSolicitacao {
+  solicitacao: Solicitacao;
+  nomeCliente: string;
+}
 
 @Component({
   selector: 'app-funcionario',
@@ -25,57 +26,50 @@ import { Solicitacao } from '../../shared/models/solicitacao.model';
   ],
   templateUrl: './login-funcionario.html',
 })
-
-
-
 export class LoginFuncionarioComponent {
   private solicitacaoService = inject(SolicitacaoService);
+  private usuarioService = inject(UsuarioService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
-  solicitacao: Solicitacao | null = null;
+  private platformId = inject(PLATFORM_ID);
 
-  ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
+  funcionarioAtual = 'Mario';
+  linhas: LinhaSolicitacao[] = [];
 
-    if (!idParam) {
-      if (isPlatformBrowser(this.platformId)) {
-        this.router.navigate(['/funcionario']);
-      }
-      return;
-    }
-
-    const id = Number(idParam);
-    let solicitacaoRecebida: Solicitacao | null = null;
-
-    // Tenta capturar do history.state APENAS se estiver rodando no navegador
-    if (isPlatformBrowser(this.platformId)) {
-      solicitacaoRecebida = history.state?.solicitacao as Solicitacao;
-    }
-
-    // Cenário 1: Chegou via navegação com state no navegador
-    if (solicitacaoRecebida && solicitacaoRecebida.id === id) {
-      this.solicitacao = solicitacaoRecebida;
-    } 
-    // Cenário 2: SSR ou F5 (busca no serviço)
-    else {
-      const listagem = this.solicitacaoService.listar();
-      const solicitacaoEncontrada = listagem.find(s => s.id === id);
-
-      if (solicitacaoEncontrada) {
-        this.solicitacao = solicitacaoEncontrada;
-      } else if (isPlatformBrowser(this.platformId)) {
-        // Redireciona somente no browser se o item realmente não existir no serviço
-        this.router.navigate(['/funcionario']);
-      }
-    }
+  constructor() {
+    this.linhas = this.solicitacaoService
+      .listar()
+      .filter((s) => s.estado === 'ABERTA')
+      .map((s) => ({
+        solicitacao: s,
+        nomeCliente: this.resolverNomeCliente(s),
+      }));
   }
 
-  onOrcamentoClick(): void {
-  if (!this.solicitacao) {
-    return;
-  }
-  this.router.navigate(['/efetuar-orcamento', this.solicitacao.id]);
+  /** Ordem: cliente embutido -> usuário no localStorage (clienteId) -> clienteNome. */
+  private resolverNomeCliente(s: Solicitacao): string {
+    if (s.cliente?.nome) {
+      return s.cliente.nome;
+    }
 
-}
+    const clienteId = s.clienteId ?? s.cliente?.id;
+
+    // localStorage só existe no navegador (não no SSR)
+    if (clienteId !== undefined && isPlatformBrowser(this.platformId)) {
+      const usuario = this.usuarioService
+        .listarTodos()
+        .find((u) => u.id === clienteId);
+
+      if (usuario?.nome) {
+        return usuario.nome;
+      }
+    }
+
+    return s.clienteNome ?? '';
+  }
+
+  onManutencaoClick(solicitacao: Solicitacao): void {
+    this.router.navigate(['/manutencao', solicitacao.id], {
+      state: { solicitacao },
+    });
+  }
 }
