@@ -81,7 +81,7 @@
   [style]="{ width: 'min(420px, 92vw)' }">
   <div class="mt-2">
     <label for="nomeCategoria" class="mb-2 block text-sm font-medium text-gray-700">Nome</label>
-    <input id="nomeCategoria" type="text" pInputText [(ngModel)]="nome" class="w-full" />
+    <input id="nomeCategoria" type="text" pInputText [(ngModel)]="nome" maxlength="100" class="w-full" />
     @if (mensagemErro) {
       <p class="mt-2 text-sm text-red-600">{{ mensagemErro }}</p>
     }

@@ -39,8 +39,13 @@
             type="text"
             formControlName="nome"
             pInputText
+            maxlength="150"
+            autocomplete="name"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
           />
+          @if (cadastroForm.get('nome')?.touched && cadastroForm.get('nome')?.invalid) {
+            <small class="text-sm text-red-600">Informe o nome completo (3 a 150 caracteres).</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -50,8 +55,13 @@
             type="email"
             formControlName="email"
             pInputText
+            maxlength="150"
+            autocomplete="email"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
           />
+          @if (cadastroForm.get('email')?.touched && cadastroForm.get('email')?.invalid) {
+            <small class="text-sm text-red-600">Informe um e-mail válido com até 150 caracteres.</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -63,6 +73,9 @@
             placeholder="(99) 99999-9999"
             styleClass="w-full"
           ></p-inputMask>
+          @if (cadastroForm.get('telefone')?.touched && cadastroForm.get('telefone')?.invalid) {
+            <small class="text-sm text-red-600">Informe um telefone com DDD (10 ou 11 dígitos).</small>
+          }
         </div>
 
       </div>
@@ -85,6 +98,9 @@
             styleClass="w-full"
             (onBlur)="buscarCep()"
           ></p-inputMask>
+          @if (cadastroForm.get('cep')?.touched && cadastroForm.get('cep')?.invalid) {
+            <small class="text-sm text-red-600">Informe um CEP válido com 8 dígitos.</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -94,8 +110,13 @@
             type="text"
             formControlName="logradouro"
             pInputText
+            maxlength="150"
+            autocomplete="street-address"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
           />
+          @if (cadastroForm.get('logradouro')?.touched && cadastroForm.get('logradouro')?.invalid) {
+            <small class="text-sm text-red-600">Informe o logradouro (2 a 150 caracteres).</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -105,8 +126,13 @@
             type="text"
             formControlName="numero"
             pInputText
+            maxlength="10"
+            inputmode="text"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
           />
+          @if (cadastroForm.get('numero')?.touched && cadastroForm.get('numero')?.invalid) {
+            <small class="text-sm text-red-600">Informe o número (até 10 caracteres).</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -116,8 +142,12 @@
             type="text"
             formControlName="bairro"
             pInputText
+            maxlength="100"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
           />
+          @if (cadastroForm.get('bairro')?.touched && cadastroForm.get('bairro')?.invalid) {
+            <small class="text-sm text-red-600">Informe o bairro (2 a 100 caracteres).</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -127,8 +157,13 @@
             type="text"
             formControlName="cidade"
             pInputText
+            maxlength="100"
+            autocomplete="address-level2"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
           />
+          @if (cadastroForm.get('cidade')?.touched && cadastroForm.get('cidade')?.invalid) {
+            <small class="text-sm text-red-600">Informe a cidade (2 a 100 caracteres).</small>
+          }
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -138,8 +173,13 @@
             type="text"
             formControlName="estado"
             pInputText
+            maxlength="2"
+            autocomplete="address-level1"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
           />
+          @if (cadastroForm.get('estado')?.touched && cadastroForm.get('estado')?.invalid) {
+            <small class="text-sm text-red-600">Informe a sigla do estado com 2 letras.</small>
+          }
         </div>
 
         <button

@@ -32,6 +32,7 @@ export class RedirecionamentoComponent {
   funcionarios: string[] = ['Mário', 'Ana', 'Carlos', 'Beatriz'];
 
   funcionarioDestino: string = '';
+  mensagemErro = '';
 
  ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -77,9 +78,20 @@ export class RedirecionamentoComponent {
   
 
   onConfirmarRedirecionamento() {
-    if (!this.funcionarioDestino) {
+    const destino = this.funcionarioDestino.trim();
+
+    if (!destino) {
+      this.mensagemErro = 'Selecione um funcionário.';
       return;
     }
+
+    if (destino === this.funcionarioOrigem || !this.funcionariosDisponiveis.includes(destino)) {
+      this.mensagemErro = 'Selecione um funcionário válido.';
+      return;
+    }
+
+    this.mensagemErro = '';
+    this.funcionarioDestino = destino;
 
     console.log('Funcionário origem:', this.funcionarioOrigem);
     console.log('Funcionário destino:', this.funcionarioDestino);

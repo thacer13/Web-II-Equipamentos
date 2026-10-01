@@ -94,6 +94,45 @@ export class UsuarioService {
     }
 
     cadastrarCliente(cliente: Cliente): void { // Inserir
+      const nome = cliente.nome?.trim().replace(/\s+/g, ' ') ?? '';
+      const email = cliente.email?.trim().toLowerCase() ?? '';
+      const cpf = cliente.cpf?.replace(/\D/g, '') ?? '';
+      const telefone = cliente.telefone?.replace(/\D/g, '') ?? '';
+      const endereco = cliente.endereco;
+      const cep = endereco?.cep?.replace(/\D/g, '') ?? '';
+      const logradouro = endereco?.logradouro?.trim().replace(/\s+/g, ' ') ?? '';
+      const numero = endereco?.numero?.trim() ?? '';
+      const bairro = endereco?.bairro?.trim().replace(/\s+/g, ' ') ?? '';
+      const cidade = endereco?.cidade?.trim().replace(/\s+/g, ' ') ?? '';
+      const estado = endereco?.estado?.trim().toUpperCase() ?? '';
+
+      if (!nome || nome.length < 3 || nome.length > 150) {
+        throw new Error('Nome inválido.');
+      }
+      if (!email || email.length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error('E-mail inválido.');
+      }
+      if (cpf.length !== 11) {
+        throw new Error('CPF inválido.');
+      }
+      if (telefone.length < 10 || telefone.length > 11) {
+        throw new Error('Telefone inválido.');
+      }
+      if (cep.length !== 8 || !logradouro || logradouro.length > 150 || !numero || numero.length > 10 || !bairro || bairro.length > 100 || !cidade || cidade.length > 100 || !/^[A-Z]{2}$/.test(estado)) {
+        throw new Error('Endereço inválido.');
+      }
+
+      cliente.nome = nome;
+      cliente.email = email;
+      cliente.cpf = cpf;
+      cliente.telefone = telefone;
+      endereco.cep = cep;
+      endereco.logradouro = logradouro;
+      endereco.numero = numero;
+      endereco.bairro = bairro;
+      endereco.cidade = cidade;
+      endereco.estado = estado;
+
       const usuarios = this.listarTodos();
       cliente.id = new Date().getTime();
       cliente.perfil = 'CLIENTE';
@@ -107,14 +146,21 @@ export class UsuarioService {
     }
 
     buscarPorEmail(email: string): Usuario | undefined {
+      const normalizado = email?.trim().toLowerCase() ?? '';
+      if (!normalizado) {
+        return undefined;
+      }
       const usuarios = this.listarTodos();
-      return usuarios.find(usuario => usuario.email.toLowerCase() === email.toLowerCase());
+      return usuarios.find((usuario: Usuario) => usuario.email.toLowerCase() === normalizado);
     }
 
     buscarPorCpf(cpf: string): Cliente | undefined {
+      const cpfLimpo = (cpf ?? '').replace(/\D/g, ''); // Limpa o cpf que veio por parâmetro
+      if (!cpfLimpo) {
+        return undefined;
+      }
       const usuarios = this.listarTodos();
-      const cpfLimpo = cpf.replace(/\D/g, ''); // Limpa o cpf que veio por parâmetro
-      return usuarios.find(usuario => (usuario as Cliente).cpf?.replace(/\D/g, '') === cpfLimpo) as Cliente; // Retorna o Cliente Usuário que encontrar com o mesmo cpf
+      return usuarios.find((usuario: Usuario) => (usuario as Cliente).cpf?.replace(/\D/g, '') === cpfLimpo) as Cliente; // Retorna o Cliente Usuário que encontrar com o mesmo cpf
     }
 
     remover(id: number): void {

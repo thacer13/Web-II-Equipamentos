@@ -33,11 +33,24 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
+    const email = this.username.trim().toLowerCase();
+    const senha = this.password.trim();
+
+    if (!email || !senha) {
+      this.mensagemErro = 'Informe e-mail e senha.';
+      return;
+    }
+
+    if (email.length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.mensagemErro = 'Informe um e-mail válido.';
+      return;
+    }
+
     this.loading = true;
     this.mensagemErro = '';
 
     setTimeout(() => {
-      const usuarioEncontrado = this.usuarioService.buscarPorEmail(this.username);
+      const usuarioEncontrado = this.usuarioService.buscarPorEmail(email);
 
       if (!usuarioEncontrado) {
         this.mensagemErro = 'Usuário não encontrado.';
@@ -45,14 +58,14 @@ export class LoginComponent {
         return;
       }
 
-      if (usuarioEncontrado.senha !== this.password) {
+      if (usuarioEncontrado.senha !== senha) {
         this.mensagemErro = 'Senha incorreta.';
         this.loading = false;
         return;
       }
 
       if (this.lembrarCredenciais) {
-        this.usuarioService.lembrarCredenciais(this.username, this.password);
+        this.usuarioService.lembrarCredenciais(email, senha);
       } else {
         this.usuarioService.esquecerCredenciais();
       }

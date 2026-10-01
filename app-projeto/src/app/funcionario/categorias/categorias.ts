@@ -69,10 +69,15 @@ export class CategoriasComponent {
   }
 
   salvarCategoria(): void {
-    const nome = this.nome.trim();
+    const nome = this.nome.trim().replace(/\s+/g, ' ');
 
     if (!nome) {
       this.mensagemErro = 'Informe o nome da categoria.';
+      return;
+    }
+
+    if (nome.length < 2 || nome.length > 100) {
+      this.mensagemErro = 'Informe um nome com 2 a 100 caracteres.';
       return;
     }
 

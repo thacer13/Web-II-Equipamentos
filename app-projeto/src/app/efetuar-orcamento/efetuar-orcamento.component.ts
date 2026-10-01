@@ -80,9 +80,14 @@ export class EfetuarOrcamentoComponent implements OnInit {
   }
 
   get valorValido(): boolean {
-
-    return this.valorOrcamento !== null &&
-           this.valorOrcamento > 0;
+    if (this.valorOrcamento === null || this.valorOrcamento === undefined) {
+      return false;
+    }
+    const valor = Number(this.valorOrcamento);
+    return Number.isFinite(valor) &&
+      valor > 0 &&
+      valor <= 99999999.99 &&
+      Math.round(valor * 100) / 100 === valor;
   }
 
   voltar(): void {

@@ -35,6 +35,7 @@ export class ClienteComponent {
 
   fecharFormulario() {
     this.mostrarFormulario = false;
+    this.solicitacoes = this.solicitacaoService.listar();
   }
 
   abrirOrcamento(solicitacao: Solicitacao) {

@@ -21,7 +21,9 @@
                     style="min-height: 70px; resize: none;"
                     placeholder="Ex: Troca da tela do notebook"
                     [(ngModel)]="descricaoManutencao"
-                    name="descricaoManutencao">
+                    name="descricaoManutencao"
+                    maxlength="2000"
+                    required>
                 </textarea>
             </div>
 
@@ -32,9 +34,15 @@
                     style="min-height: 70px; resize: none;"
                     placeholder="Ex: Evitar deixar o notebook na tomada o dia todo"
                     [(ngModel)]="orientacoesCliente"
-                    name="orientacoesCliente">
+                    name="orientacoesCliente"
+                    maxlength="2000"
+                    required>
                 </textarea>
             </div>
+
+            @if (mensagemErro) {
+                <p class="text-sm text-red-600">{{ mensagemErro }}</p>
+            }
 
             <div class="flex gap-3">
                 <p-button

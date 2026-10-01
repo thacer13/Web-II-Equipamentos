@@ -30,6 +30,7 @@ export class ManutencaoComponent {
   funcionarioLogado: string = 'Funcionário Exemplo';
   descricaoManutencao: string = '';
   orientacoesCliente: string = '';
+  mensagemErro = '';
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -70,6 +71,22 @@ export class ManutencaoComponent {
   onConfirmarManutencao() {
     if (!this.solicitacao) return;
 
+    const descricao = this.descricaoManutencao.trim().replace(/\s+/g, ' ');
+    const orientacoes = this.orientacoesCliente.trim().replace(/\s+/g, ' ');
+
+    if (!descricao || !orientacoes) {
+      this.mensagemErro = 'Preencha a descrição e as orientações.';
+      return;
+    }
+
+    if (descricao.length < 3 || descricao.length > 2000 || orientacoes.length < 3 || orientacoes.length > 2000) {
+      this.mensagemErro = 'Cada campo deve ter 3 a 2000 caracteres.';
+      return;
+    }
+
+    this.mensagemErro = '';
+    this.descricaoManutencao = descricao;
+    this.orientacoesCliente = orientacoes;
     const dataHoraManutencao = new Date();
 
     console.log('Solicitação ID:', this.solicitacao.id);

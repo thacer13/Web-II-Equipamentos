@@ -12,7 +12,7 @@
 
   @if (mostrarFormulario) {
     <div class="app-card overflow-hidden">
-      <app-cliente-solicitacao (aoCancelar)="fecharFormulario()"></app-cliente-solicitacao>
+      <app-cliente-solicitacao (aoCancelar)="fecharFormulario()" (aoSalvar)="fecharFormulario()"></app-cliente-solicitacao>
     </div>
   }
 

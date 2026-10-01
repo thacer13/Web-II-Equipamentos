@@ -154,6 +154,20 @@ export class SolicitacaoService {
   criar(
     dados: Pick<Solicitacao, 'descricaoEquipamento' | 'categoriaEquipamento' | 'descricaoDefeito'>,
   ): Solicitacao {
+    const descricaoEquipamento = dados.descricaoEquipamento?.trim().replace(/\s+/g, ' ') ?? '';
+    const categoriaEquipamento = dados.categoriaEquipamento?.trim().replace(/\s+/g, ' ') ?? '';
+    const descricaoDefeito = dados.descricaoDefeito?.trim().replace(/\s+/g, ' ') ?? '';
+
+    if (!descricaoEquipamento || descricaoEquipamento.length < 3 || descricaoEquipamento.length > 150) {
+      throw new Error('Descrição do equipamento inválida.');
+    }
+    if (!categoriaEquipamento || categoriaEquipamento.length < 2 || categoriaEquipamento.length > 100) {
+      throw new Error('Categoria inválida.');
+    }
+    if (!descricaoDefeito || descricaoDefeito.length < 10 || descricaoDefeito.length > 2000) {
+      throw new Error('Descrição do defeito inválida.');
+    }
+
     this.listar();
     const lista = this.solicitacoes ?? [];
     const agora = new Date().toISOString();
@@ -161,7 +175,9 @@ export class SolicitacaoService {
     const usuarioLogado = this.usuarioService.obterUsuarioLogado() as Cliente;
 
     const nova: Solicitacao = {
-      ...dados,
+      descricaoEquipamento,
+      categoriaEquipamento,
+      descricaoDefeito,
       id: lista.length ? Math.max(...lista.map((s) => s.id)) + 1 : 1,
       dataHora: agora,
       cliente: usuarioLogado,
@@ -183,12 +199,13 @@ export class SolicitacaoService {
     funcionario?: string,
     observacao?: string
   ): void {
+    const texto = observacao?.trim().replace(/\s+/g, ' ');
     solicitacao.estado = novoEstado;
     solicitacao.historico.push({
       dataHora: new Date().toISOString(),
       estado: novoEstado,
-      funcionario,
-      observacao,
+      funcionario: funcionario?.trim() ? funcionario.trim() : undefined,
+      observacao: texto ? texto.slice(0, 2000) : undefined,
     });
     this.listar();
     this.salvar(this.solicitacoes ?? []);

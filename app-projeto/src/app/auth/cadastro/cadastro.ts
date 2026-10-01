@@ -2,6 +2,15 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { validarCpf } from './cpf.validator';
+import {
+  LIMITES,
+  naoVazio,
+  normalizarTexto,
+  somenteDigitos,
+  validarCep,
+  validarEstado,
+  validarTelefone,
+} from '../../shared/validators/form-validators';
 import { InputMaskModule } from 'primeng/inputmask';
 import { ButtonModule } from 'primeng/button';
 import { Router, RouterModule } from '@angular/router';
@@ -30,16 +39,16 @@ export class CadastroComponent implements OnInit {
 
   private inicializarFormulario(): void {
     this.cadastroForm = this.fb.group({
-      nome: ['', Validators.required],
+      nome: ['', [Validators.required, naoVazio(), Validators.minLength(3), Validators.maxLength(LIMITES.nome)]],
       cpf: ['', [Validators.required, validarCpf()]],
-      email: ['', [Validators.required, Validators.email]],
-      telefone: ['', Validators.required],
-      cep: ['', Validators.required],
-      logradouro: ['', Validators.required],
-      numero: ['', Validators.required],
-      bairro: ['', Validators.required],
-      cidade: ['', Validators.required],
-      estado: ['', Validators.required]
+      email: ['', [Validators.required, naoVazio(), Validators.email, Validators.maxLength(LIMITES.email)]],
+      telefone: ['', [Validators.required, naoVazio(), validarTelefone(), Validators.maxLength(LIMITES.telefone)]],
+      cep: ['', [Validators.required, validarCep()]],
+      logradouro: ['', [Validators.required, naoVazio(), Validators.minLength(2), Validators.maxLength(LIMITES.logradouro)]],
+      numero: ['', [Validators.required, naoVazio(), Validators.maxLength(LIMITES.numero)]],
+      bairro: ['', [Validators.required, naoVazio(), Validators.minLength(2), Validators.maxLength(LIMITES.bairro)]],
+      cidade: ['', [Validators.required, naoVazio(), Validators.minLength(2), Validators.maxLength(LIMITES.cidade)]],
+      estado: ['', [Validators.required, validarEstado()]]
     });
   }
 
@@ -73,33 +82,45 @@ export class CadastroComponent implements OnInit {
     }
 
     const dadosForm = this.cadastroForm.value;
-    const cpfLimpo = dadosForm.cpf.replace(/\D/g, '');
-    const telefoneLimpo = dadosForm.telefone.replace(/\D/g, '');
-    const cepLimpo = dadosForm.cep.replace(/\D/g, '');
+    const nome = normalizarTexto(dadosForm.nome);
+    const email = normalizarTexto(dadosForm.email).toLowerCase();
+    const cpfLimpo = somenteDigitos(dadosForm.cpf);
+    const telefoneLimpo = somenteDigitos(dadosForm.telefone);
+    const cepLimpo = somenteDigitos(dadosForm.cep);
+    const logradouro = normalizarTexto(dadosForm.logradouro);
+    const numero = normalizarTexto(dadosForm.numero);
+    const bairro = normalizarTexto(dadosForm.bairro);
+    const cidade = normalizarTexto(dadosForm.cidade);
+    const estado = normalizarTexto(dadosForm.estado).toUpperCase();
 
-    if(this.usuarioService.buscarPorEmail(dadosForm.email)) {
+    if (!nome || !email || !logradouro || !numero || !bairro || !cidade || !estado) {
+      alert('Preencha todos os campos obrigatórios corretamente.');
+      return;
+    }
+
+    if (this.usuarioService.buscarPorEmail(email)) {
       alert('E-mail já cadastrado.');
       return;
     }
 
-    if(this.usuarioService.buscarPorCpf(dadosForm.cpf)) {
+    if(this.usuarioService.buscarPorCpf(cpfLimpo)) {
       alert('CPF já cadastrado.');
       return;
     }
 
     const novoCliente: Cliente = { // Mapeamento dos dados para o model
-      nome: dadosForm.nome,
-      email: dadosForm.email,
+      nome,
+      email,
       cpf: cpfLimpo,
       telefone: telefoneLimpo,
       perfil: 'CLIENTE',
       endereco: {
         cep: cepLimpo,
-        logradouro: dadosForm.logradouro,
-        numero: dadosForm.numero,
-        bairro: dadosForm.bairro,
-        cidade: dadosForm.cidade,
-        estado: dadosForm.estado
+        logradouro,
+        numero,
+        bairro,
+        cidade,
+        estado
       }
     };
 

@@ -37,12 +37,19 @@ export class ClienteOrcamentoComponent {
 
   // Confirma a rejeição (RF007)
   confirmarRejeicao() {
-    if (this.motivoRejeicao.trim() === '') {
+    const motivo = this.motivoRejeicao.trim().replace(/\s+/g, ' ');
+
+    if (motivo.length < 3) {
       alert('Por favor, informe um motivo para a rejeição.');
       return;
     }
-    
-    this.solicitacao.justificativaRejeicao = this.motivoRejeicao.trim();
+
+    if (motivo.length > 1000) {
+      alert('O motivo deve ter no máximo 1000 caracteres.');
+      return;
+    }
+
+    this.solicitacao.justificativaRejeicao = motivo;
     alert('Serviço Rejeitado'); // Mensagem exigida pelo RF007
     this.aoResponder.emit('REJEITADA');
   }

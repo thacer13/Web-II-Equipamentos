@@ -180,6 +180,10 @@
             currency="BRL"
             locale="pt-BR"
             placeholder="R$ 0,00"
+            [min]="0.01"
+            [max]="99999999.99"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
             [disabled]="salvandoOrcamento"
             [style]="{ width: '100%' }"
             inputStyleClass="w-full">

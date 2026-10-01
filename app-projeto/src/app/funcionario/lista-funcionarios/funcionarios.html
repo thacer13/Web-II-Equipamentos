@@ -92,19 +92,19 @@
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
     <div class="sm:col-span-2">
       <label for="nomeFuncionario" class="mb-2 block text-sm font-medium text-gray-700">Nome</label>
-      <input id="nomeFuncionario" type="text" pInputText [(ngModel)]="nome" class="w-full" />
+      <input id="nomeFuncionario" type="text" pInputText [(ngModel)]="nome" maxlength="150" autocomplete="name" class="w-full" />
     </div>
     <div class="sm:col-span-2">
       <label for="emailFuncionario" class="mb-2 block text-sm font-medium text-gray-700">E-mail</label>
-      <input id="emailFuncionario" type="email" pInputText [(ngModel)]="email" class="w-full" />
+      <input id="emailFuncionario" type="email" pInputText [(ngModel)]="email" maxlength="150" autocomplete="email" class="w-full" />
     </div>
     <div>
       <label for="dataNascimentoFuncionario" class="mb-2 block text-sm font-medium text-gray-700">Data de Nascimento</label>
-      <input id="dataNascimentoFuncionario" type="date" [(ngModel)]="dataNascimento" class="w-full rounded border border-gray-300 px-3 py-2" />
+      <input id="dataNascimentoFuncionario" type="date" [(ngModel)]="dataNascimento" min="1900-01-01" class="w-full rounded border border-gray-300 px-3 py-2" />
     </div>
     <div>
       <label for="senhaFuncionario" class="mb-2 block text-sm font-medium text-gray-700">Senha</label>
-      <input id="senhaFuncionario" type="password" pInputText [(ngModel)]="senha" class="w-full" />
+      <input id="senhaFuncionario" type="password" pInputText [(ngModel)]="senha" maxlength="50" autocomplete="new-password" class="w-full" />
     </div>
     @if (mensagemErro) {
       <p class="sm:col-span-2 text-sm text-red-600">{{ mensagemErro }}</p>

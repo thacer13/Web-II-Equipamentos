@@ -15,12 +15,12 @@
       
       <div class="login-fields">
         <p-floatLabel>
-          <input pInputText id="username" [(ngModel)]="username" name="username" type="text" required autocomplete="username"/>
+          <input pInputText id="username" [(ngModel)]="username" name="username" type="email" required maxlength="150" autocomplete="username"/>
           <label for="username">Usuário</label>
         </p-floatLabel>
 
         <p-floatLabel>
-          <input pInputText id="password" [(ngModel)]="password" name="password" type="password" required autocomplete="current-password"/>
+          <input pInputText id="password" [(ngModel)]="password" name="password" type="password" required maxlength="50" autocomplete="current-password"/>
           <label for="password">Senha</label>
         </p-floatLabel>
       </div>

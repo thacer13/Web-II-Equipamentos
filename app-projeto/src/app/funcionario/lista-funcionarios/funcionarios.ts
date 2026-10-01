@@ -98,12 +98,35 @@ export class FuncionariosComponent {
   }
 
   salvarFuncionario(): void {
-    const nome = this.nome.trim();
+    const nome = this.nome.trim().replace(/\s+/g, ' ');
     const email = this.email.trim().toLowerCase();
     const senha = this.senha.trim();
 
     if (!nome || !email || !this.dataNascimento || !senha) {
       this.mensagemErro = 'Preencha todos os campos.';
+      return;
+    }
+
+    if (nome.length < 3 || nome.length > 150) {
+      this.mensagemErro = 'Informe um nome com 3 a 150 caracteres.';
+      return;
+    }
+
+    if (email.length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.mensagemErro = 'Informe um e-mail válido com até 150 caracteres.';
+      return;
+    }
+
+    const nascimento = new Date(`${this.dataNascimento}T00:00:00`);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    if (Number.isNaN(nascimento.getTime()) || nascimento > hoje || nascimento.getFullYear() < 1900) {
+      this.mensagemErro = 'Informe uma data de nascimento válida.';
+      return;
+    }
+
+    if (senha.length < 4 || senha.length > 50) {
+      this.mensagemErro = 'A senha deve ter 4 a 50 caracteres.';
       return;
     }
 
