@@ -51,6 +51,31 @@
   gap: 1.25rem;
 }
 
+.remember-credentials {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  color: #4b5563;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.remember-credentials input {
+  margin-top: 0.2rem;
+  accent-color: #16a34a;
+}
+
+.remember-credentials span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.remember-credentials small {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
 p-floatLabel {
   display: block;
   width: 100%;

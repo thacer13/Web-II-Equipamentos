@@ -26,9 +26,13 @@ describe('UsuarioService', () => {
   let service: UsuarioService;
 
   beforeEach(() => {
-    // O service lê e grava direto como propriedade (localStorage[chave]),
-    // então um objeto vazio basta como armazenamento isolado por teste.
-    vi.stubGlobal('localStorage', {});
+    const storage: Record<string, string> = {};
+    Object.defineProperties(storage, {
+      getItem: { value: (key: string) => storage[key] ?? null },
+      setItem: { value: (key: string, value: string) => { storage[key] = value; } },
+      removeItem: { value: (key: string) => { delete storage[key]; } }
+    });
+    vi.stubGlobal('localStorage', storage);
     TestBed.configureTestingModule({});
     service = TestBed.inject(UsuarioService);
   });
@@ -67,6 +71,19 @@ describe('UsuarioService', () => {
 
     expect(service.buscarPorEmail('MARIA@Email.com')?.nome).toBe('Maria Souza');
     expect(service.buscarPorEmail('outra@email.com')).toBeUndefined();
+  });
+
+  it('lembra e remove as credenciais localmente', () => {
+    service.lembrarCredenciais('maria@email.com', 'senha-secreta');
+
+    expect(service.obterCredenciaisLembradas()).toEqual({
+      email: 'maria@email.com',
+      senha: 'senha-secreta'
+    });
+
+    service.esquecerCredenciais();
+
+    expect(service.obterCredenciaisLembradas()).toBeNull();
   });
 
   it('busca por CPF com ou sem máscara', () => {

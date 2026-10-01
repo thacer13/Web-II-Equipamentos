@@ -18,9 +18,19 @@ export class LoginComponent {
   password = '';
   loading = false;
   mensagemErro = '';
+  lembrarCredenciais = false;
 
   private usuarioService = inject(UsuarioService);
   private router = inject(Router);
+
+  constructor() {
+    const credenciais = this.usuarioService.obterCredenciaisLembradas();
+    if (credenciais) {
+      this.username = credenciais.email;
+      this.password = credenciais.senha;
+      this.lembrarCredenciais = true;
+    }
+  }
 
   onSubmit(): void {
     this.loading = true;
@@ -39,6 +49,12 @@ export class LoginComponent {
         this.mensagemErro = 'Senha incorreta.';
         this.loading = false;
         return;
+      }
+
+      if (this.lembrarCredenciais) {
+        this.usuarioService.lembrarCredenciais(this.username, this.password);
+      } else {
+        this.usuarioService.esquecerCredenciais();
       }
 
       this.usuarioService.salvarUsuarioLogado(usuarioEncontrado);

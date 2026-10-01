@@ -66,3 +66,14 @@ CREATE TABLE historico_solicitacao (
     descricao_manutencao TEXT,
     orientacoes_cliente TEXT
 );
+
+INSERT INTO categoria_equipamento (nome)
+VALUES
+    ('Notebook'),
+    ('Desktop'),
+    ('Impressora'),
+    ('Mouse'),
+    ('Teclado'),
+    ('Monitor'),
+    ('Hardware'),
+    ('Celular');

@@ -5,6 +5,13 @@ import { Funcionario } from '../models/funcionario.model';
 
 const LS_CHAVE = "usuarios"
 const LS_USUARIO_LOGADO = "usuarioLogado";
+const LS_EMAIL_LEMBRADO = "emailLembrado";
+const LS_SENHA_LEMBRADA = "senhaLembrada";
+
+export interface CredenciaisLembradas {
+  email: string;
+  senha: string;
+}
 
 export const DADOS_INICIAIS_USUARIOS: Usuario[] = [
   {
@@ -39,6 +46,30 @@ export const DADOS_INICIAIS_USUARIOS: Usuario[] = [
   providedIn: 'root',
 })
 export class UsuarioService {
+    obterCredenciaisLembradas(): CredenciaisLembradas | null {
+      if (typeof localStorage === 'undefined') {
+        return null;
+      }
+
+      const email = localStorage.getItem(LS_EMAIL_LEMBRADO);
+      const senha = localStorage.getItem(LS_SENHA_LEMBRADA);
+      return email && senha ? { email, senha } : null;
+    }
+
+    lembrarCredenciais(email: string, senha: string): void {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(LS_EMAIL_LEMBRADO, email);
+        localStorage.setItem(LS_SENHA_LEMBRADA, senha);
+      }
+    }
+
+    esquecerCredenciais(): void {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(LS_EMAIL_LEMBRADO);
+        localStorage.removeItem(LS_SENHA_LEMBRADA);
+      }
+    }
+
     listarTodos(): Usuario[] {
       const usuarios = localStorage[LS_CHAVE];
       // Se não houver usuários, salva os dados iniciais para ter com quem testar

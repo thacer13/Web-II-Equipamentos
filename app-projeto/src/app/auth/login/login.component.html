@@ -25,6 +25,17 @@
         </p-floatLabel>
       </div>
 
+      <label class="remember-credentials">
+        <input
+          type="checkbox"
+          [(ngModel)]="lembrarCredenciais"
+          name="lembrarCredenciais"
+        />
+        <span>
+          Lembrar meu login e senha neste dispositivo
+        </span>
+      </label>
+
       <button pButton type="submit" label="Entrar" class="btn-primary" [disabled]="loading"></button>
 
       <div class="login-actions">
