@@ -105,3 +105,20 @@ JOIN categoria_equipamento c
 WHERE s.data_hora_pagamento IS NOT NULL
 GROUP BY c.id, c.nome
 ORDER BY c.nome;
+
+
+SELECT
+    u.id,
+    u.nome,
+    u.email,
+    u.senha_hash,
+    CASE
+        WHEN f.id IS NOT NULL THEN 'FUNCIONARIO'
+        WHEN c.id IS NOT NULL THEN 'CLIENTE'
+    END AS perfil
+FROM usuario u
+LEFT JOIN funcionario f
+    ON f.id = u.id
+LEFT JOIN cliente c
+    ON c.id = u.id
+WHERE u.email = 'maria@teste.com';
