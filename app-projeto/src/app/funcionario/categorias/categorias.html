@@ -46,20 +46,11 @@
                     @if (categoria.ativo) {
                       <p-button
                         type="button"
-                        icon="pi pi-ban"
+                        icon="pi pi-trash"
                         [rounded]="true"
                         [text]="true"
                         severity="danger"
-                        (click)="pedirDesativacao(categoria)">
-                      </p-button>
-                    } @else {
-                      <p-button
-                        type="button"
-                        icon="pi pi-check"
-                        [rounded]="true"
-                        [text]="true"
-                        severity="success"
-                        (click)="ativar(categoria)">
+                        (click)="pedirRemocao(categoria)">
                       </p-button>
                     }
                   </div>
@@ -99,16 +90,16 @@
   [closable]="true"
   [style]="{ width: 'min(420px, 92vw)' }">
   <p class="text-sm text-gray-700">
-    Deseja desativar a categoria
+    Deseja remover a categoria
     <strong>{{ categoriaSelecionada?.nome }}</strong>?
   </p>
   <ng-template #footer>
     <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (click)="showConfirmacao = false"></p-button>
     <button
       type="button"
-      (click)="confirmarDesativacao()"
+      (click)="confirmarRemocao()"
       class="bg-red-700 hover:bg-red-800 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-      Desativar
+      Remover
     </button>
   </ng-template>
 </p-dialog>

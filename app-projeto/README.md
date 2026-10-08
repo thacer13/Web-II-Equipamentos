@@ -210,17 +210,15 @@ Cada funcionário possui informações como:
 - E-mail
 - Data de nascimento
 - Senha
-- Situação ativa ou inativa
 
 A interface permite:
 
 - Listar funcionários
 - Cadastrar funcionários
 - Editar funcionários
-- Desativar funcionários
-- Reativar funcionários
+- Excluir funcionários
 
-O sistema também verifica regras relacionadas à desativação dos funcionários.
+O funcionário conectado e o último funcionário ativo não podem ser excluídos.
 
 ## Relatórios de receitas
 

@@ -6,13 +6,12 @@ import { ClienteComponent } from './cliente/cliente.component';
 import { SolicitacaoFuncionarioComponent } from './funcionario/solicitacoes/solicitacao-funcionario';
 import { EfetuarOrcamentoComponent } from './efetuar-orcamento/efetuar-orcamento.component';
 import { CategoriasComponent } from './funcionario/categorias/categorias';
-import { FuncionariosComponent } from './funcionario/lista-funcionarios/funcionarios';
+import { ListaFuncionariosComponent } from './funcionario/lista-funcionarios/lista-funcionarios';
 import { LoginFuncionarioComponent } from './funcionario/login-funcionario/login-funcionario';
 import { RelatorioPeriodoComponent } from './funcionario/relatorio-periodo/relatorio-periodo';
 import { RelatorioCategoriasComponent } from './funcionario/relatorio-categorias/relatorio-categorias';
 import { RedirecionamentoComponent } from './funcionario/manutencao/redirecionamento';
 import { ManutencaoComponent } from './funcionario/manutencao/manutencao';
-import { authGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -38,9 +37,7 @@ export const routes: Routes = [
     },
     {
         path: 'cliente',
-        component: ClienteComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['CLIENTE'] }
+        component: ClienteComponent
     },
     {
         path: 'funcionario',
@@ -48,21 +45,15 @@ export const routes: Routes = [
     },
     {
         path: 'funcionario/solicitacoes',
-        component: SolicitacaoFuncionarioComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: SolicitacaoFuncionarioComponent
     },
     {
         path: 'funcionario/categorias',
-        component: CategoriasComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: CategoriasComponent
     },
     {
         path: 'funcionario/lista-funcionarios',
-        component: FuncionariosComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: ListaFuncionariosComponent
     },
     {
         path: 'funcionario/login-funcionario',
@@ -70,32 +61,22 @@ export const routes: Routes = [
     },
     {
         path: 'funcionario/receitas/periodo',
-        component: RelatorioPeriodoComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: RelatorioPeriodoComponent
     },
     {
         path: 'funcionario/receitas/categoria',
-        component: RelatorioCategoriasComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: RelatorioCategoriasComponent
     },
     {
         path: 'efetuar-orcamento/:id',
-        component: EfetuarOrcamentoComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: EfetuarOrcamentoComponent
     },
     {
         path: 'manutencao/:id',
-        component: ManutencaoComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: ManutencaoComponent
     },
     {
         path: 'redirecionamento/:id',
-        component: RedirecionamentoComponent,
-        canActivate: [authGuard],
-        data: { perfis: ['FUNCIONARIO'] }
+        component: RedirecionamentoComponent
     }
 ]

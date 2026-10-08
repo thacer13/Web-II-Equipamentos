@@ -115,17 +115,17 @@ export class CategoriasComponent {
     this.showFormulario = false;
   }
 
-  pedirDesativacao(categoria: Categoria): void {
+  pedirRemocao(categoria: Categoria): void {
     this.categoriaSelecionada = categoria;
     this.showConfirmacao = true;
   }
 
-  confirmarDesativacao(): void {
+  confirmarRemocao(): void {
     if (!this.categoriaSelecionada) {
       return;
     }
 
-    this.categoriaSelecionada.ativo = false;
+    this.categorias = this.categorias.filter((item) => item.id !== this.categoriaSelecionada?.id);
 
     this.salvarLocal();
 

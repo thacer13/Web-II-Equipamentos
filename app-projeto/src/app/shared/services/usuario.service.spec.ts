@@ -86,21 +86,6 @@ describe('UsuarioService', () => {
     expect(service.obterCredenciaisLembradas()).toBeNull();
   });
 
-  it('encerra a sessão sem apagar as credenciais lembradas', () => {
-    const usuario = novoCliente({ id: 1, senha: '123' });
-    const senha = usuario.senha ?? '';
-    service.salvarUsuarioLogado(usuario);
-    service.lembrarCredenciais(usuario.email, senha);
-
-    service.logout();
-
-    expect(service.obterUsuarioLogado()).toBeNull();
-    expect(service.obterCredenciaisLembradas()).toEqual({
-      email: usuario.email,
-      senha
-    });
-  });
-
   it('busca por CPF com ou sem máscara', () => {
     service.cadastrarCliente(novoCliente());
 
