@@ -5,6 +5,33 @@
   width: 100%;
 }
 
+.session-actions {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+.logout-button {
+  border: 1px solid #dc2626;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #b91c1c;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: #fef2f2;
+}
+
+.logout-button:focus-visible {
+  outline: 2px solid #b91c1c;
+  outline-offset: 2px;
+}
+
 strong {
   font-size: 1.8em;
   margin-bottom: 25px;
