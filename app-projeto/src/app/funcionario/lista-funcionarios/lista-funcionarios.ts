@@ -1,35 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-
-interface FuncionarioCrud {
-  id: number;
-  nome: string;
-  email: string;
-  dataNascimento: string;
-  senha: string;
-  ativo: boolean;
-}
-
-const LS_CHAVE = 'funcionarios-crud';
-
-const FUNCIONARIOS_INICIAIS: FuncionarioCrud[] = [
-  {
-    id: 2,
-    nome: 'Mário',
-    email: 'mario@teste.com',
-    dataNascimento: '1992-08-20',
-    senha: '1234',
-    ativo: true
-  },
-];
+import { UsuarioService } from '../../shared/services/usuario.service';
+import { Funcionario } from '../../shared/models/funcionario.model';
 
 @Component({
-  selector: 'app-lista-funcionarios',
+  selector: 'app-funcionarios',
   standalone: true,
   imports: [
     CommonModule,
@@ -40,13 +20,12 @@ const FUNCIONARIOS_INICIAIS: FuncionarioCrud[] = [
   ],
   templateUrl: './lista-funcionarios.html',
 })
-export class ListaFuncionariosComponent {
-  private router = inject(Router);
+
+export class ListaFuncionariosComponent implements OnInit {
   private location = inject(Location);
 
-  funcionarioAtual = 'Mário';
-
-  funcionarios: FuncionarioCrud[] = [];
+  funcionarios: Funcionario[] = [];
+  funcionarioSelecionado: Funcionario | null = null;
 
   showFormulario = false;
   showConfirmacao = false;
@@ -56,13 +35,22 @@ export class ListaFuncionariosComponent {
   nome = '';
   email = '';
   dataNascimento = '';
-  senha = '';
   mensagemErro = '';
+  funcionarioLogadoId?: number;
 
-  funcionarioSelecionado: FuncionarioCrud | null = null;
+  constructor(private usuarioService: UsuarioService) {}
 
-  constructor() {
-    this.carregar();
+  ngOnInit(): void {
+    this.carregarFuncionarios();
+    
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
+    if (usuarioLogado) {
+      this.funcionarioLogadoId = usuarioLogado.id;
+    }
+  }
+
+  carregarFuncionarios(): void {
+    this.funcionarios = this.usuarioService.listarFuncionarios();
   }
 
   voltar(): void {
@@ -74,111 +62,83 @@ export class ListaFuncionariosComponent {
     this.nome = '';
     this.email = '';
     this.dataNascimento = '';
-    this.senha = '';
     this.mensagemErro = '';
     this.showFormulario = true;
   }
 
-  abrirEditar(funcionario: FuncionarioCrud): void {
-    this.editandoId = funcionario.id;
+  abrirEditar(funcionario: Funcionario): void {
+    this.editandoId = funcionario.id!;
     this.nome = funcionario.nome;
     this.email = funcionario.email;
     this.dataNascimento = funcionario.dataNascimento;
-    this.senha = funcionario.senha;
     this.mensagemErro = '';
     this.showFormulario = true;
   }
 
   salvarFuncionario(): void {
-    const nome = this.nome.trim().replace(/\s+/g, ' ');
-    const email = this.email.trim().toLowerCase();
+    this.mensagemErro = '';
 
-    if (!nome || !email || !this.dataNascimento) {
-      this.mensagemErro = 'Preencha todos os campos.';
+    if (!this.nome || this.nome.trim().length < 3) {
+      this.mensagemErro = 'O nome deve ter pelo menos 3 caracteres.';
+      return;
+    }
+    if (!this.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+      this.mensagemErro = 'E-mail inválido.';
+      return;
+    }
+    if (!this.dataNascimento) {
+      this.mensagemErro = 'A data de nascimento é obrigatória.';
       return;
     }
 
-    if (nome.length < 3 || nome.length > 150) {
-      this.mensagemErro = 'Informe um nome com 3 a 150 caracteres.';
+    // Validação de E-mail Único (ignorando o próprio registro em caso de edição)
+    const emailExistente = this.usuarioService.buscarPorEmail(this.email);
+    if (emailExistente && emailExistente.id !== this.editandoId) {
+      this.mensagemErro = 'Este e-mail já está cadastrado no sistema.';
       return;
     }
 
-    if (email.length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      this.mensagemErro = 'Informe um e-mail válido com até 150 caracteres.';
-      return;
-    }
+    // Prepara o objeto para salvar
+    const funcionarioParaSalvar: Funcionario = {
+      id: this.editandoId !== null ? this.editandoId : undefined,
+      nome: this.nome,
+      email: this.email,
+      dataNascimento: this.dataNascimento,
+      perfil: 'FUNCIONARIO',
+      ativo: true // Será ignorado pelo Service caso seja edição, mantendo o status atual
+    };
 
-    const nascimento = new Date(`${this.dataNascimento}T00:00:00`);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    if (Number.isNaN(nascimento.getTime()) || nascimento > hoje || nascimento.getFullYear() < 1900) {
-      this.mensagemErro = 'Informe uma data de nascimento válida.';
-      return;
-    }
-    const emailDuplicado =
-      this.funcionarios.some((funcionario) =>
-        funcionario.email.toLowerCase() === email &&
-        funcionario.id !== this.editandoId
-      );
-
-    if (emailDuplicado) {
-      this.mensagemErro =
-        'Já existe um funcionário com esse e-mail.';
-      return;
-    }
-
-    if (this.editandoId === null) {
-      const proximoId =
-        this.funcionarios.length > 0
-          ? Math.max(
-              ...this.funcionarios.map(
-                (funcionario) => funcionario.id
-              )
-            ) + 1
-          : 1;
-
-      this.funcionarios.push({
-        id: proximoId,
-        nome,
-        email,
-        dataNascimento: this.dataNascimento,
-        senha: this.senha,
-        ativo: true
-      });
-    } else {
-      const funcionario =
-        this.funcionarios.find(
-          (item) => item.id === this.editandoId
-        );
-
-      if (funcionario) {
-        funcionario.nome = nome;
-        funcionario.email = email;
-        funcionario.dataNascimento = this.dataNascimento;
-        funcionario.senha = this.senha;
-      }
-    }
-
-    this.salvarLocal();
+    // Salva via Service (LocalStorage) e atualiza a tela
+    this.usuarioService.salvarFuncionario(funcionarioParaSalvar);
+    this.carregarFuncionarios();
     this.showFormulario = false;
   }
 
-  podeRemover(funcionario: FuncionarioCrud): boolean {
-    if (funcionario.nome === this.funcionarioAtual) {
-      return false;
+  gerarNovaSenhaManual(): void {
+    if (this.editandoId !== null) {
+      const funcionario = this.funcionarios.find(f => f.id === this.editandoId);
+      if (funcionario) {
+        const novaSenha = this.usuarioService.gerarSenhaAleatoria();
+        funcionario.senha = novaSenha; // Atualiza a senha no objeto atual
+        
+        // Salva a alteração
+        this.usuarioService.salvarFuncionario(funcionario);
+        
+        // Feedback visual
+        alert(`[SIMULAÇÃO] Nova senha (${novaSenha}) gerada e enviada para ${funcionario.email}`);
+      }
     }
-
-    if (!funcionario.ativo) {
-      return true;
-    }
-
-    return this.funcionarios.filter(
-      (item) => item.ativo
-    ).length > 1;
   }
 
-  pedirRemocao(funcionario: FuncionarioCrud): void {
-    if (!this.podeRemover(funcionario)) {
+  podeRemover(funcionario: Funcionario): boolean {
+    if (funcionario.id === this.funcionarioLogadoId) {
+      return false;
+    } 
+    return this.funcionarios.length > 1;
+  }
+
+  pedirRemocao(funcionario: Funcionario): void {
+    if(!this.podeRemover(funcionario)) {
       return;
     }
 
@@ -187,58 +147,18 @@ export class ListaFuncionariosComponent {
   }
 
   confirmarRemocao(): void {
-    if (
-      !this.funcionarioSelecionado ||
-      !this.podeRemover(this.funcionarioSelecionado)
-    ) {
-      return;
-    }
+    if (this.funcionarioSelecionado && this.funcionarioSelecionado.id !== undefined) {
+      if (this.funcionarioSelecionado.id === this.funcionarioLogadoId) {
+        alert('Ação bloqueada: Você não pode excluir a si mesmo.');
+        this.showConfirmacao = false;
+        return;
+      }
 
-    this.funcionarios = this.funcionarios.filter(
-      (funcionario) => funcionario.id !== this.funcionarioSelecionado?.id
-    );
-    this.salvarLocal();
-    this.showConfirmacao = false;
-    this.funcionarioSelecionado = null;
-  }
-
-  formatarData(data: string): string {
-    if (!data) {
-      return '';
-    }
-
-    const [ano, mes, dia] = data.split('-');
-
-    return `${dia}/${mes}/${ano}`;
-  }
-
-  private carregar(): void {
-    if (typeof localStorage === 'undefined') {
-      this.funcionarios =
-        FUNCIONARIOS_INICIAIS.map(
-          (funcionario) => ({ ...funcionario })
-        );
-
-      return;
-    }
-
-    const dados = localStorage.getItem(LS_CHAVE);
-
-    this.funcionarios = dados
-      ? JSON.parse(dados)
-      : FUNCIONARIOS_INICIAIS.map(
-          (funcionario) => ({ ...funcionario })
-        );
-
-    this.salvarLocal();
-  }
-
-  private salvarLocal(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        LS_CHAVE,
-        JSON.stringify(this.funcionarios)
-      );
+      this.usuarioService.remover(this.funcionarioSelecionado.id);
+      
+      this.carregarFuncionarios();
+      this.showConfirmacao = false;
+      this.funcionarioSelecionado = null;
     }
   }
 }

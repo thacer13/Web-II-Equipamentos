@@ -19,7 +19,6 @@
               <th class="px-6 py-4 font-semibold">Nome</th>
               <th class="px-6 py-4 font-semibold">E-mail</th>
               <th class="px-6 py-4 font-semibold">Data de Nascimento</th>
-              <th class="px-6 py-4 font-semibold">Status</th>
               <th class="px-6 py-4 font-semibold">Ações</th>
             </tr>
           </thead>
@@ -28,22 +27,12 @@
               <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 font-medium text-gray-800">
                   {{ funcionario.nome }}
-                  @if (funcionario.nome === funcionarioAtual) {
+                  @if (funcionario.id === funcionarioLogadoId) {
                     <span class="ml-2 text-xs font-normal text-blue-600">(você)</span>
                   }
                 </td>
                 <td class="px-6 py-4 text-gray-600">{{ funcionario.email }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ formatarData(funcionario.dataNascimento) }}</td>
-                <td class="px-6 py-4">
-                  <span
-                    class="rounded-full px-3 py-1 text-xs font-semibold"
-                    [class.bg-green-100]="funcionario.ativo"
-                    [class.text-green-700]="funcionario.ativo"
-                    [class.bg-gray-100]="!funcionario.ativo"
-                    [class.text-gray-600]="!funcionario.ativo">
-                    {{ funcionario.ativo ? 'Ativo' : 'Inativo' }}
-                  </span>
-                </td>
+                <td class="px-6 py-4 text-gray-600">{{ funcionario.dataNascimento | date:'dd/MM/yyyy':'UTC' }}</td>
                 <td class="px-6 py-4">
                   <div class="flex flex-wrap gap-2">
                     <p-button
@@ -94,6 +83,26 @@
       <label for="dataNascimentoFuncionario" class="mb-2 block text-sm font-medium text-gray-700">Data de Nascimento</label>
       <input id="dataNascimentoFuncionario" type="date" [(ngModel)]="dataNascimento" min="1900-01-01" class="w-full rounded border border-gray-300 px-3 py-2" />
     </div>
+
+    <div class="sm:col-span-2 mt-2">
+      @if (editandoId === null) {
+        <div class="rounded-md bg-blue-50 p-3 text-sm text-blue-700 border border-blue-100">
+          <i class="pi pi-info-circle mr-2"></i>
+          Uma senha temporária de 4 dígitos será gerada automaticamente e enviada para o e-mail cadastrado.
+        </div>
+      } @else {
+        <p-button 
+          type="button" 
+          label="Gerar e Enviar Nova Senha" 
+          icon="pi pi-envelope" 
+          severity="secondary" 
+          [outlined]="true" 
+          size="small"
+          (click)="gerarNovaSenhaManual()">
+        </p-button>
+      }
+    </div>
+
     @if (mensagemErro) {
       <p class="sm:col-span-2 text-sm text-red-600">{{ mensagemErro }}</p>
     }
