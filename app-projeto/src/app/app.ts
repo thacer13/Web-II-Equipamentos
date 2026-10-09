@@ -3,11 +3,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import {RouterModule} from '@angular/router';
 import { DevNavComponent } from './shared/dev-nav/dev-nav.component';
+import { TopbarComponent } from './shared/topbar/topbar.component';
 import { UsuarioService } from './shared/services/usuario.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterModule, DevNavComponent],
+  imports: [RouterModule, DevNavComponent, TopbarComponent],
   standalone: true,
   providers: [],
   templateUrl: './app.html',
