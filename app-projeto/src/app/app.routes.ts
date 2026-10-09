@@ -12,6 +12,7 @@ import { RelatorioPeriodoComponent } from './funcionario/relatorio-periodo/relat
 import { RelatorioCategoriasComponent } from './funcionario/relatorio-categorias/relatorio-categorias';
 import { RedirecionamentoComponent } from './funcionario/manutencao/redirecionamento';
 import { ManutencaoComponent } from './funcionario/manutencao/manutencao';
+import { authGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -37,7 +38,9 @@ export const routes: Routes = [
     },
     {
         path: 'cliente',
-        component: ClienteComponent
+        component: ClienteComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['CLIENTE'] }
     },
     {
         path: 'funcionario',
@@ -45,38 +48,56 @@ export const routes: Routes = [
     },
     {
         path: 'funcionario/solicitacoes',
-        component: SolicitacaoFuncionarioComponent
+        component: SolicitacaoFuncionarioComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'funcionario/categorias',
-        component: CategoriasComponent
+        component: CategoriasComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'funcionario/lista-funcionarios',
-        component: ListaFuncionariosComponent
+        component: ListaFuncionariosComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'funcionario/login-funcionario',
-        component: LoginFuncionarioComponent
+        component: LoginFuncionarioComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'funcionario/receitas/periodo',
-        component: RelatorioPeriodoComponent
+        component: RelatorioPeriodoComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'funcionario/receitas/categoria',
-        component: RelatorioCategoriasComponent
+        component: RelatorioCategoriasComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'efetuar-orcamento/:id',
-        component: EfetuarOrcamentoComponent
+        component: EfetuarOrcamentoComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'manutencao/:id',
-        component: ManutencaoComponent
+        component: ManutencaoComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     },
     {
         path: 'redirecionamento/:id',
-        component: RedirecionamentoComponent
+        component: RedirecionamentoComponent,
+        canActivate: [authGuard],
+        data: { perfis: ['FUNCIONARIO'] }
     }
 ]
