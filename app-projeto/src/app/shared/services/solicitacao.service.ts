@@ -143,10 +143,9 @@ export class SolicitacaoService {
   private usuarioService = inject(UsuarioService);
 
   listar(): Solicitacao[] {
-    if (!this.solicitacoes) {
-      this.solicitacoes = this.ler() ?? DADOS_INICIAIS;
-      this.salvar(this.solicitacoes);
-    }
+    const dados = this.ler() ?? DADOS_INICIAIS;
+    this.solicitacoes = dados;
+    this.salvar(this.solicitacoes);
     return [...this.solicitacoes].sort((a, b) => a.dataHora.localeCompare(b.dataHora));
   }
 
@@ -193,22 +192,31 @@ export class SolicitacaoService {
     return nova;
   }
 
-  atualizarEstado(
-    solicitacao: Solicitacao,
-    novoEstado: EstadoSolicitacao,
-    funcionario?: string,
-    observacao?: string
-  ): void {
+  atualizarEstado(solicitacao: Solicitacao, novoEstado: EstadoSolicitacao, funcionario?: string, observacao?: string, precoOrcado?: number): void {
+    const lista = this.listar();
+    const index = lista.findIndex(s => s.id === solicitacao.id);
+    
+    if(index !== -1) {
+      lista[index].estado = novoEstado;
+    }
+
+    if (novoEstado === 'REDIRECIONADA' && funcionario) {
+      lista[index].funcionarioDestino = funcionario;
+    }
+
+    if (precoOrcado !== undefined) {
+        lista[index].precoOrcado = precoOrcado;
+    }
+
     const texto = observacao?.trim().replace(/\s+/g, ' ');
-    solicitacao.estado = novoEstado;
-    solicitacao.historico.push({
+    lista[index].historico.push({
       dataHora: new Date().toISOString(),
       estado: novoEstado,
       funcionario: funcionario?.trim() ? funcionario.trim() : undefined,
       observacao: texto ? texto.slice(0, 2000) : undefined,
     });
-    this.listar();
-    this.salvar(this.solicitacoes ?? []);
+    this.solicitacoes = lista;
+    this.salvar(lista);
   }
 
   private ler(): Solicitacao[] | null {

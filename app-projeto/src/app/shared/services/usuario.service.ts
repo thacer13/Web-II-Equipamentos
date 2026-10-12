@@ -71,26 +71,36 @@ export class UsuarioService {
   }
 
   listarTodos(): Usuario[] {
-    const usuarios = localStorage[LS_CHAVE];
+    if (typeof localStorage === 'undefined') {
+      return DADOS_INICIAIS_USUARIOS;
+    }
+    const usuarios = localStorage.getItem(LS_CHAVE);
     // Se não houver usuários, salva os dados iniciais para ter com quem testar
     if (!usuarios) {
-      localStorage[LS_CHAVE] = JSON.stringify(DADOS_INICIAIS_USUARIOS);
+      localStorage.setItem(LS_CHAVE, JSON.stringify(DADOS_INICIAIS_USUARIOS));
       return DADOS_INICIAIS_USUARIOS;
     }
     return JSON.parse(usuarios);
   }
 
   salvarUsuarioLogado(usuario: Usuario): void {
-    localStorage.setItem(LS_USUARIO_LOGADO, JSON.stringify(usuario));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LS_USUARIO_LOGADO, JSON.stringify(usuario));
+    }  
   }
 
   obterUsuarioLogado(): Usuario | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
     const usr = localStorage.getItem(LS_USUARIO_LOGADO);
     return usr ? JSON.parse(usr) : null;
   }
 
   logout(): void {
-    localStorage.removeItem(LS_USUARIO_LOGADO);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(LS_USUARIO_LOGADO);
+    }
   }
 
   cadastrarCliente(cliente: Cliente): void { // Inserir
@@ -138,7 +148,10 @@ export class UsuarioService {
     cliente.perfil = 'CLIENTE';
     cliente.senha = this.gerarSenhaAleatoria();
     usuarios.push(cliente);
-    localStorage[LS_CHAVE] = JSON.stringify(usuarios);
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LS_CHAVE, JSON.stringify(usuarios));
+    }
 
     console.log(`[SIMULAÇÃO DE E-MAIL] Para: ${cliente.email} | Sua senha temporária é: ${cliente.senha}`);
     // Quando formos implementar o Backend (Spring Boot), substituir o localStorage por:
@@ -166,7 +179,9 @@ export class UsuarioService {
   remover(id: number): void {
     let usuarios = this.listarTodos();
     usuarios = usuarios.filter(usuario => usuario.id !== id);
-    localStorage[LS_CHAVE] = JSON.stringify(usuarios);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LS_CHAVE, JSON.stringify(usuarios));
+    }
   }
 
   gerarSenhaAleatoria(): string {
@@ -205,6 +220,8 @@ export class UsuarioService {
       console.log(`[SIMULAÇÃO DE E-MAIL] Para: ${funcionario.email} | Bem-vindo, ${funcionario.nome}! Sua senha temporária é: ${funcionario.senha}`);
     }
 
-    localStorage['usuarios'] = JSON.stringify(usuarios);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LS_CHAVE, JSON.stringify(usuarios));
+    }
   }
 }

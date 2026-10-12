@@ -6,6 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { Solicitacao } from '../../shared/models/solicitacao.model';
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
+import { UsuarioService } from '../../shared/services/usuario.service';
 
 @Component({
   selector: 'app-manutencao',
@@ -24,6 +25,7 @@ export class ManutencaoComponent {
   private solicitacaoService = inject(SolicitacaoService);
   private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
   private location = inject(Location);
+  private usuarioService = inject(UsuarioService);
 
   solicitacao: Solicitacao | null = null;
 
@@ -85,16 +87,20 @@ export class ManutencaoComponent {
     }
 
     this.mensagemErro = '';
-    this.descricaoManutencao = descricao;
-    this.orientacoesCliente = orientacoes;
-    const dataHoraManutencao = new Date();
 
-    console.log('Solicitação ID:', this.solicitacao.id);
-    console.log('Descrição:', this.descricaoManutencao);
-    console.log('Orientações:', this.orientacoesCliente);
-    console.log('Funcionário:', this.funcionarioLogado);
-    console.log('Data/Hora da Manutenção:', dataHoraManutencao);
-    console.log('Status: ARRUMADA');
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
+    const nomeFuncionario = usuarioLogado ? usuarioLogado.nome : 'Funcionário';
+
+    const observacao = `Manutenção: ${descricao} | Orientações: ${orientacoes}`;
+
+    this.solicitacaoService.atualizarEstado(
+      this.solicitacao,
+      'ARRUMADA',
+      nomeFuncionario,
+      observacao
+    );
+
+    this.router.navigate(['/funcionario/solicitacoes']);
   }
 
   onRedirecionarClick() {

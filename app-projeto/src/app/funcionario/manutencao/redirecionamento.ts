@@ -6,6 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
 import { Solicitacao } from '../../shared/models/solicitacao.model';
+import { UsuarioService } from '../../shared/services/usuario.service';
 
 @Component({
   selector: 'app-redirecionamento',
@@ -21,20 +22,29 @@ export class RedirecionamentoComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private solicitacaoService = inject(SolicitacaoService);
+  private usuarioService = inject(UsuarioService);
   private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
   private location = inject(Location); 
 
   solicitacao: Solicitacao | null = null;
 
   funcionarioOrigem: string = 'Funcionário Exemplo';
-
-  // Lista de funcionários pra quem dá pra redirecionar (viria do backend)
-  funcionarios: string[] = ['Mário', 'Ana', 'Carlos', 'Beatriz'];
+  funcionariosNomes: string[] = [];
 
   funcionarioDestino: string = '';
   mensagemErro = '';
 
  ngOnInit(): void {
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
+    if (usuarioLogado) {
+      this.funcionarioOrigem = usuarioLogado.nome;
+    }
+
+    const funcionariosCadastrados = this.usuarioService.listarFuncionarios();
+    this.funcionariosNomes = funcionariosCadastrados
+      .filter(f => f.ativo !== false) // Pega somente os ativos. Ver se não dá para tirar isso (remover ativos de funcionarios)
+      .map(f => f.nome);
+
     const idParam = this.route.snapshot.paramMap.get('id');
 
     if (!idParam) {
@@ -72,12 +82,14 @@ export class RedirecionamentoComponent {
 
   
   get funcionariosDisponiveis(): string[] {
-    return this.funcionarios.filter((f) => f !== this.funcionarioOrigem);
+    return this.funcionariosNomes.filter((f) => f !== this.funcionarioOrigem);
   }
 
   
 
   onConfirmarRedirecionamento() {
+    if (!this.solicitacao) return;
+
     const destino = this.funcionarioDestino.trim();
 
     if (!destino) {
@@ -91,12 +103,14 @@ export class RedirecionamentoComponent {
     }
 
     this.mensagemErro = '';
-    this.funcionarioDestino = destino;
 
-    console.log('Funcionário origem:', this.funcionarioOrigem);
-    console.log('Funcionário destino:', this.funcionarioDestino);
-    console.log('Data/Hora:', new Date());
-    console.log('Status: REDIRECIONADA');
+    const observacao = `Redirecionado de ${this.funcionarioOrigem} para ${destino}`;
+    this.solicitacaoService.atualizarEstado(
+      this.solicitacao,
+      'REDIRECIONADA',
+      destino,
+      observacao
+    );
 
     this.router.navigate(['/funcionario/solicitacoes']);
   }

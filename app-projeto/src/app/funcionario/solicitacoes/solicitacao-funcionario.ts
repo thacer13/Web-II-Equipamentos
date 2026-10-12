@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -11,6 +11,9 @@ import {
 } from '../../shared/services/solicitacao.service';
 import { Solicitacao } from '../../shared/models/solicitacao.model';
 import { EstadoSolicitacao } from '../../shared/models/estado-solicitacao.model';
+import { UsuarioService } from '../../shared/services/usuario.service';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-solicitacao-funcionario',
@@ -24,12 +27,14 @@ import { EstadoSolicitacao } from '../../shared/models/estado-solicitacao.model'
   ],
   templateUrl: './solicitacao-funcionario.html',
 })
-export class SolicitacaoFuncionarioComponent {
+export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
 
   private solicitacaoService = inject(SolicitacaoService);
+  private usuarioService = inject(UsuarioService);
   private router = inject(Router);
+  private routerSub?: Subscription;
 
-  funcionarioAtual = 'Mário';
+  funcionarioAtual = '';
 
   filtro = 'TODAS';
 
@@ -38,12 +43,33 @@ export class SolicitacaoFuncionarioComponent {
 
   solicitacoes: Solicitacao[] = [];
 
-  showOrcamentoInput = false;
-  showDescricaoDialog = false;
-  showDescricaoDesktopDialog = false;
+  // showOrcamentoInput = false;
+  // showDescricaoDialog = false;
+  // showDescricaoDesktopDialog = false;
   showReceitas = false;
 
-  constructor() {
+  ngOnInit(): void {
+    // 1. Pega o nome do funcionário logado no LocalStorage
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
+    if (usuarioLogado) {
+      this.funcionarioAtual = usuarioLogado.nome;
+    }
+
+    this.carregarSolicitacoes();
+
+    // 2. Garante que a lista recarregue sempre que o usuário voltar para esta rota
+    this.routerSub = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.carregarSolicitacoes();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+  }
+
+  carregarSolicitacoes(): void {
     this.solicitacoes = this.solicitacaoService.listar();
   }
 
@@ -54,30 +80,23 @@ export class SolicitacaoFuncionarioComponent {
       .slice(0, 10);
 
     return this.solicitacoes
-
       .filter((solicitacao) => {
-
         if (solicitacao.estado === 'REDIRECIONADA') {
           return (
             solicitacao.funcionarioDestino ===
             this.funcionarioAtual
           );
         }
-
         return true;
       })
-
       .filter((solicitacao) => {
-
         const dataAbertura =
           solicitacao.dataHora.slice(0, 10);
-
         if (this.filtro === 'HOJE') {
           return dataAbertura === hoje;
         }
 
         if (this.filtro === 'PERIODO') {
-
           const depoisDoInicio =
             !this.dataInicio ||
             dataAbertura >= this.dataInicio;
@@ -91,53 +110,35 @@ export class SolicitacaoFuncionarioComponent {
 
         return true;
       })
-
       .sort(
         (a, b) =>
           a.dataHora.localeCompare(b.dataHora)
       );
   }
 
-  corEstado(
-    estado: EstadoSolicitacao
-  ): string {
-
+  corEstado(estado: EstadoSolicitacao): string {
     return ESTADO_COR[estado];
   }
 
-  labelEstado(
-    estado: EstadoSolicitacao
-  ): string {
-
+  labelEstado(estado: EstadoSolicitacao): string {
     const labels: Record<
       EstadoSolicitacao,
       string
     > = {
-
       ABERTA: 'Aberta',
-
       'ORÇADA': 'Orçada',
-
       APROVADA: 'Aprovada',
-
       REJEITADA: 'Rejeitada',
-
       REDIRECIONADA: 'Redirecionada',
-
       ARRUMADA: 'Arrumada',
-
       PAGA: 'Paga',
-
       FINALIZADA: 'Finalizada'
     };
 
     return labels[estado];
   }
 
-  acaoDoEstado(
-    estado: EstadoSolicitacao
-  ): string | null {
-
+  acaoDoEstado(estado: EstadoSolicitacao): string | null {
     if (estado === 'ABERTA') {
       return 'Efetuar Orçamento';
     }
@@ -156,61 +157,16 @@ export class SolicitacaoFuncionarioComponent {
     return null;
   }
 
-  executarAcao(
-    solicitacao: Solicitacao
-  ): void {
-
+  executarAcao(solicitacao: Solicitacao): void {
     if (solicitacao.estado === 'ABERTA') {
-
       this.router.navigate(
-        [
-          '/efetuar-orcamento',
-          solicitacao.id
-        ],
+        ['/efetuar-orcamento', solicitacao.id],
         {
           state: {
-            solicitacao: {
-              ...solicitacao,
-              cliente: {
-
-                id: 1,
-
-                nome: 'Glauco Lucio',
-
-                cpf: '081.679.750-10',
-
-                email:
-                  'glauco.lucio703@hotmail.com',
-
-                telefone:
-                  '(41) 2819-5983',
-
-                endereco: {
-
-                  logradouro:
-                    'Rua Oito',
-
-                  numero:
-                    '1446',
-
-                  bairro:
-                    'Angelim',
-
-                  cidade:
-                    'Teresina',
-
-                  uf:
-                    'PI',
-
-                  cep:
-                    '64041-280'
-                }
-              }
-            }
+            solicitacao: solicitacao
           }
         }
       );
-
       return;
     }
 
@@ -218,78 +174,55 @@ export class SolicitacaoFuncionarioComponent {
       solicitacao.estado === 'APROVADA' ||
       solicitacao.estado === 'REDIRECIONADA'
     ) {
-
       this.router.navigate(
         ['/manutencao', solicitacao.id],
         {
-          state: {
-            solicitacao
-          }
+          state: {solicitacao}
         }
       );
-
       return;
     }
 
     if (solicitacao.estado === 'PAGA') {
-
-      alert(
-        `Finalizar Solicitação: solicitação ${solicitacao.id}`
-      );
-
+      alert(`Finalizar Solicitação: solicitação ${solicitacao.id}`);
       return;
     }
   }
 
   abrirCategorias(): void {
-
-    this.router.navigate([
-      '/funcionario/categorias'
-    ]);
+    this.router.navigate(['/funcionario/categorias']);
   }
 
   abrirFuncionarios(): void {
-
-    this.router.navigate([
-      '/funcionario/lista-funcionarios'
-    ]);
+    this.router.navigate(['/funcionario/lista-funcionarios']);
   }
 
   abrirReceitas(): void {
-
     this.showReceitas = true;
   }
 
   abrirReceitaPeriodo(): void {
-
     this.showReceitas = false;
-
-    this.router.navigate([
-      '/funcionario/receitas/periodo'
-    ]);
+    this.router.navigate(['/funcionario/receitas/periodo']);
   }
 
   abrirReceitaCategoria(): void {
-
     this.showReceitas = false;
-
-    this.router.navigate([
-      '/funcionario/receitas/categoria'
-    ]);
+    this.router.navigate(['/funcionario/receitas/categoria']);
   }
 
-  onOrcamentoClick(): void {
+  // onOrcamentoClick(): void {
 
-    this.showOrcamentoInput = true;
-  }
+  //   this.showOrcamentoInput = true;
+  // }
 
-  onDescricaoClick(): void {
+  // onDescricaoClick(): void {
 
-    this.showDescricaoDialog = true;
-  }
+  //   this.showDescricaoDialog = true;
+  // }
 
-  onDescricaoDesktopClick(): void {
+  // onDescricaoDesktopClick(): void {
 
-    this.showDescricaoDesktopDialog = true;
-  }
+  //   this.showDescricaoDesktopDialog = true;
+  // }
 }

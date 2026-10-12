@@ -10,6 +10,7 @@ import { Solicitacao } from '../shared/models/solicitacao.model';
 import { SolicitacaoService } from '../shared/services/solicitacao.service';
 
 import { ConfirmationService } from 'primeng/api';
+import { UsuarioService } from '../shared/services/usuario.service';
 
 @Component({
   selector: 'app-efetuar-orcamento',
@@ -29,6 +30,7 @@ import { ConfirmationService } from 'primeng/api';
 export class EfetuarOrcamentoComponent implements OnInit {
   private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
   private location = inject(Location); 
+  private usuarioService = inject(UsuarioService);
 
   solicitacao: Solicitacao | null = null;
 
@@ -101,49 +103,42 @@ export class EfetuarOrcamentoComponent implements OnInit {
     }
 
     this.confirmationService.confirm({
-
       message:
         `Confirmar orçamento no valor de ${this.formatarMoeda(this.valorOrcamento!)}?`,
-
       header: 'Confirmar orçamento',
-
       icon: 'pi pi-exclamation-triangle',
-
       acceptLabel: 'Confirmar',
-
       rejectLabel: 'Cancelar',
-
       accept: () => {
         this.confirmarOrcamento();
       }
-
     });
   }
 
   private confirmarOrcamento(): void {
-
     if (!this.solicitacao || !this.valorValido) {
       return;
     }
 
     this.salvandoOrcamento = true;
+    const valor = this.valorOrcamento!;
 
-    const idSolicitacao = this.solicitacao.id;
-    const valor = this.valorOrcamento;
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
+    const nomeFuncionario = usuarioLogado ? usuarioLogado.nome : 'Funcionário';
+    const observacao = `Orçamento de ${this.formatarMoeda(valor)}.`;
 
-    this.router.navigate(
-      ['/funcionario'],
-      {
-        state: {
-          orcadaId: idSolicitacao,
-          valorOrcamento: valor
-        }
-      }
+    this.solicitacaoService.atualizarEstado(
+      this.solicitacao,
+      'ORÇADA',
+      nomeFuncionario,
+      observacao,
+      valor
     );
+
+    this.router.navigate(['/funcionario/solicitacoes']);
   }
 
   private formatarMoeda(valor: number): string {
-
     return valor.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL'
