@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LIMITES, naoVazio, normalizarTexto } from '../../shared/validators/form-validators';
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
+import { Categoria, CategoriaService } from '../../shared/services/categoria.service';
 
 @Component({
   selector: 'app-cliente-solicitacao',
@@ -15,12 +16,14 @@ export class ClienteSolicitacaoComponent {
 
   private fb = inject(FormBuilder);
   private solicitacaoService = inject(SolicitacaoService);
+  private categoriaService = inject(CategoriaService);
 
   mensagemErro = '';
+  categorias: Categoria[] = this.categoriaService.listar().filter((categoria) => categoria.ativo);
 
   formulario: FormGroup = this.fb.group({
     descricaoEquipamento: ['', [Validators.required, naoVazio(), Validators.minLength(3), Validators.maxLength(LIMITES.descricaoEquipamento)]],
-    categoriaEquipamento: ['', [Validators.required, naoVazio(), Validators.minLength(2), Validators.maxLength(LIMITES.categoria)]],
+    categoriaEquipamento: ['', Validators.required],
     descricaoDefeito: ['', [Validators.required, naoVazio(), Validators.minLength(10), Validators.maxLength(LIMITES.descricaoDefeito)]],
   });
 

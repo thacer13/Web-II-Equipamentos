@@ -5,22 +5,7 @@ import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-
-interface Categoria {
-  id: number;
-  nome: string;
-  ativo: boolean;
-}
-
-const LS_CHAVE = 'categorias';
-
-const CATEGORIAS_INICIAIS: Categoria[] = [
-  { id: 1, nome: 'Notebook', ativo: true },
-  { id: 2, nome: 'Desktop', ativo: true },
-  { id: 3, nome: 'Impressora', ativo: true },
-  { id: 4, nome: 'Mouse', ativo: true },
-  { id: 5, nome: 'Teclado', ativo: true },
-];
+import { Categoria, CategoriaService } from '../../shared/services/categoria.service';
 
 @Component({
   selector: 'app-categorias',
@@ -37,6 +22,7 @@ const CATEGORIAS_INICIAIS: Categoria[] = [
 export class CategoriasComponent {
   private router = inject(Router);
   private location = inject(Location);
+  private categoriaService = inject(CategoriaService);
 
   categorias: Categoria[] = [];
   showFormulario = false;
@@ -139,27 +125,10 @@ export class CategoriasComponent {
   }
 
   private carregar(): void {
-    if (typeof localStorage === 'undefined') {
-      this.categorias =
-        CATEGORIAS_INICIAIS.map((categoria) => ({ ...categoria }));
-      return;
-    }
-
-    const dados = localStorage.getItem(LS_CHAVE);
-
-    this.categorias = dados
-      ? JSON.parse(dados)
-      : CATEGORIAS_INICIAIS.map((categoria) => ({ ...categoria }));
-
-    this.salvarLocal();
+    this.categorias = this.categoriaService.listar();
   }
 
   private salvarLocal(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        LS_CHAVE,
-        JSON.stringify(this.categorias)
-      );
-    }
+    this.categoriaService.salvar(this.categorias);
   }
 }
