@@ -60,6 +60,11 @@ app-root {
   margin-bottom: auto;
 }
 
+.solicitacoes-shell > :first-child,
+.solicitacoes-shell > :last-child {
+  margin-block: 0;
+}
+
 @media (max-width: 639px) {
   .app-shell {
     margin: 0.5rem auto;

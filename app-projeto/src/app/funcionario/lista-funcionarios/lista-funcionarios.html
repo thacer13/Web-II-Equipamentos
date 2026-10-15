@@ -81,7 +81,7 @@
     </div>
     <div>
       <label for="dataNascimentoFuncionario" class="mb-2 block text-sm font-medium text-gray-700">Data de Nascimento</label>
-      <input id="dataNascimentoFuncionario" type="date" [(ngModel)]="dataNascimento" min="1900-01-01" class="w-full rounded border border-gray-300 px-3 py-2" />
+      <input id="dataNascimentoFuncionario" type="date" [(ngModel)]="dataNascimento" [min]="minDate" [max]="maxDate" class="w-full rounded border border-gray-300 px-3 py-2" />
     </div>
 
     <div class="sm:col-span-2 mt-2">

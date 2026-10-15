@@ -1,12 +1,12 @@
 <div class="app-shell">
-  <div class="flex w-full items-center justify-between">
-    <span class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
-        <i class="pi pi-user" style="font-size: 1.5rem"></i>
-        Olá, {{ funcionarioAtual }}
-    </span>
-</div>
+    <div class="flex w-full items-center justify-between">
+        <span class="rounded-full bg-blue-100 px-4 py-1 text-sm font-bold text-blue-800 shadow-sm">
+            <i class="pi pi-user" style="font-size: 1.5rem"></i>
+            Olá, {{ funcionarioAtual }}
+        </span>
+    </div>
 
-    <div class="app-card w-full overflow-hidden">
+    <div class="app-card w-full overflow-hidden mt-4">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
             <h2 class="flex items-center gap-2 text-lg font-semibold text-gray-800">
                 <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -18,25 +18,77 @@
             </h2>
         </div>
 
-        <div class="w-full overflow-x-auto">
-            <table class="w-full min-w-full border-collapse text-left text-sm">
-                <thead class="bg-gray-50 text-gray-600">
-                    <tr>
-                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Data/Hora</th>
-                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Cliente</th>
-                        <th scope="col" class="px-6 py-4 font-semibold uppercase tracking-wider">Produto (Descrição)</th>
+        <div class="w-full overflow-x-auto p-4">
+            <p-table [value]="linhas" styleClass="p-datatable-striped" [tableStyle]="{'min-width': '50rem'}">
+
+                <ng-template pTemplate="header">
+                    <tr class="bg-gray-50 text-gray-600 text-left text-sm uppercase tracking-wider">
+                        <th class="px-6 py-4 font-semibold">
+                            <div
+                                class="flex items-center gap-2 [&_.p-column-filter-menu-button]:w-7 [&_.p-column-filter-menu-button]:h-7 [&_.p-column-filter-menu-button_.pi]:text-xs">
+                                Status
+                                <p-columnFilter #statusFilter field="solicitacao.estado" matchMode="equals" display="menu"
+                                    [showMatchModes]="false" [showOperator]="false" [showAddButton]="false"
+                                    [showClearButton]="false" [showApplyButton]="false" filterIcon="pi pi-filter">
+                                    <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                        <p-select [ngModel]="value" [options]="statusOptions"
+                                            (onChange)="filter($event.value); statusFilter.hide()"
+                                            placeholder="Selecione o status"
+                                            optionLabel="label" optionValue="value" [showClear]="true"
+                                            styleClass="w-full" appendTo="self">
+                                        </p-select>
+                                    </ng-template>
+                                </p-columnFilter>
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 font-semibold">
+                            <div
+                                class="flex items-center gap-2 [&_.p-column-filter-menu-button]:w-7 [&_.p-column-filter-menu-button]:h-7 [&_.p-column-filter-menu-button_.pi]:text-xs">
+                                Data/Hora
+                                <p-columnFilter #dataFilter field="dataHoraObj" matchMode="dateIs" display="menu"
+                                    [showMatchModes]="false" [showOperator]="false" [showAddButton]="false"
+                                    [showClearButton]="false" [showApplyButton]="false" filterIcon="pi pi-filter">
+                                    <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                        <p-datepicker [ngModel]="value"
+                                            (ngModelChange)="filter($event); dataFilter.hide()"
+                                            dateFormat="dd/mm/yy" [minDate]="minDate" [maxDate]="maxDate"
+                                            [readonlyInput]="true" [showClear]="true"
+                                            placeholder="Selecione a data" appendTo="self"
+                                            (click)="$event.stopPropagation()">
+                                        </p-datepicker>
+                                    </ng-template>
+                                </p-columnFilter>
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 font-semibold">
+                            <div
+                                class="flex items-center gap-2 [&_.p-column-filter-menu-button]:w-7 [&_.p-column-filter-menu-button]:h-7 [&_.p-column-filter-menu-button_.pi]:text-xs">
+                                Cliente
+                                <p-columnFilter type="text" field="nomeCliente" display="menu" [showMatchModes]="false"
+                                    [showOperator]="false" [showAddButton]="false" filterIcon="pi pi-filter">
+                                </p-columnFilter>
+                            </div>
+                        </th>
+                        <th class="px-6 py-4 font-semibold">
+                            <div
+                                class="flex items-center gap-2 [&_.p-column-filter-menu-button]:w-7 [&_.p-column-filter-menu-button]:h-7 [&_.p-column-filter-menu-button_.pi]:text-xs">
+                                Produto (Descrição)
+                                <p-columnFilter type="text" field="solicitacao.descricaoEquipamento" display="menu"
+                                    [showMatchModes]="false" [showOperator]="false" [showAddButton]="false"
+                                    filterIcon="pi pi-filter">
+                                </p-columnFilter>
+                            </div>
+                        </th>
                     </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @for (linha of linhas; track linha.solicitacao.id) {
-                    <tr class="transition-colors hover:bg-gray-50">
+                </ng-template>
+                <ng-template pTemplate="body" let-linha>
+                    <tr class="transition-colors hover:bg-gray-50 text-sm">
                         <td class="px-6 py-4">
                             <div class="flex flex-col items-start gap-2">
                                 <span
-                                    class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm font-bold text-gray-800 border border-gray-200">
-                                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-gray-600"></span>
-                                    Aberto
+                                    class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold leading-5 whitespace-nowrap"
+                                    [ngClass]="corEstado(linha.solicitacao.estado)">
+                                    {{ labelEstado(linha.solicitacao.estado) }}
                                 </span>
                                 <button pButton type="button" label="Orçamento" class="p-button-sm"
                                     (click)="onOrcamentoClick(linha.solicitacao)">
@@ -45,7 +97,7 @@
                         </td>
                         <td class="whitespace-nowrap px-6 py-4 text-gray-600">
                             <time [attr.datetime]="linha.solicitacao.dataHora">
-                                {{ linha.solicitacao.dataHora | date: 'dd/MM/yyyy - HH:mm' }}
+                                {{ linha.solicitacao.dataHora | date: 'dd/MM/yyyy - HH:mm':'':'pt-BR' }}
                             </time>
                         </td>
                         <td class="px-6 py-4 font-medium text-gray-800">
@@ -56,15 +108,16 @@
                             <div class="text-sm text-gray-600">{{ linha.solicitacao.descricaoDefeito }}</div>
                         </td>
                     </tr>
-                    } @empty {
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
                     <tr>
                         <td colspan="4" class="px-6 py-8 text-center text-gray-500">
                             Nenhuma solicitação aberta.
                         </td>
                     </tr>
-                    }
-                </tbody>
-            </table>
+                </ng-template>
+
+            </p-table>
         </div>
     </div>
 </div>

@@ -51,4 +51,15 @@ describe('ListaFuncionariosComponent', () => {
 
     expect(component.funcionarios.some((item) => item.id === funcionario.id)).toBe(false);
   });
+
+  it('rejeita datas de nascimento fora do intervalo permitido', () => {
+    component.nome = 'Novo Funcionário';
+    component.email = 'novo@teste.com';
+    component.dataNascimento = '2019-12-31';
+
+    component.salvarFuncionario();
+
+    expect(component.mensagemErro).toBe('A data de nascimento deve estar entre 01/01/2020 e hoje.');
+    expect(component.funcionarios.some((item) => item.email === component.email)).toBe(false);
+  });
 });

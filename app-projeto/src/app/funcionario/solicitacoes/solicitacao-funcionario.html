@@ -1,4 +1,4 @@
-<div class="app-shell">
+<div class="app-shell solicitacoes-shell">
 
   <div class="flex w-full items-center justify-between">
 
@@ -42,19 +42,19 @@
         Todas as Solicitações
       </h2>
 
-      <div class="mt-4 flex flex-wrap items-end gap-3">
+      <div class="mt-4 flex flex-wrap items-end gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
 
         <div>
           <label
             for="filtro"
-            class="mb-1 block text-sm text-gray-600">
+            class="mb-1 block text-sm font-medium text-gray-600">
             Filtrar por
           </label>
 
           <select
             id="filtro"
             [(ngModel)]="filtro"
-            class="rounded border border-gray-300 px-3 py-2 text-sm">
+            class="min-w-48 rounded border border-gray-300 bg-white px-3 py-2 text-sm">
 
             <option value="TODAS">
               Todas
@@ -76,7 +76,7 @@
           <div>
             <label
               for="dataInicio"
-              class="mb-1 block text-sm text-gray-600">
+              class="mb-1 block text-sm font-medium text-gray-600">
               Data inicial
             </label>
 
@@ -84,13 +84,16 @@
               id="dataInicio"
               type="date"
               [(ngModel)]="dataInicio"
-              class="rounded border border-gray-300 px-3 py-2 text-sm">
+              [min]="dataMinima"
+              [max]="dataFim || dataHoje"
+              lang="pt-BR"
+              class="w-44 rounded border border-gray-300 bg-white px-3 py-2 text-sm">
           </div>
 
           <div>
             <label
               for="dataFim"
-              class="mb-1 block text-sm text-gray-600">
+              class="mb-1 block text-sm font-medium text-gray-600">
               Data final
             </label>
 
@@ -98,7 +101,10 @@
               id="dataFim"
               type="date"
               [(ngModel)]="dataFim"
-              class="rounded border border-gray-300 px-3 py-2 text-sm">
+              [min]="dataInicio || dataMinima"
+              [max]="dataHoje"
+              lang="pt-BR"
+              class="w-44 rounded border border-gray-300 bg-white px-3 py-2 text-sm">
           </div>
 
         }
@@ -116,7 +122,7 @@
           <thead class="bg-gray-50 text-gray-600">
 
             <tr>
-              <th class="w-2/12 px-6 py-4 font-semibold">
+              <th class="w-3/12 px-6 py-4 font-semibold">
                 Estado
               </th>
 
@@ -124,7 +130,7 @@
                 Data/Hora
               </th>
 
-              <th class="w-4/12 px-6 py-4 font-semibold">
+              <th class="w-3/12 px-6 py-4 font-semibold">
                 Equipamento
               </th>
 
@@ -144,7 +150,7 @@
                 <td class="px-6 py-4">
 
                   <span
-                    class="inline-flex rounded-full px-3 py-1.5 text-sm font-semibold"
+                    class="inline-flex max-w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold leading-5 whitespace-nowrap"
                     [class]="corEstado(solicitacao.estado)">
 
                     {{ labelEstado(solicitacao.estado) }}
@@ -156,7 +162,7 @@
                 <td
                   class="whitespace-nowrap px-6 py-4 text-gray-600">
 
-                  {{ solicitacao.dataHora | date:'dd/MM/yyyy HH:mm' }}
+                  {{ solicitacao.dataHora | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
 
                 </td>
 

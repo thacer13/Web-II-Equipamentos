@@ -35,8 +35,17 @@ export class ListaFuncionariosComponent implements OnInit {
   nome = '';
   email = '';
   dataNascimento = '';
+  readonly minDate = '1980-01-01';
   mensagemErro = '';
   funcionarioLogadoId?: number;
+
+  get maxDate(): string {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
 
   constructor(private usuarioService: UsuarioService) {}
 
@@ -88,6 +97,10 @@ export class ListaFuncionariosComponent implements OnInit {
     }
     if (!this.dataNascimento) {
       this.mensagemErro = 'A data de nascimento é obrigatória.';
+      return;
+    }
+    if (this.dataNascimento < this.minDate || this.dataNascimento > this.maxDate) {
+      this.mensagemErro = 'A data de nascimento deve estar entre 01/01/2020 e hoje.';
       return;
     }
 

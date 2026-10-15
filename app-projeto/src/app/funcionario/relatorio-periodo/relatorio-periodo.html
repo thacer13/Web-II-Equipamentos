@@ -54,6 +54,8 @@
               id="dataInicioReceita"
               type="date"
               [(ngModel)]="dataInicio"
+              [min]="minDate"
+              [max]="maxDate"
               class="rounded border border-gray-300 px-3 py-2 text-sm">
           </div>
 
@@ -68,6 +70,8 @@
               id="dataFimReceita"
               type="date"
               [(ngModel)]="dataFim"
+              [min]="minDate"
+              [max]="maxDate"
               class="rounded border border-gray-300 px-3 py-2 text-sm">
           </div>
 

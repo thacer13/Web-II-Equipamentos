@@ -43,6 +43,24 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
 
   solicitacoes: Solicitacao[] = [];
 
+  get dataHoje(): string {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  get dataMinima(): string {
+    const datasDisponiveis = this.solicitacoes
+      .map(solicitacao => solicitacao.dataHora.slice(0, 10))
+      .filter(data => data <= this.dataHoje)
+      .sort();
+
+    return datasDisponiveis[0] ?? this.dataHoje;
+  }
+
   // showOrcamentoInput = false;
   // showDescricaoDialog = false;
   // showDescricaoDesktopDialog = false;
@@ -75,9 +93,7 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
 
   get solicitacoesFiltradas(): Solicitacao[] {
 
-    const hoje = new Date()
-      .toISOString()
-      .slice(0, 10);
+    const hoje = this.dataHoje;
 
     return this.solicitacoes
       .filter((solicitacao) => {

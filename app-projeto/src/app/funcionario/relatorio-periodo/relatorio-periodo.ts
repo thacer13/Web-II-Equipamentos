@@ -27,6 +27,15 @@ export class RelatorioPeriodoComponent {
 
   dataInicio = '';
   dataFim = '';
+  readonly minDate = '2020-01-01';
+
+  get maxDate(): string {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
 
   receitasOriginais: ReceitaDia[] = [
     {
@@ -69,6 +78,14 @@ export class RelatorioPeriodoComponent {
   receitas: ReceitaDia[] = [...this.receitasOriginais];
 
   consultar(): void {
+    if (
+      (this.dataInicio && (this.dataInicio < this.minDate || this.dataInicio > this.maxDate)) ||
+      (this.dataFim && (this.dataFim < this.minDate || this.dataFim > this.maxDate))
+    ) {
+      alert('As datas devem estar entre 01/01/2020 e hoje.');
+      return;
+    }
+
     if (
       this.dataInicio &&
       this.dataFim &&
