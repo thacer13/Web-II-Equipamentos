@@ -149,6 +149,13 @@ export class SolicitacaoService {
     return [...this.solicitacoes].sort((a, b) => a.dataHora.localeCompare(b.dataHora));
   }
 
+  listarPorCliente(clienteId: number | undefined): Solicitacao[] {
+    if (clienteId === undefined) {
+      return [];
+    }
+    return this.listar().filter((s) => s.cliente?.id === clienteId);
+  }
+
   /** Cria uma solicitação vinculada ao cliente logado (grava o clienteId). */
   criar(
     dados: Pick<Solicitacao, 'descricaoEquipamento' | 'categoriaEquipamento' | 'descricaoDefeito'>,
@@ -171,7 +178,11 @@ export class SolicitacaoService {
     const lista = this.solicitacoes ?? [];
     const agora = new Date().toISOString();
 
-    const usuarioLogado = this.usuarioService.obterUsuarioLogado() as Cliente;
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado() as Cliente | null;
+    if (!usuarioLogado || usuarioLogado.perfil !== 'CLIENTE') {
+      throw new Error('Cliente não identificado.');
+    }
+    const { senha: _senha, ...cliente } = usuarioLogado;
 
     const nova: Solicitacao = {
       descricaoEquipamento,
@@ -179,7 +190,7 @@ export class SolicitacaoService {
       descricaoDefeito,
       id: lista.length ? Math.max(...lista.map((s) => s.id)) + 1 : 1,
       dataHora: agora,
-      cliente: usuarioLogado,
+      cliente,
       estado: 'ABERTA',
       historico: [
         { dataHora: agora, estado: 'ABERTA', observacao: 'Solicitação aberta pelo cliente.' },
@@ -195,21 +206,29 @@ export class SolicitacaoService {
   atualizarEstado(solicitacao: Solicitacao, novoEstado: EstadoSolicitacao, funcionario?: string, observacao?: string, precoOrcado?: number): void {
     const lista = this.listar();
     const index = lista.findIndex(s => s.id === solicitacao.id);
-    
-    if(index !== -1) {
-      lista[index].estado = novoEstado;
+
+    if (index === -1) {
+      return;
     }
 
+    const alvo = lista[index];
+    alvo.estado = novoEstado;
+
     if (novoEstado === 'REDIRECIONADA' && funcionario) {
-      lista[index].funcionarioDestino = funcionario;
+      alvo.funcionarioDestino = funcionario;
     }
 
     if (precoOrcado !== undefined) {
-        lista[index].precoOrcado = precoOrcado;
+      alvo.precoOrcado = precoOrcado;
+    }
+
+    if (novoEstado === 'REJEITADA') {
+      const justificativa = solicitacao.justificativaRejeicao?.trim().replace(/\s+/g, ' ');
+      alvo.justificativaRejeicao = justificativa ? justificativa.slice(0, 1000) : undefined;
     }
 
     const texto = observacao?.trim().replace(/\s+/g, ' ');
-    lista[index].historico.push({
+    alvo.historico.push({
       dataHora: new Date().toISOString(),
       estado: novoEstado,
       funcionario: funcionario?.trim() ? funcionario.trim() : undefined,

@@ -6,6 +6,7 @@ import { ClienteOrcamentoComponent } from './cliente-orcamento/cliente-orcamento
 import { ESTADO_COR, ESTADO_LABEL, SolicitacaoService } from '../shared/services/solicitacao.service';
 import { Solicitacao } from '../shared/models/solicitacao.model';
 import { EstadoSolicitacao } from '../shared/models/estado-solicitacao.model';
+import { UsuarioService } from '../shared/services/usuario.service';
 
 @Component({
   selector: 'app-cliente',
@@ -15,9 +16,10 @@ import { EstadoSolicitacao } from '../shared/models/estado-solicitacao.model';
 })
 export class ClienteComponent {
   private solicitacaoService = inject(SolicitacaoService);
+  private usuarioService = inject(UsuarioService);
 
   mostrarFormulario = false;
-  solicitacoes = this.solicitacaoService.listar();
+  solicitacoes: Solicitacao[] = this.carregarSolicitacoes();
 
   // RF005/RF007 - painel inline de orçamento
   solicitacaoEmOrcamento: Solicitacao | null = null;
@@ -35,7 +37,20 @@ export class ClienteComponent {
 
   fecharFormulario() {
     this.mostrarFormulario = false;
-    this.solicitacoes = this.solicitacaoService.listar();
+    this.recarregar();
+  }
+
+  private carregarSolicitacoes(): Solicitacao[] {
+    const clienteId = this.usuarioService.obterUsuarioLogado()?.id;
+    return this.solicitacaoService.listarPorCliente(clienteId);
+  }
+
+  private recarregar() {
+    this.solicitacoes = this.carregarSolicitacoes();
+    if (this.selecionada) {
+      const id = this.selecionada.id;
+      this.selecionada = this.solicitacoes.find((s) => s.id === id) ?? null;
+    }
   }
 
   abrirOrcamento(solicitacao: Solicitacao) {
@@ -54,6 +69,7 @@ export class ClienteComponent {
         : this.solicitacaoEmOrcamento.justificativaRejeicao || 'Serviço rejeitado pelo cliente.';
     this.solicitacaoService.atualizarEstado(this.solicitacaoEmOrcamento, decisao, undefined, observacao);
     this.fecharOrcamento();
+    this.recarregar();
   }
 
   labelEstado(estado: EstadoSolicitacao): string {
@@ -102,6 +118,7 @@ export class ClienteComponent {
       undefined,
       'Pagamento confirmado pelo cliente.'
     );
+    this.recarregar();
     this.showPagar = false;
     this.mensagem = 'Pagamento Confirmado';
     this.showMensagem = true;
@@ -115,6 +132,7 @@ export class ClienteComponent {
       undefined,
       'Serviço resgatado pelo cliente.'
     );
+    this.recarregar();
     this.mensagem = 'Serviço Resgatado';
     this.showMensagem = true;
   }

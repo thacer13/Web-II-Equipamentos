@@ -47,7 +47,12 @@ export class ClienteSolicitacaoComponent {
       return;
     }
 
-    this.solicitacaoService.criar({ descricaoEquipamento, categoriaEquipamento, descricaoDefeito });
+    try {
+      this.solicitacaoService.criar({ descricaoEquipamento, categoriaEquipamento, descricaoDefeito });
+    } catch (erro) {
+      this.mensagemErro = erro instanceof Error ? erro.message : 'Não foi possível criar a solicitação.';
+      return;
+    }
     this.formulario.reset();
     this.mensagemErro = '';
     this.aoSalvar.emit();
