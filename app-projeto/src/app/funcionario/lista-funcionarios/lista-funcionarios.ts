@@ -62,10 +62,6 @@ export class ListaFuncionariosComponent implements OnInit {
     this.funcionarios = this.usuarioService.listarFuncionarios();
   }
 
-  voltar(): void {
-    this.location.back();
-  }
-
   abrirNovo(): void {
     this.editandoId = null;
     this.nome = '';

@@ -5,16 +5,12 @@ import { UsuarioService } from '../services/usuario.service';
 
 interface NavItem { label: string; url: string; }
 
-const ITENS_PUBLICOS: NavItem[] = [
-  { label: 'Entrar', url: '/auth/login' },
-  { label: 'Criar conta', url: '/auth/cadastro' },
-];
-
 const ITENS_CLIENTE: NavItem[] = [
   { label: 'Minhas Solicitações', url: '/cliente' },
 ];
 
 const ITENS_FUNCIONARIO: NavItem[] = [
+  { label: 'Solicitações Abertas', url: '/funcionario/login-funcionario'},
   { label: 'Solicitações', url: '/funcionario/solicitacoes' },
   { label: 'Categorias', url: '/funcionario/categorias' },
   { label: 'Funcionários', url: '/funcionario/lista-funcionarios' },
@@ -66,12 +62,12 @@ export class TopbarComponent {
   }
 
   get visivel(): boolean {
-    return !this.usuarioLogado || !this.router.url.startsWith('/auth');
+    return !!this.usuarioLogado && !this.router.url.startsWith('/auth');
   }
 
   get items(): NavItem[] {
     const usuario = this.usuarioLogado;
-    if (!usuario) return ITENS_PUBLICOS;
+    if (!usuario) return [];
     return usuario.perfil === 'FUNCIONARIO' ? ITENS_FUNCIONARIO : ITENS_CLIENTE;
   }
 

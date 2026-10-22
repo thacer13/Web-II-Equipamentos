@@ -162,8 +162,4 @@ export class RelatorioCategoriasComponent {
 
     doc.save('relatorio-categorias.pdf');
   }
-
-  voltar(): void {
-    this.location.back();
-  }
 }
