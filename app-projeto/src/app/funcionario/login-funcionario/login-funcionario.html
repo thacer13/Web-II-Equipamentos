@@ -112,9 +112,11 @@
                             {{ linha.nomeCliente || 'Cliente não identificado' }}
                         </td>
                         <td class="px-6 py-4 text-gray-600">
-                            <div class="font-medium text-gray-800">{{ linha.solicitacao.descricaoEquipamento }}</div>
-                            <div class="text-sm text-gray-600">{{ linha.solicitacao.descricaoDefeito }}</div>
-                        </td>
+                        <div class="font-medium text-gray-800">
+                            {{ (linha.solicitacao.descricaoEquipamento?.length || 0) > 30 ? (linha.solicitacao.descricaoEquipamento | slice:0:30) + '...' : linha.solicitacao.descricaoEquipamento }}
+                        </div>
+                        <div class="text-sm text-gray-600">{{ linha.solicitacao.descricaoDefeito }}</div>
+                    </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="emptymessage">

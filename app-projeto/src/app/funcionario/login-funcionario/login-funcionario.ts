@@ -137,6 +137,7 @@ export class LoginFuncionarioComponent implements OnInit {
   constructor() {
     this.linhas = this.solicitacaoService
       .listar()
+      .filter((s) => s.estado === 'ABERTA')
       .map((s) => ({
         solicitacao: s,
         nomeCliente: this.resolverNomeCliente(s),

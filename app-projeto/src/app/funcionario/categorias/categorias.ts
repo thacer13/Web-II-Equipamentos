@@ -36,10 +36,6 @@ export class CategoriasComponent {
     this.carregar();
   }
 
-  voltar(): void {
-    this.location.back();
-  }
-
   abrirNova(): void {
     this.editandoId = null;
     this.nome = '';

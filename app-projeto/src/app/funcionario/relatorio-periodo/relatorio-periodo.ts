@@ -263,8 +263,4 @@ export class RelatorioPeriodoComponent {
 
     doc.save('relatorio-periodo.pdf');
   }
-
-  voltar(): void {
-    this.location.back();
-  }
 }
