@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { ClienteSolicitacaoComponent } from "./cliente-solicitacao/cliente-solicitacao.component";
-import { ClienteOrcamentoComponent } from './cliente-orcamento/cliente-orcamento.component';
+import { ClienteSolicitacaoComponent } from './cliente-solicitacao/cliente-solicitacao.component';
+import { ClienteOrcamentoComponent, RespostaOrcamento } from './cliente-orcamento/cliente-orcamento.component';
 import { ESTADO_COR, ESTADO_LABEL, SolicitacaoService } from '../shared/services/solicitacao.service';
 import { Solicitacao } from '../shared/models/solicitacao.model';
 import { EstadoSolicitacao } from '../shared/models/estado-solicitacao.model';
@@ -61,15 +61,29 @@ export class ClienteComponent {
     this.solicitacaoEmOrcamento = null;
   }
 
-  processarOrcamento(decisao: 'APROVADA' | 'REJEITADA') {
+  processarOrcamento(resposta: RespostaOrcamento): void {
     if (!this.solicitacaoEmOrcamento) return;
-    const observacao =
-      decisao === 'APROVADA'
-        ? 'Serviço aprovado pelo cliente.'
-        : this.solicitacaoEmOrcamento.justificativaRejeicao || 'Serviço rejeitado pelo cliente.';
-    this.solicitacaoService.atualizarEstado(this.solicitacaoEmOrcamento, decisao, undefined, observacao);
+
+    const solicitacao = this.solicitacaoEmOrcamento;
+    const valor = solicitacao.precoOrcado ?? 0;
+    const sucesso = this.solicitacaoService.responderOrcamento(
+      solicitacao,
+      resposta.decisao,
+      resposta.motivo
+    );
+
+    if (!sucesso) {
+      this.mensagem = 'Não foi possível responder ao orçamento.';
+      this.showMensagem = true;
+      return;
+    }
+
     this.fecharOrcamento();
     this.recarregar();
+    this.mensagem = resposta.decisao === 'APROVADA'
+      ? `Serviço Aprovado no Valor ${this.formatarValor(valor)}`
+      : 'Serviço Rejeitado';
+    this.showMensagem = true;
   }
 
   labelEstado(estado: EstadoSolicitacao): string {
