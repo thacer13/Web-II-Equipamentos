@@ -38,8 +38,8 @@ const ITENS_FUNCIONARIO: NavItem[] = [
     }
   `,
   styles: [`
-    .topbar { position: sticky; top: 1rem; z-index: 1000; width: min(1024px, calc(100vw - 2rem));
-      margin: 1rem auto 0; padding: .6rem 1rem; display: flex; align-items: center; gap: .5rem; }
+    .topbar { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000; width: min(1024px, calc(100vw - 2rem));
+      padding: .6rem 1rem; display: flex; align-items: center; gap: .5rem; background: white; }
     .links { display: flex; gap: .35rem; flex-wrap: wrap; }
     .link { color: #374151; text-decoration: none; font-size: 14px; font-weight: 500;
       padding: .4rem .7rem; border-radius: 8px; }

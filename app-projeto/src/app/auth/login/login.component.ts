@@ -5,7 +5,6 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { UsuarioService } from '../../shared/services/usuario.service';
-import { Pool } from "pg"
 
 @Component({
   selector: 'app-login',
@@ -34,20 +33,9 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    const databaseUrl = process.env["DATABASE_URL"];
-
-    if (!databaseUrl) {
-      throw new Error("DATABASE_URL não está definida");
-    }
-
-    const pool = new Pool({ connectionString: databaseUrl });
     const email = this.username.trim().toLowerCase();
     const senha = this.password.trim();
 
-    async function getUser(email: string, password: string) {
-      const client = await pool.query('SELECT * FROM usuarios WHERE email = $1 AND senha = $2', [email, password]);
-      return client;
-    }
     if (!email || !senha) {
       this.mensagemErro = 'Informe e-mail e senha.';
       return;

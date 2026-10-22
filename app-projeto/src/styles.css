@@ -149,3 +149,7 @@ p-button .p-button.p-button-danger:hover {
   border-color: #b91c1c !important;
   color: #ffffff !important;
 }
+
+.app-shell {
+  padding-top: 5.5rem; 
+}
