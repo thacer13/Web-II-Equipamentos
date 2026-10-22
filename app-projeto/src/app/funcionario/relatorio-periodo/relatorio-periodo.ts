@@ -3,7 +3,9 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
 import { jsPDF } from 'jspdf';
+import { hoje, paraIso } from '../../shared/utils/datas';
 
 interface ReceitaDia {
   data: string;
@@ -17,7 +19,8 @@ interface ReceitaDia {
   imports: [
     CommonModule,
     FormsModule,
-    ButtonModule
+    ButtonModule,
+    DatePickerModule
   ],
   templateUrl: './relatorio-periodo.html',
 })
@@ -25,17 +28,10 @@ export class RelatorioPeriodoComponent {
   private router = inject(Router);
   private location = inject(Location);
 
-  dataInicio = '';
-  dataFim = '';
-  readonly minDate = '2020-01-01';
-
-  get maxDate(): string {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-  }
+  dataInicio: Date | null = null;
+  dataFim: Date | null = null;
+  readonly minDate = new Date(2020, 0, 1);
+  readonly maxDate = hoje();
 
   receitasOriginais: ReceitaDia[] = [
     {
@@ -78,10 +74,10 @@ export class RelatorioPeriodoComponent {
   receitas: ReceitaDia[] = [...this.receitasOriginais];
 
   consultar(): void {
-    if (
-      (this.dataInicio && (this.dataInicio < this.minDate || this.dataInicio > this.maxDate)) ||
-      (this.dataFim && (this.dataFim < this.minDate || this.dataFim > this.maxDate))
-    ) {
+    const foraDoLimite = (data: Date | null) =>
+      !!data && (data < this.minDate || data > this.maxDate);
+
+    if (foraDoLimite(this.dataInicio) || foraDoLimite(this.dataFim)) {
       alert('As datas devem estar entre 01/01/2020 e hoje.');
       return;
     }
@@ -95,20 +91,23 @@ export class RelatorioPeriodoComponent {
       return;
     }
 
+    const inicio = this.dataInicio ? paraIso(this.dataInicio) : '';
+    const fim = this.dataFim ? paraIso(this.dataFim) : '';
+
     this.receitas = this.receitasOriginais.filter((item) => {
       const depoisDoInicio =
-        !this.dataInicio || item.data >= this.dataInicio;
+        !inicio || item.data >= inicio;
 
       const antesDoFim =
-        !this.dataFim || item.data <= this.dataFim;
+        !fim || item.data <= fim;
 
       return depoisDoInicio && antesDoFim;
     });
   }
 
   limpar(): void {
-    this.dataInicio = '';
-    this.dataFim = '';
+    this.dataInicio = null;
+    this.dataFim = null;
     this.receitas = [...this.receitasOriginais];
   }
 
@@ -227,12 +226,12 @@ export class RelatorioPeriodoComponent {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(31, 41, 55);
-      doc.text(item.data, colDataInicial, y + 6.5);
+      doc.text(this.formatarData(item.data), colDataInicial, y + 6.5);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(31, 41, 55);
-      doc.text(item.data, colDataFinal, y + 6.5);
+      doc.text(this.formatarData(item.data), colDataFinal, y + 6.5);
 
       doc.setTextColor(75, 85, 99);
       doc.text(String(item.quantidade), colQuantidade, y + 6.5);

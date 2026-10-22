@@ -5,6 +5,8 @@ import { Router, NavigationEnd } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
 import {
   SolicitacaoService,
   ESTADO_COR
@@ -12,6 +14,7 @@ import {
 import { Solicitacao } from '../../shared/models/solicitacao.model';
 import { EstadoSolicitacao } from '../../shared/models/estado-solicitacao.model';
 import { UsuarioService } from '../../shared/services/usuario.service';
+import { deIso, hoje, paraIso } from '../../shared/utils/datas';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -23,7 +26,9 @@ import { filter } from 'rxjs/operators';
     FormsModule,
     ButtonModule,
     InputTextModule,
-    DialogModule
+    DialogModule,
+    SelectModule,
+    DatePickerModule
   ],
   templateUrl: './solicitacao-funcionario.html',
 })
@@ -38,28 +43,21 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
 
   filtro = 'TODAS';
 
-  dataInicio = '';
-  dataFim = '';
+  readonly opcoesFiltro = [
+    { label: 'Todas', value: 'TODAS' },
+    { label: 'Hoje', value: 'HOJE' },
+    { label: 'Período de abertura', value: 'PERIODO' }
+  ];
+
+  dataInicio: Date | null = null;
+  dataFim: Date | null = null;
 
   solicitacoes: Solicitacao[] = [];
 
-  get dataHoje(): string {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
+  readonly dataHoje = hoje();
 
-    return `${ano}-${mes}-${dia}`;
-  }
-
-  get dataMinima(): string {
-    const datasDisponiveis = this.solicitacoes
-      .map(solicitacao => solicitacao.dataHora.slice(0, 10))
-      .filter(data => data <= this.dataHoje)
-      .sort();
-
-    return datasDisponiveis[0] ?? this.dataHoje;
-  }
+  // Campo (não getter) para o [minDate] do datepicker manter a mesma referência.
+  dataMinima = this.dataHoje;
 
   // showOrcamentoInput = false;
   // showDescricaoDialog = false;
@@ -89,11 +87,21 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
 
   carregarSolicitacoes(): void {
     this.solicitacoes = this.solicitacaoService.listar();
+
+    const hojeIso = paraIso(this.dataHoje);
+    const maisAntiga = this.solicitacoes
+      .map(solicitacao => solicitacao.dataHora.slice(0, 10))
+      .filter(data => data <= hojeIso)
+      .sort()[0];
+
+    this.dataMinima = (maisAntiga && deIso(maisAntiga)) || this.dataHoje;
   }
 
   get solicitacoesFiltradas(): Solicitacao[] {
 
-    const hoje = this.dataHoje;
+    const hojeIso = paraIso(this.dataHoje);
+    const inicio = this.dataInicio ? paraIso(this.dataInicio) : '';
+    const fim = this.dataFim ? paraIso(this.dataFim) : '';
 
     return this.solicitacoes
       .filter((solicitacao) => {
@@ -109,17 +117,17 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
         const dataAbertura =
           solicitacao.dataHora.slice(0, 10);
         if (this.filtro === 'HOJE') {
-          return dataAbertura === hoje;
+          return dataAbertura === hojeIso;
         }
 
         if (this.filtro === 'PERIODO') {
           const depoisDoInicio =
-            !this.dataInicio ||
-            dataAbertura >= this.dataInicio;
+            !inicio ||
+            dataAbertura >= inicio;
 
           const antesDoFim =
-            !this.dataFim ||
-            dataAbertura <= this.dataFim;
+            !fim ||
+            dataAbertura <= fim;
 
           return depoisDoInicio && antesDoFim;
         }

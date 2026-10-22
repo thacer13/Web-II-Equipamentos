@@ -15,16 +15,15 @@
 
         <form class="flex flex-col gap-4 p-6">
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-gray-700">Redirecionar para</label>
-                <select
-                    class="w-full rounded border border-gray-300 p-2 text-sm"
+                <label for="funcionarioDestino" class="text-sm font-semibold text-gray-700">Redirecionar para</label>
+                <p-select
+                    inputId="funcionarioDestino"
                     [(ngModel)]="funcionarioDestino"
-                    name="funcionarioDestino">
-                    <option value="" disabled selected>Selecione um funcionário</option>
-                    @for (funcionario of funcionariosDisponiveis; track funcionario) {
-                        <option [value]="funcionario">{{ funcionario }}</option>
-                    }
-                </select>
+                    name="funcionarioDestino"
+                    [options]="funcionariosDisponiveis"
+                    placeholder="Selecione um funcionário"
+                    [fluid]="true">
+                </p-select>
             </div>
 
             @if (mensagemErro) {
@@ -35,7 +34,7 @@
                 <p-button
                     type="button"
                     label="Voltar"
-                    styleClass="p-button-secondary"
+                    severity="secondary"
                     (click)="voltar()">
                 </p-button>
                 <p-button
