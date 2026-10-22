@@ -15,11 +15,13 @@
 
         <form class="flex flex-col gap-4 p-6">
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-gray-700">Descrição da Manutenção</label>
+                <label for="descricaoManutencao" class="text-sm font-semibold text-gray-700">Descrição da Manutenção</label>
                 <textarea
-                    class="w-full rounded border border-gray-300 p-2 text-sm"
-                    style="min-height: 70px; resize: none;"
+                    pTextarea
+                    rows="3"
+                    class="w-full resize-none"
                     placeholder="Ex: Troca da tela do notebook"
+                    id="descricaoManutencao"
                     [(ngModel)]="descricaoManutencao"
                     name="descricaoManutencao"
                     maxlength="2000"
@@ -28,11 +30,13 @@
             </div>
 
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-semibold text-gray-700">Orientações para o Cliente</label>
+                <label for="orientacoesCliente" class="text-sm font-semibold text-gray-700">Orientações para o Cliente</label>
                 <textarea
-                    class="w-full rounded border border-gray-300 p-2 text-sm"
-                    style="min-height: 70px; resize: none;"
+                    pTextarea
+                    rows="3"
+                    class="w-full resize-none"
                     placeholder="Ex: Evitar deixar o notebook na tomada o dia todo"
+                    id="orientacoesCliente"
                     [(ngModel)]="orientacoesCliente"
                     name="orientacoesCliente"
                     maxlength="2000"
@@ -47,12 +51,12 @@
             <div class="flex gap-3">
                 <p-button
                     label="Voltar"
-                    styleClass="p-button-secondary"
+                    severity="secondary"
                     (click)="voltar()">
                 </p-button>
                 <p-button
                     label="Redirecionar"
-                    styleClass="p-button-secondary"
+                    severity="secondary"
                     (click)="onRedirecionarClick()">
                 </p-button>
                 <p-button

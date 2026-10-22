@@ -2,6 +2,7 @@ import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { TextareaModule } from 'primeng/textarea';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { Solicitacao } from '../../shared/models/solicitacao.model';
@@ -14,7 +15,8 @@ import { UsuarioService } from '../../shared/services/usuario.service';
   imports: [
     CommonModule,
     FormsModule,
-    ButtonModule
+    ButtonModule,
+    TextareaModule
   ],
   templateUrl: './manutencao.html',
   host: { 'ngSkipHydration': 'true' },

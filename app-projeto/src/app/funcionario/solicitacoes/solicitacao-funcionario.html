@@ -51,24 +51,14 @@
             Filtrar por
           </label>
 
-          <select
-            id="filtro"
+          <p-select
+            inputId="filtro"
             [(ngModel)]="filtro"
-            class="min-w-48 rounded border border-gray-300 bg-white px-3 py-2 text-sm">
-
-            <option value="TODAS">
-              Todas
-            </option>
-
-            <option value="HOJE">
-              Hoje
-            </option>
-
-            <option value="PERIODO">
-              Período de abertura
-            </option>
-
-          </select>
+            [options]="opcoesFiltro"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="min-w-48">
+          </p-select>
         </div>
 
         @if (filtro === 'PERIODO') {
@@ -80,14 +70,17 @@
               Data inicial
             </label>
 
-            <input
-              id="dataInicio"
-              type="date"
+            <p-datepicker
+              inputId="dataInicio"
               [(ngModel)]="dataInicio"
-              [min]="dataMinima"
-              [max]="dataFim || dataHoje"
-              lang="pt-BR"
-              class="w-44 rounded border border-gray-300 bg-white px-3 py-2 text-sm">
+              [minDate]="dataMinima"
+              [maxDate]="dataFim || dataHoje"
+              dateFormat="dd/mm/yy"
+              placeholder="dd/mm/aaaa"
+              [showIcon]="true"
+              [showClear]="true"
+              styleClass="w-44">
+            </p-datepicker>
           </div>
 
           <div>
@@ -97,14 +90,17 @@
               Data final
             </label>
 
-            <input
-              id="dataFim"
-              type="date"
+            <p-datepicker
+              inputId="dataFim"
               [(ngModel)]="dataFim"
-              [min]="dataInicio || dataMinima"
-              [max]="dataHoje"
-              lang="pt-BR"
-              class="w-44 rounded border border-gray-300 bg-white px-3 py-2 text-sm">
+              [minDate]="dataInicio || dataMinima"
+              [maxDate]="dataHoje"
+              dateFormat="dd/mm/yy"
+              placeholder="dd/mm/aaaa"
+              [showIcon]="true"
+              [showClear]="true"
+              styleClass="w-44">
+            </p-datepicker>
           </div>
 
         }

@@ -5,8 +5,10 @@ import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { DatePickerModule } from 'primeng/datepicker';
 import { UsuarioService } from '../../shared/services/usuario.service';
 import { Funcionario } from '../../shared/models/funcionario.model';
+import { deIso, hoje, paraIso } from '../../shared/utils/datas';
 
 @Component({
   selector: 'app-funcionarios',
@@ -16,7 +18,8 @@ import { Funcionario } from '../../shared/models/funcionario.model';
     FormsModule,
     ButtonModule,
     InputTextModule,
-    DialogModule
+    DialogModule,
+    DatePickerModule
   ],
   templateUrl: './lista-funcionarios.html',
 })
@@ -34,18 +37,11 @@ export class ListaFuncionariosComponent implements OnInit {
 
   nome = '';
   email = '';
-  dataNascimento = '';
-  readonly minDate = '1950-01-01';
+  dataNascimento: Date | null = null;
+  readonly minDate = new Date(1950, 0, 1);
+  readonly maxDate = hoje();
   mensagemErro = '';
   funcionarioLogadoId?: number;
-
-  get maxDate(): string {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-  }
 
   constructor(private usuarioService: UsuarioService) {}
 
@@ -70,7 +66,7 @@ export class ListaFuncionariosComponent implements OnInit {
     this.editandoId = null;
     this.nome = '';
     this.email = '';
-    this.dataNascimento = '';
+    this.dataNascimento = null;
     this.mensagemErro = '';
     this.showFormulario = true;
   }
@@ -79,7 +75,7 @@ export class ListaFuncionariosComponent implements OnInit {
     this.editandoId = funcionario.id!;
     this.nome = funcionario.nome;
     this.email = funcionario.email;
-    this.dataNascimento = funcionario.dataNascimento;
+    this.dataNascimento = deIso(funcionario.dataNascimento);
     this.mensagemErro = '';
     this.showFormulario = true;
   }
@@ -116,7 +112,7 @@ export class ListaFuncionariosComponent implements OnInit {
       id: this.editandoId !== null ? this.editandoId : undefined,
       nome: this.nome,
       email: this.email,
-      dataNascimento: this.dataNascimento,
+      dataNascimento: paraIso(this.dataNascimento),
       perfil: 'FUNCIONARIO',
       ativo: true // Será ignorado pelo Service caso seja edição, mantendo o status atual
     };

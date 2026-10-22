@@ -2,6 +2,7 @@ import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
@@ -14,7 +15,8 @@ import { UsuarioService } from '../../shared/services/usuario.service';
   imports: [
     CommonModule,
     FormsModule,
-    ButtonModule
+    ButtonModule,
+    SelectModule
   ],
   templateUrl: './redirecionamento.html',
 })
