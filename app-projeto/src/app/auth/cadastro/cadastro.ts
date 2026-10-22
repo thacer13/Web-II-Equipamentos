@@ -17,6 +17,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ViacepService } from '../../shared/services/viacep.service';
 import { UsuarioService } from '../../shared/services/usuario.service';
 import { Cliente } from '../../shared/models/cliente.model';
+import {Pool} from "pg"
 
 @Component({
   selector: 'app-cadastro',

@@ -35,7 +35,7 @@ export class ListaFuncionariosComponent implements OnInit {
   nome = '';
   email = '';
   dataNascimento = '';
-  readonly minDate = '1980-01-01';
+  readonly minDate = '1950-01-01';
   mensagemErro = '';
   funcionarioLogadoId?: number;
 
@@ -100,7 +100,7 @@ export class ListaFuncionariosComponent implements OnInit {
       return;
     }
     if (this.dataNascimento < this.minDate || this.dataNascimento > this.maxDate) {
-      this.mensagemErro = 'A data de nascimento deve estar entre 01/01/2020 e hoje.';
+      this.mensagemErro = 'A data de nascimento deve estar entre 01/01/1950 e hoje.';
       return;
     }
 

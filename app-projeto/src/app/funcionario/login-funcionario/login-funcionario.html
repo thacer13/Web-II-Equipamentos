@@ -9,12 +9,7 @@
     <div class="app-card w-full overflow-hidden mt-4">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
             <h2 class="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clip-rule="evenodd" />
-                </svg>
-                Solicitações Abertas
+                Solicitações
             </h2>
         </div>
 
@@ -49,12 +44,14 @@
                                     [showMatchModes]="false" [showOperator]="false" [showAddButton]="false"
                                     [showClearButton]="false" [showApplyButton]="false" filterIcon="pi pi-filter">
                                     <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                        <p-datepicker [ngModel]="value"
+                                        <p-datepicker #dataPicker [ngModel]="value"
                                             (ngModelChange)="filter($event); dataFilter.hide()"
+                                            (onMonthChange)="limitarNavegacaoData($event, dataPicker)"
+                                            (onYearChange)="limitarNavegacaoData($event, dataPicker)"
                                             dateFormat="dd/mm/yy" [minDate]="minDate" [maxDate]="maxDate"
                                             [readonlyInput]="true" [showClear]="true"
                                             placeholder="Selecione a data" appendTo="self"
-                                            (click)="$event.stopPropagation()">
+                                            (click)="$event.stopPropagation(); limitarNavegacaoData($event, dataPicker)">
                                         </p-datepicker>
                                     </ng-template>
                                 </p-columnFilter>
@@ -64,8 +61,14 @@
                             <div
                                 class="flex items-center gap-2 [&_.p-column-filter-menu-button]:w-7 [&_.p-column-filter-menu-button]:h-7 [&_.p-column-filter-menu-button_.pi]:text-xs">
                                 Cliente
-                                <p-columnFilter type="text" field="nomeCliente" display="menu" [showMatchModes]="false"
-                                    [showOperator]="false" [showAddButton]="false" filterIcon="pi pi-filter">
+                                <p-columnFilter #clienteFilter type="text" field="nomeCliente" display="menu"
+                                    [showMatchModes]="false" [showOperator]="false" [showAddButton]="false"
+                                    filterIcon="pi pi-filter">
+                                    <ng-template pTemplate="filter" let-filterConstraint="filterConstraint" let-filter="filterCallback">
+                                        <input pInputText type="text" [ngModel]="filterConstraint.value"
+                                            (ngModelChange)="filterConstraint.value = $event"
+                                            (keydown.enter)="aplicarFiltroEnter($event, filter, clienteFilter)">
+                                    </ng-template>
                                 </p-columnFilter>
                             </div>
                         </th>
@@ -73,9 +76,14 @@
                             <div
                                 class="flex items-center gap-2 [&_.p-column-filter-menu-button]:w-7 [&_.p-column-filter-menu-button]:h-7 [&_.p-column-filter-menu-button_.pi]:text-xs">
                                 Produto (Descrição)
-                                <p-columnFilter type="text" field="solicitacao.descricaoEquipamento" display="menu"
+                                <p-columnFilter #produtoFilter type="text" field="solicitacao.descricaoEquipamento" display="menu"
                                     [showMatchModes]="false" [showOperator]="false" [showAddButton]="false"
                                     filterIcon="pi pi-filter">
+                                    <ng-template pTemplate="filter" let-filterConstraint="filterConstraint" let-filter="filterCallback">
+                                        <input pInputText type="text" [ngModel]="filterConstraint.value"
+                                            (ngModelChange)="filterConstraint.value = $event"
+                                            (keydown.enter)="aplicarFiltroEnter($event, filter, produtoFilter)">
+                                    </ng-template>
                                 </p-columnFilter>
                             </div>
                         </th>
@@ -112,7 +120,7 @@
                 <ng-template pTemplate="emptymessage">
                     <tr>
                         <td colspan="4" class="px-6 py-8 text-center text-gray-500">
-                            Nenhuma solicitação aberta.
+                            Nenhuma solicitação encontrada.
                         </td>
                     </tr>
                 </ng-template>
