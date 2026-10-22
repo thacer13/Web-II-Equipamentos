@@ -1,3 +1,4 @@
+
 import { Injectable, inject } from '@angular/core';
 import { Solicitacao } from '../models/solicitacao.model';
 import { EstadoSolicitacao } from '../models/estado-solicitacao.model';
@@ -201,6 +202,45 @@ export class SolicitacaoService {
     this.solicitacoes = lista;
     this.salvar(lista);
     return nova;
+  }
+
+  responderOrcamento(solicitacao: Solicitacao, decisao: 'APROVADA' | 'REJEITADA', motivo?: string): boolean {
+    const lista = this.listar();
+    const alvo = lista.find(s => s.id === solicitacao.id);
+
+    if (!alvo || alvo.estado !== 'ORÇADA') {
+      return false;
+    }
+
+    if (alvo.precoOrcado === undefined || alvo.precoOrcado <= 0) {
+      return false;
+    }
+
+    let observacao = 'Serviço aprovado pelo cliente.';
+
+    if (decisao === 'REJEITADA') {
+      const motivoRejeicao = motivo?.trim().replace(/\s+/g, ' ') ?? '';
+
+      if (motivoRejeicao.length < 3 || motivoRejeicao.length > 1000) {
+        return false;
+      }
+
+      alvo.justificativaRejeicao = motivoRejeicao;
+      observacao = motivoRejeicao;
+    } else {
+      alvo.justificativaRejeicao = undefined;
+    }
+
+    alvo.estado = decisao;
+    alvo.historico.push({
+      dataHora: new Date().toISOString(),
+      estado: decisao,
+      observacao,
+    });
+
+    this.solicitacoes = lista;
+    this.salvar(lista);
+    return true;
   }
 
   atualizarEstado(solicitacao: Solicitacao, novoEstado: EstadoSolicitacao, funcionario?: string, observacao?: string, precoOrcado?: number): void {

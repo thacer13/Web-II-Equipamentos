@@ -1,53 +1,52 @@
 <div class="p-6">
-
-    @if(!mostrandoRejeicao) {
+  @if (!mostrandoRejeicao) {
     <h2 class="text-xl font-bold text-gray-800 mb-4">Aprovação de Orçamento</h2>
-    
-    <!-- Dados da solicitação - RF005 -->
+
     <div class="grid grid-cols-2 gap-4 text-sm mb-6 text-gray-700">
-        <div><strong class="text-gray-900">Data da Solicitação:</strong> {{ solicitacao.dataHora | date:'dd/MM/yyyy HH:mm' }}</div>
-        <div><strong class="text-gray-900">Equipamento:</strong> {{ solicitacao.descricaoEquipamento }}</div>
-        <div><strong class="text-gray-900">Categoria:</strong> {{ solicitacao.categoriaEquipamento }}</div>
-        <div class="col-span-2"><strong class="text-gray-900">Defeito Relatado:</strong> {{ solicitacao.descricaoDefeito }}</div>
+      <div><strong>Data da Solicitação:</strong> {{ solicitacao.dataHora | date:'dd/MM/yyyy HH:mm' }}</div>
+      <div><strong>Equipamento:</strong> {{ solicitacao.descricaoEquipamento }}</div>
+      <div><strong>Categoria:</strong> {{ solicitacao.categoriaEquipamento }}</div>
+      <div class="col-span-2"><strong>Defeito Relatado:</strong> {{ solicitacao.descricaoDefeito }}</div>
     </div>
 
-    <!-- Preço orçado em destaque - RF005 -->
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center mb-6">
-        <p class="text-gray-500 text-sm mb-1">Valor do Orçamento</p>
-        <p class="text-4xl font-extrabold text-green-700">
+      <p class="text-gray-500 text-sm mb-1">Valor do Orçamento</p>
+      <p class="text-4xl font-extrabold text-green-700">
         {{ formatarValor(solicitacao.precoOrcado ?? 0) }}
-        </p>
+      </p>
     </div>
 
-    <!-- Ações - RF005 -->
     <div class="flex gap-4 justify-end">
-        <button (click)="iniciarRejeicao()" class="bg-red-100 text-red-700 hover:bg-red-200 px-6 py-2 rounded-lg font-medium">
+      <button type="button" (click)="aoCancelar.emit()"
+        class="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg font-medium">
+        Voltar
+      </button>
+      <button type="button" (click)="iniciarRejeicao()"
+        class="bg-red-100 text-red-700 hover:bg-red-200 px-6 py-2 rounded-lg font-medium">
         Rejeitar Serviço
-        </button>
-        <button (click)="aprovar()" class="bg-green-600 text-white hover:bg-green-700 px-6 py-2 rounded-lg font-medium">
+      </button>
+      <button type="button" (click)="aprovar()"
+        class="bg-green-600 text-white hover:bg-green-700 px-6 py-2 rounded-lg font-medium">
         Aprovar Serviço
-        </button>
+      </button>
     </div>
-    }
-    @else {
-    <!-- Motivo da rejeição - RF007 -->
+  } @else {
     <h2 class="text-xl font-bold text-gray-800 mb-2">Motivo da Rejeição</h2>
     <p class="text-sm text-gray-600 mb-4">Por favor, descreva o motivo para rejeitar este orçamento.</p>
-    
-    <textarea 
-    [(ngModel)]="motivoRejeicao" 
-    class="text-gray-700 w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 focus:outline-none mb-6 resize-none"
-    rows="4"
-    maxlength="1000"
-    placeholder="Escreva o motivo aqui..."></textarea>
-    
+
+    <textarea [(ngModel)]="motivoRejeicao" rows="4" maxlength="1000"
+      placeholder="Escreva o motivo aqui..."
+      class="text-gray-700 w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 focus:outline-none mb-6 resize-none"></textarea>
+
     <div class="flex gap-4 justify-end">
-    <button (click)="cancelarRejeicao()" class="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg font-medium transition-colors">
+      <button type="button" (click)="cancelarRejeicao()"
+        class="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6 py-2 rounded-lg font-medium">
         Voltar
-    </button>
-    <button (click)="confirmarRejeicao()" class="bg-red-700 text-white hover:bg-red-800 px-6 py-2 rounded-lg font-medium">
+      </button>
+      <button type="button" (click)="confirmarRejeicao()"
+        class="bg-red-700 text-white hover:bg-red-800 px-6 py-2 rounded-lg font-medium">
         Confirmar Rejeição
-    </button>
+      </button>
     </div>
-    }
+  }
 </div>

@@ -3,15 +3,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Solicitacao } from '../../shared/models/solicitacao.model';
 
+export interface RespostaOrcamento {
+  decisao: 'APROVADA' | 'REJEITADA';
+  motivo?: string;
+}
+
 @Component({
   selector: 'app-cliente-orcamento',
-  imports: [FormsModule, CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './cliente-orcamento.component.html',
   styleUrl: './cliente-orcamento.component.css',
 })
 export class ClienteOrcamentoComponent {
   @Input({ required: true }) solicitacao!: Solicitacao;
-  @Output() aoResponder = new EventEmitter<'APROVADA' | 'REJEITADA'>();
+  @Output() aoResponder = new EventEmitter<RespostaOrcamento>();
   @Output() aoCancelar = new EventEmitter<void>();
 
   mostrandoRejeicao = false;
@@ -21,36 +26,32 @@ export class ClienteOrcamentoComponent {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  aprovar() {
-    alert(`Serviço Aprovado no Valor ${this.formatarValor(this.solicitacao.precoOrcado ?? 0)}`);
-    this.aoResponder.emit('APROVADA');
+  aprovar(): void {
+    if (this.solicitacao.estado !== 'ORÇADA' || !this.solicitacao.precoOrcado || this.solicitacao.precoOrcado <= 0) {
+      alert('Esta solicitação não possui um orçamento válido.');
+      return;
+    }
+
+    this.aoResponder.emit({ decisao: 'APROVADA' });
   }
 
-  iniciarRejeicao() {
+  iniciarRejeicao(): void {
     this.mostrandoRejeicao = true;
   }
 
-  cancelarRejeicao() {
+  cancelarRejeicao(): void {
     this.mostrandoRejeicao = false;
     this.motivoRejeicao = '';
   }
 
-  // Confirma a rejeição (RF007)
-  confirmarRejeicao() {
+  confirmarRejeicao(): void {
     const motivo = this.motivoRejeicao.trim().replace(/\s+/g, ' ');
 
-    if (motivo.length < 3) {
-      alert('Por favor, informe um motivo para a rejeição.');
+    if (motivo.length < 3 || motivo.length > 1000) {
+      alert('O motivo deve ter entre 3 e 1000 caracteres.');
       return;
     }
 
-    if (motivo.length > 1000) {
-      alert('O motivo deve ter no máximo 1000 caracteres.');
-      return;
-    }
-
-    this.solicitacao.justificativaRejeicao = motivo;
-    alert('Serviço Rejeitado'); // Mensagem exigida pelo RF007
-    this.aoResponder.emit('REJEITADA');
+    this.aoResponder.emit({ decisao: 'REJEITADA', motivo });
   }
 }
