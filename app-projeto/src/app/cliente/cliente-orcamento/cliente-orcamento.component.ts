@@ -30,6 +30,10 @@ export class ClienteOrcamentoComponent {
     this.mostrandoRejeicao = true;
   }
 
+  fechar() {
+    this.aoCancelar.emit();
+  }
+
   cancelarRejeicao() {
     this.mostrandoRejeicao = false;
     this.motivoRejeicao = '';
