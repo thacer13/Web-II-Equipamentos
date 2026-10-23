@@ -208,7 +208,13 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
     }
 
     if (solicitacao.estado === 'PAGA') {
-      alert(`Finalizar Solicitação: solicitação ${solicitacao.id}`);
+      this.solicitacaoService.atualizarEstado(
+        solicitacao,
+        'FINALIZADA',
+        this.funcionarioAtual,
+        'Solicitação finalizada pelo funcionário.'
+      );
+      this.carregarSolicitacoes();
       return;
     }
   }

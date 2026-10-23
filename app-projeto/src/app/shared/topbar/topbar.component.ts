@@ -50,6 +50,9 @@ const ITENS_FUNCIONARIO: NavItem[] = [
     .sair { border: 1px solid #dc2626; border-radius: .5rem; background: #fff; color: #b91c1c;
       padding: .4rem .8rem; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
     .sair:hover { background: #fef2f2; }
+    @media (min-width: 640px) {
+      .topbar { top: 1.5rem; }
+    }
   `],
 })
 export class TopbarComponent {

@@ -1,15 +1,15 @@
 <div class="app-shell">
   <div>
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="mt-4 text-2xl font-semibold text-gray-800">Gerenciar Funcionários</h1>
-        <p class="mt-1 text-sm text-gray-500">Cadastre, edite e remova funcionários do sistema.</p>
-      </div>
-      <div class="flex gap-2">
-        <p-button type="button" label="Adicionar Funcionário" (click)="abrirNovo()"></p-button>
-      </div>
-    </div>
     <div class="app-card overflow-hidden">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-6 py-5">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-800">Gerenciar Funcionários</h1>
+          <p class="mt-1 text-sm text-gray-500">Cadastre, edite e remova funcionários do sistema.</p>
+        </div>
+        <div class="flex gap-2">
+          <p-button type="button" label="Adicionar Funcionário" (click)="abrirNovo()"></p-button>
+        </div>
+      </div>
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-left text-sm">
           <thead class="bg-gray-50 text-gray-600">
