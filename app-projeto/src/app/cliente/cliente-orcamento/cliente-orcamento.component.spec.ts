@@ -29,4 +29,13 @@ describe('ClienteOrcamentoComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('emits cancellation when the close button is clicked', () => {
+    const aoCancelar = vi.spyOn(component.aoCancelar, 'emit');
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('button[aria-label="Fechar aprovação ou rejeição do serviço"]').click();
+
+    expect(aoCancelar).toHaveBeenCalledOnce();
+  });
 });
