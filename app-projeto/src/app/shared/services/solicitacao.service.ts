@@ -1,4 +1,3 @@
-
 import { Injectable, inject } from '@angular/core';
 import { Solicitacao } from '../models/solicitacao.model';
 import { EstadoSolicitacao } from '../models/estado-solicitacao.model';
@@ -136,6 +135,13 @@ const DADOS_INICIAIS: Solicitacao[] = [
   },
 ];
 
+// Uma solicitação já paga: usada nos relatórios de receita (RF019 e RF020)
+export interface ReceitaPaga {
+  dataPagamento: string;
+  categoria: string;
+  valor: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -155,6 +161,25 @@ export class SolicitacaoService {
       return [];
     }
     return this.listar().filter((s) => s.cliente?.id === clienteId);
+  }
+
+  // Solicitações que já foram pagas: data do pagamento (passo PAGA do histórico), categoria e valor
+  listarReceitas(): ReceitaPaga[] {
+    const receitas: ReceitaPaga[] = [];
+
+    for (const solicitacao of this.listar()) {
+      const pagamento = solicitacao.historico.find((h) => h.estado === 'PAGA');
+
+      if (pagamento && solicitacao.precoOrcado) {
+        receitas.push({
+          dataPagamento: pagamento.dataHora,
+          categoria: solicitacao.categoriaEquipamento,
+          valor: solicitacao.precoOrcado,
+        });
+      }
+    }
+
+    return receitas;
   }
 
   /** Cria uma solicitação vinculada ao cliente logado (grava o clienteId). */

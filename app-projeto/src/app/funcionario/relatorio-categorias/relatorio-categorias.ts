@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { jsPDF } from 'jspdf';
+import { SolicitacaoService } from '../../shared/services/solicitacao.service';
 
 interface ReceitaCategoria {
   categoria: string;
@@ -19,14 +20,31 @@ interface ReceitaCategoria {
 export class RelatorioCategoriasComponent {
   private router = inject(Router);
   private location = inject(Location);
+  private solicitacaoService = inject(SolicitacaoService);
 
-  receitas: ReceitaCategoria[] = [
-    { categoria: 'Notebook', quantidade: 4, receita: 1250 },
-    { categoria: 'Desktop', quantidade: 3, receita: 890 },
-    { categoria: 'Impressora', quantidade: 5, receita: 1100 },
-    { categoria: 'Mouse', quantidade: 2, receita: 180 },
-    { categoria: 'Teclado', quantidade: 3, receita: 350 },
-  ];
+  receitas: ReceitaCategoria[] = [];
+
+  constructor() {
+    this.receitas = this.calcularReceitasPorCategoria();
+  }
+
+  private calcularReceitasPorCategoria(): ReceitaCategoria[] {
+    const lista: ReceitaCategoria[] = [];
+
+    for (const pagamento of this.solicitacaoService.listarReceitas()) {
+      let item = lista.find((r) => r.categoria === pagamento.categoria);
+
+      if (!item) {
+        item = { categoria: pagamento.categoria, quantidade: 0, receita: 0 };
+        lista.push(item);
+      }
+
+      item.quantidade++;
+      item.receita += pagamento.valor;
+    }
+
+    return lista.sort((a, b) => a.categoria.localeCompare(b.categoria));
+  }
 
   get totalServicos(): number {
     return this.receitas.reduce((total, item) => total + item.quantidade, 0);
@@ -52,16 +70,14 @@ export class RelatorioCategoriasComponent {
     const larguraUtil = larguraPagina - margem * 2;
     const alturaLinha = 10;
 
-
     const colCategoria = margem + 4;
     const colQuantidade = margem + larguraUtil * 0.55;
-    const colReceita = margem + larguraUtil - 4; 
+    const colReceita = margem + larguraUtil - 4;
 
     const moeda = (v: number) => this.formatarMoeda(v).replace(/\u00A0/g, ' ');
 
     let y = margem;
 
-   
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(31, 41, 55);
@@ -77,6 +93,7 @@ export class RelatorioCategoriasComponent {
       y
     );
     y += 10;
+
     const larguraCard = (larguraUtil - 6) / 2;
     const alturaCard = 22;
 
@@ -99,7 +116,6 @@ export class RelatorioCategoriasComponent {
     desenharCard(margem, 'Total de Serviços', String(this.totalServicos));
     desenharCard(margem + larguraCard + 6, 'Receita Total', moeda(this.totalReceita));
     y += alturaCard + 10;
-
 
     const desenharCabecalho = () => {
       doc.setFillColor(249, 250, 251);

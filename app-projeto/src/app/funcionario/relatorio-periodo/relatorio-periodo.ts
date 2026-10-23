@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { jsPDF } from 'jspdf';
 import { hoje, paraIso } from '../../shared/utils/datas';
+import { SolicitacaoService } from '../../shared/services/solicitacao.service';
 
 interface ReceitaDia {
   data: string;
@@ -27,51 +28,50 @@ interface ReceitaDia {
 export class RelatorioPeriodoComponent {
   private router = inject(Router);
   private location = inject(Location);
+  private solicitacaoService = inject(SolicitacaoService);
 
   dataInicio: Date | null = null;
   dataFim: Date | null = null;
+  private periodoInicio: Date | null = null;
+  private periodoFim: Date | null = null;
   readonly minDate = new Date(2020, 0, 1);
   readonly maxDate = hoje();
 
-  receitasOriginais: ReceitaDia[] = [
-    {
-      data: '2026-09-10',
-      quantidade: 3,
-      receita: 650
-    },
-    {
-      data: '2026-09-11',
-      quantidade: 5,
-      receita: 1120
-    },
-    {
-      data: '2026-09-12',
-      quantidade: 2,
-      receita: 430
-    },
-    {
-      data: '2026-09-13',
-      quantidade: 4,
-      receita: 980
-    },
-    {
-      data: '2026-09-14',
-      quantidade: 3,
-      receita: 720
-    },
-    {
-      data: '2026-09-15',
-      quantidade: 4,
-      receita: 1350
-    },
-    {
-      data: '2026-09-16',
-      quantidade: 2,
-      receita: 540
-    }
-  ];
+  receitasOriginais: ReceitaDia[] = [];
+  receitas: ReceitaDia[] = [];
 
-  receitas: ReceitaDia[] = [...this.receitasOriginais];
+  constructor() {
+    this.receitasOriginais = this.calcularReceitasPorDia();
+    this.receitas = [...this.receitasOriginais];
+  }
+
+  private calcularReceitasPorDia(): ReceitaDia[] {
+    const lista: ReceitaDia[] = [];
+
+    for (const pagamento of this.solicitacaoService.listarReceitas()) {
+      const data = this.diaLocal(pagamento.dataPagamento);
+      let dia = lista.find((item) => item.data === data);
+
+      if (!dia) {
+        dia = { data, quantidade: 0, receita: 0 };
+        lista.push(dia);
+      }
+
+      dia.quantidade++;
+      dia.receita += pagamento.valor;
+    }
+
+    return lista.sort((a, b) => a.data.localeCompare(b.data));
+  }
+
+  // Converte a data/hora do pagamento para o dia (aaaa-mm-dd) no horário local
+  private diaLocal(dataHora: string): string {
+    const d = new Date(dataHora);
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+
+    return `${d.getFullYear()}-${mes}-${dia}`;
+  }
 
   consultar(): void {
     const foraDoLimite = (data: Date | null) =>
@@ -91,6 +91,9 @@ export class RelatorioPeriodoComponent {
       return;
     }
 
+    this.periodoInicio = this.dataInicio;
+    this.periodoFim = this.dataFim;
+
     const inicio = this.dataInicio ? paraIso(this.dataInicio) : '';
     const fim = this.dataFim ? paraIso(this.dataFim) : '';
 
@@ -108,6 +111,8 @@ export class RelatorioPeriodoComponent {
   limpar(): void {
     this.dataInicio = null;
     this.dataFim = null;
+    this.periodoInicio = null;
+    this.periodoFim = null;
     this.receitas = [...this.receitasOriginais];
   }
 
@@ -138,6 +143,25 @@ export class RelatorioPeriodoComponent {
     }).format(valor);
   }
 
+  // Texto do período usado no PDF (datas em branco = sem limite)
+  private descricaoPeriodo(): string {
+    const formatar = (data: Date) => data.toLocaleDateString('pt-BR');
+
+    if (this.periodoInicio && this.periodoFim) {
+      return `${formatar(this.periodoInicio)} a ${formatar(this.periodoFim)}`;
+    }
+
+    if (this.periodoInicio) {
+      return `a partir de ${formatar(this.periodoInicio)}`;
+    }
+
+    if (this.periodoFim) {
+      return `até ${formatar(this.periodoFim)}`;
+    }
+
+    return 'todo o período';
+  }
+
   gerarPdf(): void {
     const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
@@ -147,10 +171,9 @@ export class RelatorioPeriodoComponent {
     const larguraUtil = larguraPagina - margem * 2;
     const alturaLinha = 10;
 
-    const colDataInicial = margem + 4;
-    const colDataFinal = margem + larguraUtil * 0.3;
+    const colData = margem + 4;
     const colQuantidade = margem + larguraUtil * 0.55;
-    const colReceita = margem + larguraUtil - 4; 
+    const colReceita = margem + larguraUtil - 4;
 
     const moeda = (v: number) => this.formatarMoeda(v).replace(/\u00A0/g, ' ');
 
@@ -170,6 +193,8 @@ export class RelatorioPeriodoComponent {
       margem,
       y
     );
+    y += 6;
+    doc.text(`Período: ${this.descricaoPeriodo()}`, margem, y);
     y += 10;
 
     const larguraCard = (larguraUtil - 6) / 2;
@@ -202,8 +227,7 @@ export class RelatorioPeriodoComponent {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.setTextColor(75, 85, 99);
-      doc.text('Data Inicial', colDataInicial, y + 6.5);
-      doc.text('Data Final', colDataFinal, y + 6.5);
+      doc.text('Data', colData, y + 6.5);
       doc.text('Qtd. de Serviços', colQuantidade, y + 6.5);
       doc.text('Receita', colReceita, y + 6.5, { align: 'right' });
 
@@ -226,12 +250,7 @@ export class RelatorioPeriodoComponent {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(31, 41, 55);
-      doc.text(this.formatarData(item.data), colDataInicial, y + 6.5);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(31, 41, 55);
-      doc.text(this.formatarData(item.data), colDataFinal, y + 6.5);
+      doc.text(this.formatarData(item.data), colData, y + 6.5);
 
       doc.setTextColor(75, 85, 99);
       doc.text(String(item.quantidade), colQuantidade, y + 6.5);
@@ -245,6 +264,7 @@ export class RelatorioPeriodoComponent {
 
       y += alturaLinha;
     }
+
     novaPaginaSeNecessario();
 
     doc.setFillColor(249, 250, 251);
@@ -255,8 +275,7 @@ export class RelatorioPeriodoComponent {
 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(31, 41, 55);
-    doc.text('Data Inicial', colDataInicial, y + 6.5);
-    doc.text('Data Final', colDataFinal, y + 6.5);
+    doc.text('Total', colData, y + 6.5);
     doc.text(String(this.totalServicos), colQuantidade, y + 6.5);
     doc.text(moeda(this.totalReceita), colReceita, y + 6.5, { align: 'right' });
 
