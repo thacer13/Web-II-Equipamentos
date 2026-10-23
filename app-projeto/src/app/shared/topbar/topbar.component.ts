@@ -39,7 +39,7 @@ const ITENS_FUNCIONARIO: NavItem[] = [
   `,
   styles: [`
     .topbar { position: sticky; top: 1rem; z-index: 1000; width: min(1024px, calc(100vw - 2rem));
-      margin: 1rem auto 0; padding: .6rem 1rem; display: flex; align-items: center; gap: .5rem; }
+      margin: 1rem auto; padding: .6rem 1rem; display: flex; align-items: center; gap: .5rem; }
     .links { display: flex; gap: .35rem; flex-wrap: wrap; }
     .link { color: #374151; text-decoration: none; font-size: 14px; font-weight: 500;
       padding: .4rem .7rem; border-radius: 8px; }
@@ -50,6 +50,9 @@ const ITENS_FUNCIONARIO: NavItem[] = [
     .sair { border: 1px solid #dc2626; border-radius: .5rem; background: #fff; color: #b91c1c;
       padding: .4rem .8rem; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
     .sair:hover { background: #fef2f2; }
+    @media (min-width: 640px) {
+      .topbar { top: 1.5rem; margin: 1.5rem auto; }
+    }
   `],
 })
 export class TopbarComponent {
