@@ -71,7 +71,24 @@ export class ListaFuncionariosComponent implements OnInit {
     this.editandoId = funcionario.id!;
     this.nome = funcionario.nome;
     this.email = funcionario.email;
-    this.dataNascimento = deIso(funcionario.dataNascimento);
+    if (funcionario.dataNascimento) {
+      // Tenta converter de forma segura independentemente do formato da string ISO
+      const valorData = typeof funcionario.dataNascimento === 'string' 
+        ? funcionario.dataNascimento.split('T')[0] 
+        : funcionario.dataNascimento;
+
+      const partes = String(valorData).split('-');
+      if (partes.length === 3) {
+        const ano = Number(partes[0]);
+        const mes = Number(partes[1]) - 1; // Meses no JS começam em 0 (0 = janeiro)
+        const dia = Number(partes[2]);
+        this.dataNascimento = new Date(ano, mes, dia);
+      } else {
+        this.dataNascimento = new Date(funcionario.dataNascimento);
+      }
+    } else {
+      this.dataNascimento = null;
+    }
     this.mensagemErro = '';
     this.showFormulario = true;
   }
