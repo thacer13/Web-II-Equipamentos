@@ -11,7 +11,6 @@ import { Categoria, CategoriaService } from '../../shared/services/categoria.ser
   styleUrl: './cliente-solicitacao.component.css',
 })
 export class ClienteSolicitacaoComponent {
-  @Output() aoCancelar = new EventEmitter<void>();
   @Output() aoSalvar = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
@@ -26,10 +25,6 @@ export class ClienteSolicitacaoComponent {
     categoriaEquipamento: ['', Validators.required],
     descricaoDefeito: ['', [Validators.required, naoVazio(), Validators.minLength(10), Validators.maxLength(LIMITES.descricaoDefeito)]],
   });
-
-  botaoCancelar() {
-    this.aoCancelar.emit();
-  }
 
   enviar() {
     if (this.formulario.invalid) {
@@ -56,6 +51,5 @@ export class ClienteSolicitacaoComponent {
     this.formulario.reset();
     this.mensagemErro = '';
     this.aoSalvar.emit();
-    this.aoCancelar.emit();
   }
 }

@@ -23,6 +23,7 @@ export class ClienteComponent {
 
   // RF005/RF007 - painel inline de orçamento
   solicitacaoEmOrcamento: Solicitacao | null = null;
+  showOrcamento = false;
 
   // RF008 / RF010
   selecionada: Solicitacao | null = null;
@@ -55,10 +56,13 @@ export class ClienteComponent {
 
   abrirOrcamento(solicitacao: Solicitacao) {
     this.solicitacaoEmOrcamento = solicitacao;
+    this.showOrcamento = true;
   }
 
   fecharOrcamento() {
     this.solicitacaoEmOrcamento = null;
+    this.showOrcamento = false;
+    this.recarregar();
   }
 
   processarOrcamento(resposta: RespostaOrcamento): void {

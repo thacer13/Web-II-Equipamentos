@@ -10,23 +10,6 @@
     </button>
   </header>
 
-  @if (mostrarFormulario) {
-    <div class="app-card overflow-hidden">
-      <app-cliente-solicitacao (aoCancelar)="fecharFormulario()" (aoSalvar)="fecharFormulario()"></app-cliente-solicitacao>
-    </div>
-  }
-
-  <!-- RF005 / RF007 - painel inline de orçamento -->
-  @if (solicitacaoEmOrcamento) {
-    <div class="app-card overflow-hidden">
-      <app-cliente-orcamento
-        [solicitacao]="solicitacaoEmOrcamento"
-        (aoResponder)="processarOrcamento($event)"
-        (aoCancelar)="fecharOrcamento()">
-      </app-cliente-orcamento>
-    </div>
-  }
-
   <div class="app-card overflow-hidden">
     <table class="w-full text-left border-collapse">
       <thead>
@@ -103,6 +86,22 @@
   </div>
 
 </main>
+
+<!-- Modal Nova Solicitação -->
+<p-dialog header="Nova Solicitação" [(visible)]="mostrarFormulario" [modal]="true" [style]="{ width: 'min(620px, 92vw)' }" (onHide)="fecharFormulario()">
+  <app-cliente-solicitacao (aoCancelar)="fecharFormulario()" (aoSalvar)="fecharFormulario()"></app-cliente-solicitacao>
+</p-dialog>
+
+<!-- Modal Aprovar/Rejeitar Orçamento (RF005 / RF007) -->
+<p-dialog header="Aprovar/Rejeitar Orçamento" [(visible)]="showOrcamento" [modal]="true" [style]="{ width: 'min(620px, 92vw)' }" (onHide)="fecharOrcamento()">
+  @if (solicitacaoEmOrcamento) {
+    <app-cliente-orcamento
+      [solicitacao]="solicitacaoEmOrcamento"
+      (aoResponder)="processarOrcamento($event)"
+      (aoCancelar)="fecharOrcamento()">
+    </app-cliente-orcamento>
+  }
+</p-dialog>
 
 <!-- RF008 - Visualizar Serviço -->
 <p-dialog header="Visualizar Serviço" [(visible)]="showVisualizar" [modal]="true" [style]="{ width: 'min(620px, 92vw)' }">
