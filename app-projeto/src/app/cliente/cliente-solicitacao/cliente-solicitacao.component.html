@@ -8,9 +8,10 @@
       <input
         type="text"
         id="equipamento"
+        pInputText
         formControlName="descricaoEquipamento"
         maxlength="150"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all text-sm text-gray-900 bg-white"
+        class="w-full"
         placeholder="Ex: Notebook Dell Inspiron"
       />
       @if (formulario.get('descricaoEquipamento')?.touched && formulario.get('descricaoEquipamento')?.invalid) {
@@ -22,16 +23,15 @@
       <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1">
         Categoria do Equipamento
       </label>
-      <select
-        id="categoria"
+      <p-select
+        inputId="categoria"
         formControlName="categoriaEquipamento"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all text-sm text-gray-900 bg-white"
-      >
-        <option value="" disabled>Selecione uma categoria</option>
-        @for (categoria of categorias; track categoria.id) {
-          <option [value]="categoria.nome">{{ categoria.nome }}</option>
-        }
-      </select>
+        [options]="categorias"
+        optionLabel="nome"
+        optionValue="nome"
+        placeholder="Selecione uma categoria"
+        [fluid]="true">
+      </p-select>
       @if (formulario.get('categoriaEquipamento')?.touched && formulario.get('categoriaEquipamento')?.invalid) {
         <p class="mt-1 text-xs text-red-600">Selecione uma categoria.</p>
       }
@@ -43,10 +43,11 @@
       </label>
       <textarea
         id="defeito"
+        pTextarea
         rows="4"
         formControlName="descricaoDefeito"
         maxlength="2000"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all text-sm resize-none text-gray-900 bg-white"
+        class="w-full resize-none"
         placeholder="Descreva detalhadamente qual é o problema..."
       ></textarea>
       @if (formulario.get('descricaoDefeito')?.touched && formulario.get('descricaoDefeito')?.invalid) {
@@ -59,13 +60,7 @@
     }
 
     <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
-      <button
-        type="submit"
-        [disabled]="formulario.invalid"
-        class="px-5 py-2.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        Solicitar Orçamento
-      </button>
+      <p-button type="submit" label="Solicitar Orçamento" [disabled]="formulario.invalid"></p-button>
     </div>
 
   </form>

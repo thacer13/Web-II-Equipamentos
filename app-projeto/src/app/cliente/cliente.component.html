@@ -4,10 +4,7 @@
     <h1 class="text-2xl font-semibold text-gray-800">
       Minhas Solicitações
     </h1>
-    <button class="bg-green-600 hover:bg-green-700 text-white rounded-lg px-5 py-2.5 font-medium transition-colors"
-      (click)="abrirFormulario()">
-      Nova Solicitação
-    </button>
+    <p-button type="button" label="Nova Solicitação" (click)="abrirFormulario()"></p-button>
   </header>
 
   <div class="app-card overflow-hidden">
@@ -43,28 +40,16 @@
             <td class="px-6 py-4 text-sm">
               <div class="flex gap-2">
                 <!-- Botão sempre visível (RF008) -->
-                <button (click)="abrirVisualizar(solicitacao)"
-                  class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                  Visualizar Serviço
-                </button>
+                <p-button type="button" label="Visualizar Serviço" severity="secondary" size="small" (click)="abrirVisualizar(solicitacao)"></p-button>
 
                 @if (solicitacao.estado === 'ORÇADA') {
-                  <button (click)="abrirOrcamento(solicitacao)"
-                    class="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                    Aprovar/Rejeitar Serviço
-                  </button>
+                  <p-button type="button" label="Aprovar/Rejeitar Serviço" size="small" (click)="abrirOrcamento(solicitacao)"></p-button>
                 }
                 @else if (solicitacao.estado === 'REJEITADA') {
-                  <button (click)="resgatar(solicitacao)"
-                    class="bg-red-100 hover:bg-red-200 text-red-700 rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                    Resgatar Serviço
-                  </button>
+                  <p-button type="button" label="Resgatar Serviço" severity="danger" size="small" (click)="resgatar(solicitacao)"></p-button>
                 }
                 @else if (solicitacao.estado === 'ARRUMADA') {
-                  <button (click)="abrirPagar(solicitacao)"
-                    class="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-                    Pagar Serviço
-                  </button>
+                  <p-button type="button" label="Pagar Serviço" size="small" (click)="abrirPagar(solicitacao)"></p-button>
                 } @else {
                   <span class="text-gray-400">
                     Sem ação
@@ -157,10 +142,7 @@
 
       @if (acaoParaEstado(selecionada.estado); as acao) {
         <div class="flex justify-end border-t border-gray-100 pt-3">
-          <button (click)="executarAcao(selecionada)"
-            class="bg-green-600 hover:bg-green-700 text-white rounded-lg px-5 py-2.5 text-sm font-medium transition-colors">
-            {{ acao }}
-          </button>
+          <p-button type="button" [label]="acao" (click)="executarAcao(selecionada)"></p-button>
         </div>
       }
     </div>
@@ -192,10 +174,7 @@
       </div>
 
       <div class="flex justify-end border-t border-gray-100 pt-3">
-        <button (click)="confirmarPagamento()"
-          class="bg-green-600 hover:bg-green-700 text-white rounded-lg px-5 py-2.5 text-sm font-medium transition-colors">
-          Confirmar Pagamento
-        </button>
+        <p-button type="button" label="Confirmar Pagamento" (click)="confirmarPagamento()"></p-button>
       </div>
     </div>
   }
@@ -205,9 +184,6 @@
 <p-dialog header="Aviso" [(visible)]="showMensagem" [modal]="true" [style]="{ width: 'min(400px, 92vw)' }">
   <p class="text-sm text-gray-800">{{ mensagem }}</p>
   <div class="flex justify-end pt-4">
-    <button (click)="fecharMensagem()"
-      class="bg-green-600 hover:bg-green-700 text-white rounded-lg px-6 py-2.5 text-sm font-medium transition-colors">
-      OK
-    </button>
+    <p-button type="button" label="OK" (click)="fecharMensagem()"></p-button>
   </div>
 </p-dialog>

@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 import { ClienteSolicitacaoComponent } from './cliente-solicitacao/cliente-solicitacao.component';
 import { ClienteOrcamentoComponent, RespostaOrcamento } from './cliente-orcamento/cliente-orcamento.component';
 import { ESTADO_COR, ESTADO_LABEL, SolicitacaoService } from '../shared/services/solicitacao.service';
@@ -11,7 +12,7 @@ import { UsuarioService } from '../shared/services/usuario.service';
 @Component({
   selector: 'app-cliente',
   standalone: true,
-  imports: [ClienteSolicitacaoComponent, ClienteOrcamentoComponent, FormsModule, DialogModule],
+  imports: [ClienteSolicitacaoComponent, ClienteOrcamentoComponent, FormsModule, DialogModule, ButtonModule],
   templateUrl: './cliente.component.html',
 })
 export class ClienteComponent {
