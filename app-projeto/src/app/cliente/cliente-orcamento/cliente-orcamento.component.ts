@@ -17,8 +17,7 @@ export interface RespostaOrcamento {
 export class ClienteOrcamentoComponent {
   @Input({ required: true }) solicitacao!: Solicitacao;
   @Output() aoResponder = new EventEmitter<RespostaOrcamento>();
-  @Output() aoCancelar = new EventEmitter<void>();
-
+  
   mostrandoRejeicao = false;
   motivoRejeicao = '';
 
@@ -37,10 +36,6 @@ export class ClienteOrcamentoComponent {
 
   iniciarRejeicao(): void {
     this.mostrandoRejeicao = true;
-  }
-
-  fechar(): void {
-    this.aoCancelar.emit();
   }
 
   cancelarRejeicao(): void {

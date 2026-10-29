@@ -1,5 +1,4 @@
 <div class="p-6">
-  <h2 class="text-xl font-semibold text-gray-800 mb-6">Nova Solicitação de Manutenção</h2>
   <form [formGroup]="formulario" (ngSubmit)="enviar()" class="flex flex-col gap-5">
 
     <div>
@@ -60,12 +59,6 @@
     }
 
     <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
-      <button
-        type="button" (click)="botaoCancelar()"
-        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-      >
-        Cancelar
-      </button>
       <button
         type="submit"
         [disabled]="formulario.invalid"

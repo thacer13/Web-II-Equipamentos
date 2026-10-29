@@ -31,7 +31,10 @@ const ITENS_FUNCIONARIO: NavItem[] = [
           }
         </nav>
         @if (userName) {
-          <span class="user">{{ userName }}</span>
+          <span class="user">
+            <i class="pi pi-user" style="font-size: 1.5rem"></i>  
+            {{ userName }}
+          </span>
           <button type="button" class="sair" (click)="sair()">Sair</button>
         }
       </header>
