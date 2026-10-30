@@ -1,12 +1,16 @@
 import { Component, Output, EventEmitter, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TextareaModule } from 'primeng/textarea';
 import { LIMITES, naoVazio, normalizarTexto } from '../../shared/validators/form-validators';
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
 import { Categoria, CategoriaService } from '../../shared/services/categoria.service';
 
 @Component({
   selector: 'app-cliente-solicitacao',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, SelectModule, TextareaModule],
   templateUrl: './cliente-solicitacao.component.html',
   styleUrl: './cliente-solicitacao.component.css',
 })
@@ -22,7 +26,7 @@ export class ClienteSolicitacaoComponent {
 
   formulario: FormGroup = this.fb.group({
     descricaoEquipamento: ['', [Validators.required, naoVazio(), Validators.minLength(3), Validators.maxLength(LIMITES.descricaoEquipamento)]],
-    categoriaEquipamento: ['', Validators.required],
+    categoriaEquipamento: [null, Validators.required],
     descricaoDefeito: ['', [Validators.required, naoVazio(), Validators.minLength(10), Validators.maxLength(LIMITES.descricaoDefeito)]],
   });
 
