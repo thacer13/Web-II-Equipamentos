@@ -1,6 +1,7 @@
 package br.ufpr.tads.webequipamentos.dao;
 
 import br.ufpr.tads.webequipamentos.model.Usuario;
+import br.ufpr.tads.webequipamentos.model.UsuarioLogin;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -32,16 +33,30 @@ public class UsuarioDaoImpl implements UsuarioDao {
         """;
 
     private static final String SELECT_BASE = """
-        SELECT u.id, c.cpf, u.nome, u.email, c.telefone, u.senha_hash,
+        SELECT u.id, c.cpf, u.nome, u.email, c.telefone, u.senha_hash, u.salt,
                e.cep, e.logradouro, e.numero, e.bairro, e.cidade, e.estado
         FROM usuario u
         JOIN cliente c ON c.id = u.id
         JOIN endereco e ON e.id = c.endereco_id
         """;
 
+    private static final String SELECT_LOGIN = """
+        SELECT u.id, u.nome, u.email, u.senha_hash, u.salt,
+               CASE
+                   WHEN f.id IS NOT NULL THEN 'FUNCIONARIO'
+                   WHEN c.id IS NOT NULL THEN 'CLIENTE'
+                   ELSE 'SEM_PERFIL'
+               END AS perfil
+        FROM usuario u
+        LEFT JOIN funcionario f ON f.id = u.id
+        LEFT JOIN cliente c ON c.id = u.id
+        WHERE LOWER(u.email) = LOWER(?)
+          AND (f.id IS NULL OR f.ativo = TRUE)
+        """;
+
     private static final String UPDATE_USUARIO = """
         UPDATE usuario
-           SET nome = ?, email = ?, senha_hash = ?
+           SET nome = ?, email = ?, senha_hash = ?, salt = ?
          WHERE id = ?
         """;
 
@@ -65,12 +80,22 @@ public class UsuarioDaoImpl implements UsuarioDao {
         rs.getString("email"),
         rs.getString("telefone"),
         rs.getString("senha_hash"),
+        rs.getString("salt"),
         rs.getString("cep"),
         rs.getString("logradouro"),
         rs.getString("numero"),
         rs.getString("bairro"),
         rs.getString("cidade"),
         rs.getString("estado")
+    );
+
+    private static final RowMapper<UsuarioLogin> LOGIN_MAPPER = (rs, rowNum) -> new UsuarioLogin(
+        rs.getInt("id"),
+        rs.getString("nome"),
+        rs.getString("email"),
+        rs.getString("senha_hash"),
+        rs.getString("salt"),
+        rs.getString("perfil")
     );
 
     private final JdbcTemplate jdbc;
@@ -87,7 +112,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
             u.nome(),
             u.email(),
             u.senhaHash(),
-            ""
+            u.salt()
         );
 
         int enderecoId = jdbc.queryForObject(
@@ -107,13 +132,19 @@ public class UsuarioDaoImpl implements UsuarioDao {
 
     @Override
     public Optional<Usuario> buscarPorId(int id) {
-        return jdbc.query(SELECT_BASE + " WHERE id = ?", MAPPER, id)
+        return jdbc.query(SELECT_BASE + " WHERE u.id = ?", MAPPER, id)
                    .stream().findFirst();
     }
 
     @Override
     public Optional<Usuario> buscarPorEmail(String email) {
-        return jdbc.query(SELECT_BASE + " WHERE email = ?", MAPPER, email)
+        return jdbc.query(SELECT_BASE + " WHERE LOWER(u.email) = LOWER(?)", MAPPER, email)
+                   .stream().findFirst();
+    }
+
+    @Override
+    public Optional<UsuarioLogin> buscarParaLogin(String email) {
+        return jdbc.query(SELECT_LOGIN, LOGIN_MAPPER, email)
                    .stream().findFirst();
     }
 
@@ -126,7 +157,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
     @Override
     public boolean existePorEmail(String email) {
         return Boolean.TRUE.equals(jdbc.queryForObject(
-            "SELECT EXISTS (SELECT 1 FROM usuario WHERE email = ?)", Boolean.class, email));
+            "SELECT EXISTS (SELECT 1 FROM usuario WHERE LOWER(email) = LOWER(?))", Boolean.class, email));
     }
 
     @Override
@@ -136,6 +167,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
             u.nome(),
             u.email(),
             u.senhaHash(),
+            u.salt(),
             u.id()
         );
         int clienteLinhas = jdbc.update(

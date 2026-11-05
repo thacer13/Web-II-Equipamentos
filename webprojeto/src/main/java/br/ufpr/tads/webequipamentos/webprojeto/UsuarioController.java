@@ -23,12 +23,12 @@ public class UsuarioController {
         this.service = service;
     }
 
-    // RF002 - Login: devolve id, nome, e-mail e perfil (CLIENTE ou FUNCIONARIO)
+   
     @PostMapping("/auth/login")
     public UsuarioResponse login(@RequestBody LoginRequest req, HttpSession session) {
         UsuarioResponse usuario = service.login(req);
 
-        // Guarda quem está logado na sessão (cookie JSESSIONID)
+        
         session.setAttribute("email", usuario.email());
         session.setAttribute("perfil", usuario.perfil());
 
@@ -41,7 +41,7 @@ public class UsuarioController {
         session.invalidate();
     }
 
-    // RF001 - Autocadastro de cliente
+    
     @PostMapping("/clientes")
     @ResponseStatus(HttpStatus.CREATED)
     public UsuarioResponse cadastrar(@RequestBody CadastroRequest req) {
