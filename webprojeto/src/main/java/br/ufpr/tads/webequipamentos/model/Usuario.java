@@ -6,6 +6,7 @@ public record Usuario(
     String email,
     String telefone,
     String senhaHash,
+    String salt,
     String cep,
     String logradouro,
     String numero,

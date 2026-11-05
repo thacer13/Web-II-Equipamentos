@@ -1,6 +1,5 @@
 package br.ufpr.tads.webequipamentos.model;
 
-
 public record UsuarioLogin(
     Integer id,
     String nome,
