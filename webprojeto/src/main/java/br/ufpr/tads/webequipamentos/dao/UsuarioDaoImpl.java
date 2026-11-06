@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public class UsuarioDaoImpl implements UsuarioDao {
@@ -128,6 +129,11 @@ public class UsuarioDaoImpl implements UsuarioDao {
 
         jdbc.update(INSERT_CLIENTE, usuarioId, u.cpf(), u.telefone(), enderecoId);
         return usuarioId;
+    }
+
+    @Override
+    public List<Usuario> listar() {
+        return jdbc.query(SELECT_BASE + " ORDER BY u.id", MAPPER);
     }
 
     @Override

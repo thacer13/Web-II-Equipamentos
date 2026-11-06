@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 @Service
 public class UsuarioService {
 
@@ -82,6 +83,50 @@ public class UsuarioService {
     public UsuarioResponse buscar(Integer id) {
         Usuario u = dao.buscarPorId(id).orElseThrow(NaoEncontradoException::new);
         return new UsuarioResponse(u.id(), u.nome(), u.email(), "CLIENTE");
+    }
+
+    @Transactional(readOnly = true)
+    public List<UsuarioResponse> listar() {
+        return dao.listar().stream()
+            .map(u -> new UsuarioResponse(u.id(), u.nome(), u.email(), "CLIENTE"))
+            .toList();
+    }
+
+    @Transactional
+    public UsuarioResponse atualizar(Integer id, CadastroRequest req) {
+        validar(req);
+
+        Usuario atual = dao.buscarPorId(id).orElseThrow(NaoEncontradoException::new);
+        String cpf = Validacoes.somenteDigitos(req.cpf());
+        String email = req.email().trim().toLowerCase();
+
+        if (!cpf.equals(atual.cpf()) && dao.existePorCpf(cpf)) {
+            throw new ConflitoException("CPF já cadastrado.");
+        }
+        if (!email.equals(atual.email()) && dao.existePorEmail(email)) {
+            throw new ConflitoException("E-mail já cadastrado.");
+        }
+
+        Usuario alterado = new Usuario(
+            id,
+            cpf,
+            req.nome().trim(),
+            email,
+            Validacoes.somenteDigitos(req.telefone()),
+            atual.senhaHash(),
+            atual.salt(),
+            Validacoes.somenteDigitos(req.cep()),
+            req.logradouro().trim(),
+            req.numero().trim(),
+            req.bairro().trim(),
+            req.cidade().trim(),
+            req.estado().trim().toUpperCase()
+        );
+
+        if (!dao.atualizar(alterado)) {
+            throw new NaoEncontradoException();
+        }
+        return new UsuarioResponse(id, alterado.nome(), alterado.email(), "CLIENTE");
     }
 
     @Transactional

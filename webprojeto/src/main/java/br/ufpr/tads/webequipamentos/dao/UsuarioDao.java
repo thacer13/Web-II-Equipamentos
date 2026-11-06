@@ -4,10 +4,12 @@ import br.ufpr.tads.webequipamentos.model.Usuario;
 import br.ufpr.tads.webequipamentos.model.UsuarioLogin;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface UsuarioDao {
 
     int inserir(Usuario usuario);                         
+    List<Usuario> listar();
     Optional<Usuario> buscarPorId(int id);                
     Optional<Usuario> buscarPorEmail(String email);        
     Optional<UsuarioLogin> buscarParaLogin(String email);  
