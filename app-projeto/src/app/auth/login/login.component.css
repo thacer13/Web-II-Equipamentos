@@ -81,6 +81,17 @@ p-floatLabel {
   width: 100%;
 }
 
+p-password {
+  display: block;
+  width: 100%;
+}
+
+::ng-deep p-password,
+::ng-deep p-password .p-password,
+::ng-deep p-password .p-password input {
+  width: 100% !important;
+}
+
 ::ng-deep p-floatLabel .p-inputtext {
   width: 100%;
   padding: 0.875rem 1rem;

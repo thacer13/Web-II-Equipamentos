@@ -3,13 +3,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { PasswordModule } from 'primeng/password';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { UsuarioService } from '../../shared/services/usuario.service';
 
 @Component({
   selector: 'app-login',
-  imports: [InputTextModule, ButtonModule, FloatLabelModule, FormsModule, RouterModule],
+  imports: [InputTextModule, ButtonModule, FloatLabelModule, PasswordModule, FormsModule, RouterModule],
   standalone: true,
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
