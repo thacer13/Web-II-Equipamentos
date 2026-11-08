@@ -124,9 +124,14 @@ export class CadastroComponent implements OnInit {
       }
     };
 
-    this.usuarioService.cadastrarCliente(novoCliente);
-
-    alert('Cadastro realizado com sucesso! Sua senha de 4 dígitos foi enviada para o e-mail cadastrado.');
-    this.router.navigate(['/auth/login']);
+    this.usuarioService.cadastrarCliente(novoCliente).subscribe({
+      next: () => {
+        alert('Cadastro realizado com sucesso! Sua senha de acesso foi enviada para o e-mail cadastrado.');
+        this.router.navigate(['/auth/login']);
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Erro ao realizar cadastro.');
+      }
+    });
   }
 }

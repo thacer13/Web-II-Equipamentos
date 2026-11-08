@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -49,36 +50,36 @@ export class LoginComponent {
     this.loading = true;
     this.mensagemErro = '';
 
-    setTimeout(() => {
-      const usuarioEncontrado = this.usuarioService.buscarPorEmail(email);
+    this.usuarioService.autenticar(email, senha).subscribe({
+      next: (usuario) => {
+        if (this.lembrarCredenciais) {
+          this.usuarioService.lembrarCredenciais(email, senha);
+        } else {
+          this.usuarioService.esquecerCredenciais();
+        }
 
-      if (!usuarioEncontrado) {
-        this.mensagemErro = 'Usuário não encontrado.';
+        this.usuarioService.salvarUsuarioLogado(usuario);
+
+        if (usuario.perfil === 'CLIENTE') {
+          this.router.navigate(['/cliente']);
+        } else if (usuario.perfil === 'FUNCIONARIO') {
+          this.router.navigate(['/funcionario']);
+        }
+
         this.loading = false;
-        return;
-      }
-
-      if (usuarioEncontrado.senha !== senha) {
-        this.mensagemErro = 'Senha incorreta.';
+      },
+      error: (erro: unknown) => {
+        if (erro instanceof HttpErrorResponse && erro.status === 401) {
+          this.mensagemErro = 'E-mail ou senha inválidos.';
+        } else if (erro instanceof HttpErrorResponse) {
+          this.mensagemErro = erro.error?.mensagem || 'Não foi possível realizar o login. Tente novamente.';
+        } else if (erro instanceof Error) {
+          this.mensagemErro = erro.message;
+        } else {
+          this.mensagemErro = 'Não foi possível realizar o login. Tente novamente.';
+        }
         this.loading = false;
-        return;
       }
-
-      if (this.lembrarCredenciais) {
-        this.usuarioService.lembrarCredenciais(email, senha);
-      } else {
-        this.usuarioService.esquecerCredenciais();
-      }
-
-      this.usuarioService.salvarUsuarioLogado(usuarioEncontrado);
-
-      if (usuarioEncontrado.perfil === 'CLIENTE') {
-        this.router.navigate(['/cliente']);
-      } else if (usuarioEncontrado.perfil === 'FUNCIONARIO') {
-        this.router.navigate(['/funcionario']);
-      }
-
-      this.loading = false;
-    }, 1000);
+    });
   }
 }

@@ -23,10 +23,12 @@ public class UsuarioService {
 
     private final UsuarioDao dao;
     private final SenhaHash senhaHash;
+    private final EmailService emailService;
 
-    public UsuarioService(UsuarioDao dao, SenhaHash senhaHash) {
+    public UsuarioService(UsuarioDao dao, SenhaHash senhaHash, EmailService emailService) {
         this.dao = dao;
         this.senhaHash = senhaHash;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -61,8 +63,7 @@ public class UsuarioService {
 
         int id = dao.inserir(novo);
 
-        // Simulação do envio por e-mail: a senha aparece no console do Spring
-        log.info("[SIMULAÇÃO DE E-MAIL] Para: {} | Sua senha é: {}", email, senha);
+        emailService.enviarEmailCadastro(email, senha);
 
         return new UsuarioResponse(id, novo.nome(), novo.email(), "CLIENTE");
     }
@@ -136,38 +137,49 @@ public class UsuarioService {
 
     private void validar(CadastroRequest req) {
         if (req == null) {
+            log.error("CadastroRequest veio nulo!");
             throw new IllegalArgumentException("Dados não informados.");
         }
         if (!Validacoes.textoEntre(req.nome(), 3, 150)) {
+            log.error("Nome inválido recebido: '{}'", req.nome());
             throw new IllegalArgumentException("Nome inválido.");
         }
         if (!Validacoes.emailValido(req.email())) {
+            log.error("E-mail inválido recebido: '{}'", req.email());
             throw new IllegalArgumentException("E-mail inválido.");
         }
         if (!Validacoes.cpfValido(req.cpf())) {
+            log.error("CPF inválido recebido: '{}'", req.cpf());
             throw new IllegalArgumentException("CPF inválido.");
         }
 
         int digitosTelefone = Validacoes.somenteDigitos(req.telefone()).length();
         if (digitosTelefone < 10 || digitosTelefone > 11) {
+            log.error("Telefone inválido recebido: '{}'", req.telefone());
             throw new IllegalArgumentException("Telefone inválido.");
         }
         if (Validacoes.somenteDigitos(req.cep()).length() != 8) {
+            log.error("CEP inválido recebido: '{}'", req.cep());
             throw new IllegalArgumentException("CEP inválido.");
         }
         if (!Validacoes.textoEntre(req.logradouro(), 2, 150)) {
+            log.error("Logradouro inválido recebido: '{}'", req.logradouro());
             throw new IllegalArgumentException("Logradouro inválido.");
         }
         if (!Validacoes.textoEntre(req.numero(), 1, 10)) {
+            log.error("Número inválido recebido: '{}'", req.numero());
             throw new IllegalArgumentException("Número inválido.");
         }
         if (!Validacoes.textoEntre(req.bairro(), 2, 100)) {
+            log.error("Bairro inválido recebido: '{}'", req.bairro());
             throw new IllegalArgumentException("Bairro inválido.");
         }
         if (!Validacoes.textoEntre(req.cidade(), 2, 100)) {
+            log.error("Cidade inválida recebida: '{}'", req.cidade());
             throw new IllegalArgumentException("Cidade inválida.");
         }
         if (req.estado() == null || !req.estado().trim().toUpperCase().matches("[A-Z]{2}")) {
+            log.error("Estado inválido recebido: '{}'", req.estado());
             throw new IllegalArgumentException("Estado inválido.");
         }
     }

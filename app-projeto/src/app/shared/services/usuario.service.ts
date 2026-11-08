@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
 import { Usuario } from '../models/usuario.model';
 import { Cliente } from '../models/cliente.model';
 import { Funcionario } from '../models/funcionario.model';
@@ -46,6 +48,13 @@ export const DADOS_INICIAIS_USUARIOS: Usuario[] = [
   providedIn: 'root',
 })
 export class UsuarioService {
+  private http = inject(HttpClient);
+
+  // Mudar para 'true' quando quiser testar integrado com o Spring Boot real
+  private usarBackend = true;
+  private apiUrl = 'http://localhost:8082/api/clientes'; 
+  private loginUrl = 'http://localhost:8082/api/auth/login';
+
   obterCredenciaisLembradas(): CredenciaisLembradas | null {
     if (typeof localStorage === 'undefined') {
       return null;
@@ -103,7 +112,7 @@ export class UsuarioService {
     }
   }
 
-  cadastrarCliente(cliente: Cliente): void { // Inserir
+  cadastrarCliente(cliente: Cliente): Observable<any> { // Inserir
     const nome = cliente.nome?.trim().replace(/\s+/g, ' ') ?? '';
     const email = cliente.email?.trim().toLowerCase() ?? '';
     const cpf = cliente.cpf?.replace(/\D/g, '') ?? '';
@@ -143,6 +152,23 @@ export class UsuarioService {
     endereco.cidade = cidade;
     endereco.estado = estado;
 
+    if (this.usarBackend) {
+      const payload = {
+        cpf: cliente.cpf,
+        nome: cliente.nome,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        senha: '', // senha é gerada no backend
+        cep: cliente.endereco?.cep,
+        logradouro: cliente.endereco?.logradouro,
+        numero: cliente.endereco?.numero,
+        bairro: cliente.endereco?.bairro,
+        cidade: cliente.endereco?.cidade,
+        estado: cliente.endereco?.estado
+      };
+      return this.http.post(this.apiUrl, payload);
+    }
+
     const usuarios = this.listarTodos();
     cliente.id = new Date().getTime();
     cliente.perfil = 'CLIENTE';
@@ -154,8 +180,23 @@ export class UsuarioService {
     }
 
     console.log(`[SIMULAÇÃO DE E-MAIL] Para: ${cliente.email} | Sua senha temporária é: ${cliente.senha}`);
-    // Quando formos implementar o Backend (Spring Boot), substituir o localStorage por:
-    // return this.http.post('http://localhost:8080/api/cadastro', cliente);
+    return of(cliente);
+  }
+
+  autenticar(email: string, senha: string): Observable<Usuario> {
+    if (this.usarBackend) {
+      return this.http.post<Usuario>(
+        this.loginUrl,
+        { email, senha },
+        { withCredentials: true }
+      );
+    }
+
+    const usuario = this.buscarPorEmail(email);
+    if (!usuario || usuario.senha !== senha) {
+      return throwError(() => new Error('E-mail ou senha inválidos.'));
+    }
+    return of(usuario);
   }
 
   buscarPorEmail(email: string): Usuario | undefined {
