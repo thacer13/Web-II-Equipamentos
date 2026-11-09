@@ -1,10 +1,11 @@
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
+import { csrfInterceptor } from './shared/interceptors/csrf.interceptor';
 import Aura from '@primeuix/themes/aura';
 
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -14,7 +15,7 @@ registerLocaleData(localePt, 'pt-BR');
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([csrfInterceptor])),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     providePrimeNG({

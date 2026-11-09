@@ -3,11 +3,19 @@ package br.ufpr.tads.webequipamentos.webprojeto;
 import br.ufpr.tads.webequipamentos.dto.CadastroRequest;
 import br.ufpr.tads.webequipamentos.dto.LoginRequest;
 import br.ufpr.tads.webequipamentos.dto.UsuarioResponse;
+import br.ufpr.tads.webequipamentos.services.AutenticacaoService;
 import br.ufpr.tads.webequipamentos.services.UsuarioService;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,33 +24,43 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class UsuarioController {
 
     private final UsuarioService service;
+    private final AutenticacaoService autenticacaoService;
+    private final LogoutHandler logoutHandler = new CompositeLogoutHandler(
+        new SecurityContextLogoutHandler(),
+        new CookieClearingLogoutHandler("JSESSIONID")
+    );
 
-    public UsuarioController(UsuarioService service) {
+    public UsuarioController(UsuarioService service, AutenticacaoService autenticacaoService) {
         this.service = service;
+        this.autenticacaoService = autenticacaoService;
     }
 
-   
-    @PostMapping("/auth/login")
-    public UsuarioResponse login(@RequestBody LoginRequest req, HttpSession session) {
-        UsuarioResponse usuario = service.login(req);
-        
-        session.setAttribute("email", usuario.email());
-        session.setAttribute("perfil", usuario.perfil());
+    @GetMapping("/auth/csrf")
+    public CsrfToken csrfToken(CsrfToken csrfToken) {
+        return csrfToken;
+    }
 
-        return usuario;
+    @PostMapping("/auth/login")
+    public UsuarioResponse login(
+            @RequestBody LoginRequest req,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        return autenticacaoService.login(req, request, response);
     }
 
     @PostMapping("/auth/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(HttpSession session) {
-        session.invalidate();
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        logoutHandler.logout(
+            request,
+            response,
+            SecurityContextHolder.getContext().getAuthentication()
+        );
     }
 
-    
     @PostMapping("/clientes")
     @ResponseStatus(HttpStatus.CREATED)
     public UsuarioResponse cadastrar(@RequestBody CadastroRequest req) {

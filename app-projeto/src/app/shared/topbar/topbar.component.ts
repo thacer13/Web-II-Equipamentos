@@ -36,6 +36,9 @@ const ITENS_FUNCIONARIO: NavItem[] = [
             {{ userName }}
           </span>
           <button type="button" class="sair" (click)="sair()">Sair</button>
+          @if (logoutError) {
+            <span class="logout-error" role="alert">{{ logoutError }}</span>
+          }
         }
       </header>
     }
@@ -53,6 +56,7 @@ const ITENS_FUNCIONARIO: NavItem[] = [
     .sair { border: 1px solid #dc2626; border-radius: .5rem; background: #fff; color: #b91c1c;
       padding: .4rem .8rem; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
     .sair:hover { background: #fef2f2; }
+    .logout-error { color: #b91c1c; font-size: 12px; }
     @media (min-width: 640px) {
       .topbar { top: 1.5rem; }
     }
@@ -62,6 +66,7 @@ export class TopbarComponent {
   private platformId = inject(PLATFORM_ID);
   private usuarios = inject(UsuarioService);
   private router = inject(Router);
+  logoutError = '';
 
   private get usuarioLogado() {
     return isPlatformBrowser(this.platformId) ? this.usuarios.obterUsuarioLogado() : null;
@@ -82,7 +87,12 @@ export class TopbarComponent {
   }
 
   sair(): void {
-    this.usuarios.logout();
-    this.router.navigate(['/auth/login']);
+    this.logoutError = '';
+    this.usuarios.logout().subscribe({
+      next: () => this.router.navigate(['/auth/login']),
+      error: () => {
+        this.logoutError = 'Não foi possível encerrar a sessão. Tente novamente.';
+      }
+    });
   }
 }

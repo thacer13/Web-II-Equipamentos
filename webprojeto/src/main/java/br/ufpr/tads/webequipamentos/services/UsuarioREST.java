@@ -3,8 +3,9 @@ package br.ufpr.tads.webequipamentos.services;
 import br.ufpr.tads.webequipamentos.dto.CadastroRequest;
 import br.ufpr.tads.webequipamentos.dto.LoginRequest;
 import br.ufpr.tads.webequipamentos.dto.UsuarioResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -23,9 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioREST {
 
     private final UsuarioService service;
+    private final AutenticacaoService autenticacaoService;
 
-    public UsuarioREST(UsuarioService service) {
+    public UsuarioREST(UsuarioService service, AutenticacaoService autenticacaoService) {
         this.service = service;
+        this.autenticacaoService = autenticacaoService;
     }
 
     @GetMapping
@@ -47,12 +50,10 @@ public class UsuarioREST {
     @PostMapping("/login")
     public UsuarioResponse login(
         @RequestBody LoginRequest request,
-        HttpSession session
+        HttpServletRequest servletRequest,
+        HttpServletResponse servletResponse
     ) {
-        UsuarioResponse usuario = service.login(request);
-        session.setAttribute("email", usuario.email());
-        session.setAttribute("perfil", usuario.perfil());
-        return usuario;
+        return autenticacaoService.login(request, servletRequest, servletResponse);
     }
 
     @PutMapping("/{id}")

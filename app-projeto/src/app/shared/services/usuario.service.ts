@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, tap, throwError } from 'rxjs';
 import { Usuario } from '../models/usuario.model';
 import { Cliente } from '../models/cliente.model';
 import { Funcionario } from '../models/funcionario.model';
@@ -54,6 +54,7 @@ export class UsuarioService {
   private usarBackend = true;
   private apiUrl = 'http://localhost:8080/api/clientes'; 
   private loginUrl = 'http://localhost:8080/api/auth/login';
+  private logoutUrl = 'http://localhost:8080/api/auth/logout';
 
   obterCredenciaisLembradas(): CredenciaisLembradas | null {
     if (typeof localStorage === 'undefined') {
@@ -106,10 +107,16 @@ export class UsuarioService {
     return usr ? JSON.parse(usr) : null;
   }
 
-  logout(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(LS_USUARIO_LOGADO);
-    }
+  logout(): Observable<void> {
+    const request = this.usarBackend
+      ? this.http.post<void>(this.logoutUrl, {})
+      : of(undefined);
+
+    return request.pipe(tap(() => {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(LS_USUARIO_LOGADO);
+      }
+    }));
   }
 
   cadastrarCliente(cliente: Cliente): Observable<any> { // Inserir
