@@ -1,11 +1,16 @@
 package br.ufpr.tads.webequipamentos.services;
 
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
+import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
+import br.ufpr.tads.webequipamentos.exception.NaoEncontradoException;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +48,44 @@ class SolicitacaoServiceTest {
         assertEquals(criada, service.criar(" joao@teste.com ", req));
 
         verify(dao).registrarAbertura(7);
+    }
+
+    @Test
+    void detalheIncluiHistoricoDaSolicitacao() {
+
+        SolicitacaoResumo resumo = new SolicitacaoResumo(
+            7, LocalDateTime.of(2026, 11, 9, 19, 0),
+            "Notebook", "Tela piscando sem parar",
+            "Notebook", "ORÇADA", new BigDecimal("250.00")
+        );
+
+        List<HistoricoItem> historico = List.of(
+            new HistoricoItem(LocalDateTime.of(2026, 11, 9, 19, 0),
+                null, "ABERTA", null, null, null, null, null, null),
+            new HistoricoItem(LocalDateTime.of(2026, 11, 10, 9, 0),
+                "ABERTA", "ORÇADA", "Maria", null, new BigDecimal("250.00"), null, null, null)
+        );
+
+        when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(resumo));
+        when(dao.listarHistorico(7)).thenReturn(historico);
+
+        SolicitacaoDetalhe detalhe = service.detalharDoCliente("joao@teste.com", 7);
+
+        assertEquals("ORÇADA", detalhe.estado());
+        assertEquals(historico, detalhe.historico());
+    }
+
+    @Test
+    void detalheDeOutroClienteNaoEncontrado() {
+
+        when(dao.buscarDoCliente(7, "jose@teste.com")).thenReturn(Optional.empty());
+
+        assertThrows(
+            NaoEncontradoException.class,
+            () -> service.detalharDoCliente("jose@teste.com", 7)
+        );
+
+        verify(dao, never()).listarHistorico(any());
     }
 
     @Test

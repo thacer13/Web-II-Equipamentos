@@ -1,5 +1,6 @@
 package br.ufpr.tads.webequipamentos.dao;
 
+import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +16,8 @@ public interface SolicitacaoDao {
     void registrarAbertura(Integer solicitacaoId);
 
     Optional<SolicitacaoResumo> buscarResumo(Integer id);
+
+    Optional<SolicitacaoResumo> buscarDoCliente(Integer id, String emailCliente);
+
+    List<HistoricoItem> listarHistorico(Integer solicitacaoId);
 }

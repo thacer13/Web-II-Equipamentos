@@ -1,5 +1,6 @@
 package br.ufpr.tads.webequipamentos.dao;
 
+import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -47,6 +48,23 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         JOIN usuario u ON u.id = s.cliente_id
         WHERE LOWER(u.email) = LOWER(?)
         ORDER BY s.data_hora_abertura ASC, s.id ASC
+        """;
+
+    private static final String SELECT_UMA_DO_CLIENTE = SELECT_RESUMO + """
+        JOIN usuario u ON u.id = s.cliente_id
+        WHERE s.id = ? AND LOWER(u.email) = LOWER(?)
+        """;
+
+    // Nomes dos funcionários vêm de usuario; eventos do cliente ficam sem funcionário.
+    private static final String SELECT_HISTORICO = """
+        SELECT h.data_hora, h.estado_anterior, h.estado_novo,
+               uf.nome AS funcionario, ud.nome AS funcionario_destino,
+               h.valor, h.motivo, h.descricao_manutencao, h.orientacoes_cliente
+        FROM historico_solicitacao h
+        LEFT JOIN usuario uf ON uf.id = h.funcionario_id
+        LEFT JOIN usuario ud ON ud.id = h.funcionario_destino_id
+        WHERE h.solicitacao_id = ?
+        ORDER BY h.data_hora ASC, h.id ASC
         """;
 
     // Só insere se o e-mail for de um cliente e a categoria existir e estiver ativa.
@@ -114,5 +132,27 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         return jdbc.query(SELECT_RESUMO + " WHERE s.id = ?", MAPPER, id)
             .stream()
             .findFirst();
+    }
+
+    @Override
+    public Optional<SolicitacaoResumo> buscarDoCliente(Integer id, String emailCliente) {
+        return jdbc.query(SELECT_UMA_DO_CLIENTE, MAPPER, id, emailCliente)
+            .stream()
+            .findFirst();
+    }
+
+    @Override
+    public List<HistoricoItem> listarHistorico(Integer solicitacaoId) {
+        return jdbc.query(SELECT_HISTORICO, (rs, rowNum) -> new HistoricoItem(
+            rs.getTimestamp("data_hora").toLocalDateTime(),
+            rs.getString("estado_anterior"),
+            rs.getString("estado_novo"),
+            rs.getString("funcionario"),
+            rs.getString("funcionario_destino"),
+            rs.getBigDecimal("valor"),
+            rs.getString("motivo"),
+            rs.getString("descricao_manutencao"),
+            rs.getString("orientacoes_cliente")
+        ), solicitacaoId);
     }
 }

@@ -2,6 +2,7 @@ package br.ufpr.tads.webequipamentos.services;
 
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.exception.NaoEncontradoException;
 import org.springframework.stereotype.Service;
@@ -66,6 +67,28 @@ public class SolicitacaoService {
         dao.registrarAbertura(id);
 
         return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+    }
+
+    // RF008: solicitação de outro cliente responde como inexistente, sem revelar que existe.
+    @Transactional(readOnly = true)
+    public SolicitacaoDetalhe detalharDoCliente(String emailCliente, Integer id) {
+        if (emailCliente == null || emailCliente.isBlank()) {
+            throw new IllegalArgumentException("Cliente não identificado.");
+        }
+
+        SolicitacaoResumo s = dao.buscarDoCliente(id, emailCliente.trim())
+            .orElseThrow(NaoEncontradoException::new);
+
+        return new SolicitacaoDetalhe(
+            s.id(),
+            s.dataHora(),
+            s.descricaoEquipamento(),
+            s.descricaoDefeito(),
+            s.categoriaEquipamento(),
+            s.estado(),
+            s.precoOrcado(),
+            dao.listarHistorico(s.id())
+        );
     }
 
     private static String normalizar(String texto) {

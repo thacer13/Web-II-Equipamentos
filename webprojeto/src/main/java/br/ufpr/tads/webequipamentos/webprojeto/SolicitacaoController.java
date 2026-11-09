@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.services.SolicitacaoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +45,18 @@ public class SolicitacaoController {
 
         return service.listarDoCliente(
             emailDaSessao(request, "CLIENTE")
+        );
+    }
+
+    // RF008
+    @GetMapping("/cliente/{id}")
+    public SolicitacaoDetalhe detalharDoCliente(
+            @PathVariable Integer id,
+            HttpServletRequest request) {
+
+        return service.detalharDoCliente(
+            emailDaSessao(request, "CLIENTE"),
+            id
         );
     }
 
