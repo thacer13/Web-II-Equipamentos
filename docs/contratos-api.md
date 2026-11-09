@@ -74,9 +74,9 @@ A tabela abaixo está implementada em `model/EstadoSolicitacao.java`. Todo endpo
 | `GET /solicitacoes/cliente` | — | `SolicitacaoResumo[]` por data/hora crescente | RF003 | ✅ |
 | `GET /solicitacoes/cliente/{id}` | — | `SolicitacaoDetalhe` | RF005, RF008 | ✅ |
 | `POST /solicitacoes` | `{ descricaoEquipamento, categoriaId, descricaoDefeito }` | 201 `SolicitacaoResumo` | RF004 | ✅ |
-| `POST /solicitacoes/{id}/aprovacao` | — | `SolicitacaoResumo` | RF006 | ⬜ |
-| `POST /solicitacoes/{id}/rejeicao` | `{ motivo }` | `SolicitacaoResumo` | RF007 | ⬜ |
-| `POST /solicitacoes/{id}/resgate` | — | `SolicitacaoResumo` | RF009 | ⬜ |
+| `POST /solicitacoes/{id}/aprovacao` | — | `SolicitacaoResumo` | RF006 | ✅ T19 |
+| `POST /solicitacoes/{id}/rejeicao` | `{ motivo }` | `SolicitacaoResumo` | RF007 | ✅ T26 |
+| `POST /solicitacoes/{id}/resgate` | — | `SolicitacaoResumo` | RF009 | ✅ T28 |
 | `POST /solicitacoes/{id}/pagamento` | — | `SolicitacaoResumo` | RF010 | ⬜ |
 
 ### Solicitações — funcionário

@@ -3,8 +3,10 @@ package br.ufpr.tads.webequipamentos.services;
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
+import br.ufpr.tads.webequipamentos.exception.ConflitoException;
 import br.ufpr.tads.webequipamentos.exception.NaoEncontradoException;
 import org.junit.jupiter.api.Test;
 
@@ -86,6 +88,95 @@ class SolicitacaoServiceTest {
         );
 
         verify(dao, never()).listarHistorico(any());
+    }
+
+    private static SolicitacaoResumo noEstado(String estado) {
+        return new SolicitacaoResumo(
+            7, LocalDateTime.of(2026, 11, 9, 19, 0),
+            "Notebook", "Tela piscando sem parar",
+            "Notebook", estado, new BigDecimal("250.00")
+        );
+    }
+
+    @Test
+    void aprovaOrcadaRegistrandoValor() {
+
+        when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
+        when(dao.alterarEstado(7, "ORÇADA", "APROVADA")).thenReturn(true);
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("APROVADA")));
+
+        assertEquals("APROVADA", service.aprovar("joao@teste.com", 7).estado());
+
+        verify(dao).registrarTransicaoDoCliente(7, "ORÇADA", "APROVADA", new BigDecimal("250.00"), null);
+    }
+
+    @Test
+    void naoAprovaDuasVezes() {
+
+        when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("APROVADA")));
+
+        assertThrows(ConflitoException.class, () -> service.aprovar("joao@teste.com", 7));
+
+        verify(dao, never()).alterarEstado(any(), any(), any());
+    }
+
+    @Test
+    void naoAprovaSolicitacaoDeOutroCliente() {
+
+        when(dao.buscarDoCliente(7, "jose@teste.com")).thenReturn(Optional.empty());
+
+        assertThrows(NaoEncontradoException.class, () -> service.aprovar("jose@teste.com", 7));
+
+        verify(dao, never()).alterarEstado(any(), any(), any());
+    }
+
+    @Test
+    void conflitoQuandoEstadoMudaNoMeio() {
+
+        when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
+        when(dao.alterarEstado(7, "ORÇADA", "APROVADA")).thenReturn(false);
+
+        assertThrows(ConflitoException.class, () -> service.aprovar("joao@teste.com", 7));
+
+        verify(dao, never()).registrarTransicaoDoCliente(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void rejeitaComMotivoNormalizado() {
+
+        when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
+        when(dao.alterarEstado(7, "ORÇADA", "REJEITADA")).thenReturn(true);
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("REJEITADA")));
+
+        service.rejeitar("joao@teste.com", 7, new RejeicaoRequest("  Muito   caro "));
+
+        verify(dao).registrarTransicaoDoCliente(7, "ORÇADA", "REJEITADA", null, "Muito caro");
+    }
+
+    @Test
+    void rejeicaoExigeMotivo() {
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> service.rejeitar("joao@teste.com", 7, new RejeicaoRequest(" a "))
+        );
+
+        verifyNoInteractions(dao);
+    }
+
+    @Test
+    void resgataSomenteRejeitada() {
+
+        when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("REJEITADA")));
+        when(dao.alterarEstado(7, "REJEITADA", "APROVADA")).thenReturn(true);
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("APROVADA")));
+
+        service.resgatar("joao@teste.com", 7);
+
+        verify(dao).registrarTransicaoDoCliente(7, "REJEITADA", "APROVADA", null, null);
+
+        when(dao.buscarDoCliente(8, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
+        assertThrows(ConflitoException.class, () -> service.resgatar("joao@teste.com", 8));
     }
 
     @Test

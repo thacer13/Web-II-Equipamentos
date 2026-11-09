@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
@@ -66,6 +67,44 @@ public class SolicitacaoController {
             HttpServletRequest request) {
 
         return service.detalharDoCliente(
+            emailDaSessao(request, "CLIENTE"),
+            id
+        );
+    }
+
+    // RF006
+    @PostMapping("/{id}/aprovacao")
+    public SolicitacaoResumo aprovar(
+            @PathVariable Integer id,
+            HttpServletRequest request) {
+
+        return service.aprovar(
+            emailDaSessao(request, "CLIENTE"),
+            id
+        );
+    }
+
+    // RF007
+    @PostMapping("/{id}/rejeicao")
+    public SolicitacaoResumo rejeitar(
+            @PathVariable Integer id,
+            @RequestBody RejeicaoRequest req,
+            HttpServletRequest request) {
+
+        return service.rejeitar(
+            emailDaSessao(request, "CLIENTE"),
+            id,
+            req
+        );
+    }
+
+    // RF009
+    @PostMapping("/{id}/resgate")
+    public SolicitacaoResumo resgatar(
+            @PathVariable Integer id,
+            HttpServletRequest request) {
+
+        return service.resgatar(
             emailDaSessao(request, "CLIENTE"),
             id
         );

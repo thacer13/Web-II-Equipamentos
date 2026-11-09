@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,6 +100,19 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         WHERE id = ?
         """;
 
+    // Só altera se o estado ainda for o esperado; 0 linhas = outro usuário alterou antes (409).
+    private static final String UPDATE_ESTADO = """
+        UPDATE solicitacao
+           SET estado = ?
+         WHERE id = ? AND estado = ?
+        """;
+
+    private static final String INSERT_HISTORICO_CLIENTE = """
+        INSERT INTO historico_solicitacao
+            (solicitacao_id, estado_anterior, estado_novo, valor, motivo)
+        VALUES (?, ?, ?, ?, ?)
+        """;
+
     private static final RowMapper<SolicitacaoResumo> MAPPER = (rs, rowNum) -> new SolicitacaoResumo(
         rs.getInt("id"),
         rs.getTimestamp("data_hora_abertura").toLocalDateTime(),
@@ -149,6 +163,17 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     @Override
     public void registrarAbertura(Integer solicitacaoId) {
         jdbc.update(INSERT_HISTORICO_ABERTURA, solicitacaoId);
+    }
+
+    @Override
+    public boolean alterarEstado(Integer id, String estadoAtual, String novoEstado) {
+        return jdbc.update(UPDATE_ESTADO, novoEstado, id, estadoAtual) == 1;
+    }
+
+    @Override
+    public void registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
+                                            BigDecimal valor, String motivo) {
+        jdbc.update(INSERT_HISTORICO_CLIENTE, solicitacaoId, estadoAnterior, estadoNovo, valor, motivo);
     }
 
     @Override

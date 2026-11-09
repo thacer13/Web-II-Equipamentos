@@ -3,6 +3,7 @@ package br.ufpr.tads.webequipamentos.dao;
 import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,9 @@ public interface SolicitacaoDao {
     Optional<SolicitacaoResumo> buscarDoCliente(Integer id, String emailCliente);
 
     List<HistoricoItem> listarHistorico(Integer solicitacaoId);
+
+    boolean alterarEstado(Integer id, String estadoAtual, String novoEstado);
+
+    void registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
+                                     BigDecimal valor, String motivo);
 }

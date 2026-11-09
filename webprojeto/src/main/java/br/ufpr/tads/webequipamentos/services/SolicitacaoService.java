@@ -2,10 +2,13 @@ package br.ufpr.tads.webequipamentos.services;
 
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
+import br.ufpr.tads.webequipamentos.exception.ConflitoException;
 import br.ufpr.tads.webequipamentos.exception.NaoEncontradoException;
+import br.ufpr.tads.webequipamentos.model.EstadoSolicitacao;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,6 +99,68 @@ public class SolicitacaoService {
             s.precoOrcado(),
             dao.listarHistorico(s.id())
         );
+    }
+
+    // RF006: ORÇADA → APROVADA; o histórico guarda o valor aprovado.
+    @Transactional
+    public SolicitacaoResumo aprovar(String emailCliente, Integer id) {
+        return transicaoDoCliente(emailCliente, id,
+            EstadoSolicitacao.ORCADA, EstadoSolicitacao.APROVADA, null, true);
+    }
+
+    // RF007: ORÇADA → REJEITADA com motivo obrigatório.
+    @Transactional
+    public SolicitacaoResumo rejeitar(String emailCliente, Integer id, RejeicaoRequest req) {
+        String motivo = normalizar(req == null ? null : req.motivo());
+
+        if (!Validacoes.textoEntre(motivo, 3, 1000)) {
+            throw new IllegalArgumentException("O motivo deve ter entre 3 e 1000 caracteres.");
+        }
+
+        return transicaoDoCliente(emailCliente, id,
+            EstadoSolicitacao.ORCADA, EstadoSolicitacao.REJEITADA, motivo, false);
+    }
+
+    // RF009: REJEITADA → APROVADA, devolvendo o serviço ao fluxo de manutenção.
+    @Transactional
+    public SolicitacaoResumo resgatar(String emailCliente, Integer id) {
+        return transicaoDoCliente(emailCliente, id,
+            EstadoSolicitacao.REJEITADA, EstadoSolicitacao.APROVADA, null, false);
+    }
+
+    // Solicitação de outro cliente → 404; estado diferente do exigido ou alterado no meio → 409.
+    // A origem é explícita porque APROVADA pode vir de ORÇADA (aprovar) ou de REJEITADA (resgatar).
+    private SolicitacaoResumo transicaoDoCliente(String emailCliente, Integer id, EstadoSolicitacao origemExigida,
+                                                 EstadoSolicitacao destino, String motivo, boolean registrarValor) {
+        if (emailCliente == null || emailCliente.isBlank()) {
+            throw new IllegalArgumentException("Cliente não identificado.");
+        }
+
+        SolicitacaoResumo atual = dao.buscarDoCliente(id, emailCliente.trim())
+            .orElseThrow(NaoEncontradoException::new);
+
+        EstadoSolicitacao origem = EstadoSolicitacao.doBanco(atual.estado());
+
+        if (origem != origemExigida) {
+            throw new ConflitoException(
+                "Solicitação em " + origem.valorBanco() + " não permite esta ação."
+            );
+        }
+        origem.validarTransicao(destino);
+
+        if (!dao.alterarEstado(id, origem.valorBanco(), destino.valorBanco())) {
+            throw new ConflitoException("A solicitação foi alterada por outro usuário. Atualize a página.");
+        }
+
+        dao.registrarTransicaoDoCliente(
+            id,
+            origem.valorBanco(),
+            destino.valorBanco(),
+            registrarValor ? atual.precoOrcado() : null,
+            motivo
+        );
+
+        return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
     }
 
     private static String normalizar(String texto) {
