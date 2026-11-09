@@ -62,7 +62,7 @@
         } @empty {
           <tr>
             <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">
-              Nenhuma solicitação encontrada.
+              {{ carregando ? 'Carregando...' : 'Nenhuma solicitação encontrada.' }}
             </td>
           </tr>
         }

@@ -1,8 +1,10 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { Solicitacao } from '../models/solicitacao.model';
 import { EstadoSolicitacao } from '../models/estado-solicitacao.model';
 import { Cliente } from '../models/cliente.model';
-import { UsuarioService, DADOS_INICIAIS_USUARIOS } from './usuario.service';
+import { DADOS_INICIAIS_USUARIOS } from './usuario.service';
 
 const LS_CHAVE = 'solicitacoes';
 
@@ -135,6 +137,87 @@ const DADOS_INICIAIS: Solicitacao[] = [
   },
 ];
 
+// Formatos da API (docs/contratos-api.md)
+export interface NovaSolicitacao {
+  descricaoEquipamento: string;
+  categoriaId: number;
+  descricaoDefeito: string;
+}
+
+interface SolicitacaoResumoApi {
+  id: number;
+  dataHora: string;
+  descricaoEquipamento: string;
+  descricaoDefeito: string;
+  categoriaEquipamento: string;
+  estado: EstadoSolicitacao;
+  precoOrcado: number | null;
+}
+
+interface HistoricoApi {
+  dataHora: string;
+  estadoAnterior: EstadoSolicitacao | null;
+  estado: EstadoSolicitacao;
+  funcionario: string | null;
+  funcionarioDestino: string | null;
+  valor: number | null;
+  motivo: string | null;
+  descricaoManutencao: string | null;
+  orientacoesCliente: string | null;
+}
+
+interface SolicitacaoDetalheApi extends SolicitacaoResumoApi {
+  historico: HistoricoApi[];
+}
+
+function paraSolicitacao(api: SolicitacaoResumoApi, historico: HistoricoApi[] = []): Solicitacao {
+  const maisRecentes = [...historico].reverse();
+
+  return {
+    id: api.id,
+    dataHora: api.dataHora,
+    descricaoEquipamento: api.descricaoEquipamento,
+    descricaoDefeito: api.descricaoDefeito,
+    categoriaEquipamento: api.categoriaEquipamento,
+    estado: api.estado,
+    precoOrcado: api.precoOrcado ?? undefined,
+    justificativaRejeicao: maisRecentes.find((h) => h.estado === 'REJEITADA')?.motivo ?? undefined,
+    funcionarioDestino: maisRecentes.find((h) => h.funcionarioDestino)?.funcionarioDestino ?? undefined,
+    historico: historico.map((h) => ({
+      dataHora: h.dataHora,
+      estado: h.estado,
+      funcionario: h.funcionario ?? undefined,
+      observacao: observacaoDoHistorico(h),
+    })),
+  };
+}
+
+// Texto exibido em cada evento do histórico, montado a partir dos campos gravados no banco.
+function observacaoDoHistorico(h: HistoricoApi): string | undefined {
+  const moeda = (valor: number) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  switch (h.estado) {
+    case 'ABERTA':
+      return 'Solicitação aberta pelo cliente.';
+    case 'ORÇADA':
+      return h.valor != null ? `Orçamento de ${moeda(h.valor)}.` : undefined;
+    case 'APROVADA':
+      return h.estadoAnterior === 'REJEITADA' ? 'Serviço resgatado pelo cliente.' : 'Serviço aprovado pelo cliente.';
+    case 'REJEITADA':
+      return h.motivo ?? undefined;
+    case 'REDIRECIONADA':
+      return h.funcionarioDestino ? `Redirecionada para ${h.funcionarioDestino}.` : undefined;
+    case 'ARRUMADA':
+      return [h.descricaoManutencao, h.orientacoesCliente && `Orientações: ${h.orientacoesCliente}`]
+        .filter(Boolean)
+        .join(' ') || undefined;
+    case 'PAGA':
+      return 'Pagamento confirmado pelo cliente.';
+    case 'FINALIZADA':
+      return 'Solicitação finalizada.';
+  }
+}
+
 // Uma solicitação já paga: usada nos relatórios de receita (RF019 e RF020)
 export interface ReceitaPaga {
   dataPagamento: string;
@@ -147,20 +230,14 @@ export interface ReceitaPaga {
 })
 export class SolicitacaoService {
   private solicitacoes: Solicitacao[] | null = null;
-  private usuarioService = inject(UsuarioService);
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:8080/api/solicitacoes';
 
   listar(): Solicitacao[] {
     const dados = this.ler() ?? DADOS_INICIAIS;
     this.solicitacoes = dados;
     this.salvar(this.solicitacoes);
     return [...this.solicitacoes].sort((a, b) => a.dataHora.localeCompare(b.dataHora));
-  }
-
-  listarPorCliente(clienteId: number | undefined): Solicitacao[] {
-    if (clienteId === undefined) {
-      return [];
-    }
-    return this.listar().filter((s) => s.cliente?.id === clienteId);
   }
 
   // Solicitações que já foram pagas: data do pagamento (passo PAGA do histórico), categoria e valor
@@ -182,51 +259,25 @@ export class SolicitacaoService {
     return receitas;
   }
 
-  /** Cria uma solicitação vinculada ao cliente logado (grava o clienteId). */
-  criar(
-    dados: Pick<Solicitacao, 'descricaoEquipamento' | 'categoriaEquipamento' | 'descricaoDefeito'>,
-  ): Solicitacao {
-    const descricaoEquipamento = dados.descricaoEquipamento?.trim().replace(/\s+/g, ' ') ?? '';
-    const categoriaEquipamento = dados.categoriaEquipamento?.trim().replace(/\s+/g, ' ') ?? '';
-    const descricaoDefeito = dados.descricaoDefeito?.trim().replace(/\s+/g, ' ') ?? '';
+  // RF003: solicitações do cliente da sessão (contrato em docs/contratos-api.md)
+  listarDoCliente(): Observable<Solicitacao[]> {
+    return this.http
+      .get<SolicitacaoResumoApi[]>(`${this.apiUrl}/cliente`, { withCredentials: true })
+      .pipe(map((lista) => lista.map((resumo) => paraSolicitacao(resumo))));
+  }
 
-    if (!descricaoEquipamento || descricaoEquipamento.length < 3 || descricaoEquipamento.length > 150) {
-      throw new Error('Descrição do equipamento inválida.');
-    }
-    if (!categoriaEquipamento || categoriaEquipamento.length < 2 || categoriaEquipamento.length > 100) {
-      throw new Error('Categoria inválida.');
-    }
-    if (!descricaoDefeito || descricaoDefeito.length < 10 || descricaoDefeito.length > 2000) {
-      throw new Error('Descrição do defeito inválida.');
-    }
+  // RF008: dados completos e histórico de uma solicitação do cliente
+  detalharDoCliente(id: number): Observable<Solicitacao> {
+    return this.http
+      .get<SolicitacaoDetalheApi>(`${this.apiUrl}/cliente/${id}`, { withCredentials: true })
+      .pipe(map((detalhe) => paraSolicitacao(detalhe, detalhe.historico)));
+  }
 
-    this.listar();
-    const lista = this.solicitacoes ?? [];
-    const agora = new Date().toISOString();
-
-    const usuarioLogado = this.usuarioService.obterUsuarioLogado() as Cliente | null;
-    if (!usuarioLogado || usuarioLogado.perfil !== 'CLIENTE') {
-      throw new Error('Cliente não identificado.');
-    }
-    const { senha: _senha, ...cliente } = usuarioLogado;
-
-    const nova: Solicitacao = {
-      descricaoEquipamento,
-      categoriaEquipamento,
-      descricaoDefeito,
-      id: lista.length ? Math.max(...lista.map((s) => s.id)) + 1 : 1,
-      dataHora: agora,
-      cliente,
-      estado: 'ABERTA',
-      historico: [
-        { dataHora: agora, estado: 'ABERTA', observacao: 'Solicitação aberta pelo cliente.' },
-      ],
-    };
-
-    lista.push(nova);
-    this.solicitacoes = lista;
-    this.salvar(lista);
-    return nova;
+  // RF004: data/hora, estado e histórico inicial são definidos pelo servidor
+  abrir(dados: NovaSolicitacao): Observable<Solicitacao> {
+    return this.http
+      .post<SolicitacaoResumoApi>(this.apiUrl, dados, { withCredentials: true })
+      .pipe(map((resumo) => paraSolicitacao(resumo)));
   }
 
   responderOrcamento(solicitacao: Solicitacao, decisao: 'APROVADA' | 'REJEITADA', motivo?: string): boolean {

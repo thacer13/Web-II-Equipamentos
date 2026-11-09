@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 
 export interface Categoria {
   id: number;
@@ -20,6 +22,9 @@ const CATEGORIAS_INICIAIS: Categoria[] = [
   providedIn: 'root',
 })
 export class CategoriaService {
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:8080/api/categorias';
+
   listar(): Categoria[] {
     if (typeof localStorage === 'undefined') {
       return CATEGORIAS_INICIAIS.map((categoria) => ({ ...categoria }));
@@ -32,6 +37,13 @@ export class CategoriaService {
 
     this.salvar(categorias);
     return categorias;
+  }
+
+  // Categorias ativas do banco, usadas na abertura de solicitação (GET /api/categorias, T21)
+  listarAtivasDaApi(): Observable<Categoria[]> {
+    return this.http
+      .get<Categoria[]>(this.apiUrl, { withCredentials: true })
+      .pipe(map((categorias) => categorias.filter((categoria) => categoria.ativo)));
   }
 
   salvar(categorias: Categoria[]): void {

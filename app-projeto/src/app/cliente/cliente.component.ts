@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -7,7 +8,6 @@ import { ClienteOrcamentoComponent, RespostaOrcamento } from './cliente-orcament
 import { ESTADO_COR, ESTADO_LABEL, SolicitacaoService } from '../shared/services/solicitacao.service';
 import { Solicitacao } from '../shared/models/solicitacao.model';
 import { EstadoSolicitacao } from '../shared/models/estado-solicitacao.model';
-import { UsuarioService } from '../shared/services/usuario.service';
 
 @Component({
   selector: 'app-cliente',
@@ -15,12 +15,15 @@ import { UsuarioService } from '../shared/services/usuario.service';
   imports: [ClienteSolicitacaoComponent, ClienteOrcamentoComponent, FormsModule, DialogModule, ButtonModule],
   templateUrl: './cliente.component.html',
 })
-export class ClienteComponent {
+export class ClienteComponent implements OnInit {
   private solicitacaoService = inject(SolicitacaoService);
-  private usuarioService = inject(UsuarioService);
+  private platformId = inject(PLATFORM_ID);
+  // O app não usa Zone.js: respostas HTTP precisam pedir nova renderização.
+  private cdr = inject(ChangeDetectorRef);
 
   mostrarFormulario = false;
-  solicitacoes: Solicitacao[] = this.carregarSolicitacoes();
+  solicitacoes: Solicitacao[] = [];
+  carregando = true;
 
   // RF005/RF007 - painel inline de orçamento
   solicitacaoEmOrcamento: Solicitacao | null = null;
@@ -33,6 +36,13 @@ export class ClienteComponent {
   showMensagem = false;
   mensagem = '';
 
+  ngOnInit(): void {
+    // A página é pré-renderizada; a sessão só existe no navegador.
+    if (isPlatformBrowser(this.platformId)) {
+      this.recarregar();
+    }
+  }
+
   abrirFormulario() {
     this.mostrarFormulario = true;
   }
@@ -42,17 +52,21 @@ export class ClienteComponent {
     this.recarregar();
   }
 
-  private carregarSolicitacoes(): Solicitacao[] {
-    const clienteId = this.usuarioService.obterUsuarioLogado()?.id;
-    return this.solicitacaoService.listarPorCliente(clienteId);
-  }
-
+  // RF003
   private recarregar() {
-    this.solicitacoes = this.carregarSolicitacoes();
-    if (this.selecionada) {
-      const id = this.selecionada.id;
-      this.selecionada = this.solicitacoes.find((s) => s.id === id) ?? null;
-    }
+    this.solicitacaoService.listarDoCliente().subscribe({
+      next: (solicitacoes) => {
+        this.solicitacoes = solicitacoes;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.carregando = false;
+        this.mensagem = 'Não foi possível carregar suas solicitações.';
+        this.showMensagem = true;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   abrirOrcamento(solicitacao: Solicitacao) {
@@ -117,10 +131,20 @@ export class ClienteComponent {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  // RF008
+  // RF008: busca os dados completos e o histórico gravado no banco
   abrirVisualizar(solicitacao: Solicitacao) {
-    this.selecionada = solicitacao;
-    this.showVisualizar = true;
+    this.solicitacaoService.detalharDoCliente(solicitacao.id).subscribe({
+      next: (detalhe) => {
+        this.selecionada = detalhe;
+        this.showVisualizar = true;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.mensagem = 'Não foi possível carregar os dados do serviço.';
+        this.showMensagem = true;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   // RF010

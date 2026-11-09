@@ -1,4 +1,6 @@
-import { Component, Output, EventEmitter, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, Output, EventEmitter, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -14,21 +16,41 @@ import { Categoria, CategoriaService } from '../../shared/services/categoria.ser
   templateUrl: './cliente-solicitacao.component.html',
   styleUrl: './cliente-solicitacao.component.css',
 })
-export class ClienteSolicitacaoComponent {
+export class ClienteSolicitacaoComponent implements OnInit {
   @Output() aoSalvar = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
   private solicitacaoService = inject(SolicitacaoService);
   private categoriaService = inject(CategoriaService);
+  private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
 
   mensagemErro = '';
-  categorias: Categoria[] = this.categoriaService.listar().filter((categoria) => categoria.ativo);
+  enviando = false;
+  categorias: Categoria[] = [];
 
   formulario: FormGroup = this.fb.group({
     descricaoEquipamento: ['', [Validators.required, naoVazio(), Validators.minLength(3), Validators.maxLength(LIMITES.descricaoEquipamento)]],
-    categoriaEquipamento: [null, Validators.required],
+    categoriaId: [null, Validators.required],
     descricaoDefeito: ['', [Validators.required, naoVazio(), Validators.minLength(10), Validators.maxLength(LIMITES.descricaoDefeito)]],
   });
+
+  ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    this.categoriaService.listarAtivasDaApi().subscribe({
+      next: (categorias) => {
+        this.categorias = categorias;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.mensagemErro = 'Não foi possível carregar as categorias.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
 
   enviar() {
     if (this.formulario.invalid) {
@@ -38,22 +60,28 @@ export class ClienteSolicitacaoComponent {
     }
 
     const descricaoEquipamento = normalizarTexto(this.formulario.value.descricaoEquipamento);
-    const categoriaEquipamento = normalizarTexto(this.formulario.value.categoriaEquipamento);
     const descricaoDefeito = normalizarTexto(this.formulario.value.descricaoDefeito);
+    const categoriaId = this.formulario.value.categoriaId as number;
 
-    if (!descricaoEquipamento || !categoriaEquipamento || !descricaoDefeito) {
+    if (!descricaoEquipamento || !descricaoDefeito) {
       this.mensagemErro = 'Preencha todos os campos corretamente.';
       return;
     }
 
-    try {
-      this.solicitacaoService.criar({ descricaoEquipamento, categoriaEquipamento, descricaoDefeito });
-    } catch (erro) {
-      this.mensagemErro = erro instanceof Error ? erro.message : 'Não foi possível criar a solicitação.';
-      return;
-    }
-    this.formulario.reset();
-    this.mensagemErro = '';
-    this.aoSalvar.emit();
+    this.enviando = true;
+    this.solicitacaoService.abrir({ descricaoEquipamento, categoriaId, descricaoDefeito }).subscribe({
+      next: () => {
+        this.enviando = false;
+        this.formulario.reset();
+        this.mensagemErro = '';
+        this.aoSalvar.emit();
+        this.cdr.markForCheck();
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.enviando = false;
+        this.mensagemErro = erro.error?.mensagem ?? 'Não foi possível criar a solicitação.';
+        this.cdr.markForCheck();
+      },
+    });
   }
 }
