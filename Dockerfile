@@ -29,8 +29,8 @@ ENV PATH="/root/.local/bin:$PATH"
 # Diretório de trabalho padrão
 WORKDIR /workspace
 
-# Expõe as portas do Angular (4200) e do Spring Boot (8080)
-EXPOSE 4200 8080
+# Expõe as portas do Angular (4200) e do Spring Boot (8082)
+EXPOSE 4200 8082
 
-# Mantém o container ativo em segundo plano
-CMD ["sleep", "infinity"]
+# Inicia a API Spring Boot ao subir o container
+CMD ["bash", "-lc", "cd /workspace/webprojeto && exec ./mvnw spring-boot:run"]
