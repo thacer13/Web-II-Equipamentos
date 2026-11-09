@@ -1,6 +1,7 @@
 
 package br.ufpr.tads.webequipamentos.webprojeto;
 
+import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.services.SolicitacaoService;
 import org.junit.jupiter.api.Test;
@@ -133,6 +134,105 @@ class SolicitacaoControllerTest {
         );
 
         verifyNoInteractions(service);
+    }
+
+    @Test
+    void listagemDoClienteExigeSessao() {
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.listarDoCliente(request)
+        );
+
+        assertEquals(
+            HttpStatus.UNAUTHORIZED,
+            erro.getStatusCode()
+        );
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void listagemDoClienteRejeitaFuncionario() {
+
+        autenticar("maria@teste.com", "FUNCIONARIO");
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.listarDoCliente(request)
+        );
+
+        assertEquals(
+            HttpStatus.FORBIDDEN,
+            erro.getStatusCode()
+        );
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void listagemDoClienteUsaSomenteEmailDaSessao() {
+
+        autenticar(" joao@teste.com ", "CLIENTE");
+
+        when(service.listarDoCliente("joao@teste.com"))
+            .thenReturn(List.of());
+
+        assertEquals(
+            List.of(),
+            controller.listarDoCliente(request)
+        );
+
+        verify(service).listarDoCliente("joao@teste.com");
+    }
+
+    @Test
+    void criacaoRejeitaFuncionario() {
+
+        autenticar("maria@teste.com", "FUNCIONARIO");
+
+        NovaSolicitacaoRequest req = new NovaSolicitacaoRequest(
+            "Notebook", 1, "Nao liga de jeito nenhum"
+        );
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.criar(req, request)
+        );
+
+        assertEquals(
+            HttpStatus.FORBIDDEN,
+            erro.getStatusCode()
+        );
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void criacaoUsaClienteDaSessao() {
+
+        autenticar("joao@teste.com", "CLIENTE");
+
+        NovaSolicitacaoRequest req = new NovaSolicitacaoRequest(
+            "Notebook", 1, "Nao liga de jeito nenhum"
+        );
+
+        SolicitacaoResumo criada = new SolicitacaoResumo(
+            30,
+            LocalDateTime.of(2026, 11, 9, 19, 0),
+            "Notebook",
+            "Nao liga de jeito nenhum",
+            "Notebook",
+            "ABERTA",
+            null
+        );
+
+        when(service.criar("joao@teste.com", req))
+            .thenReturn(criada);
+
+        assertEquals(criada, controller.criar(req, request));
+
+        verify(service).criar("joao@teste.com", req);
     }
 
     private void autenticar(
