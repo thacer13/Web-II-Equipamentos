@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -24,6 +24,7 @@ export class LoginComponent {
 
   private usuarioService = inject(UsuarioService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor() {
     const credenciais = this.usuarioService.obterCredenciaisLembradas();
@@ -80,6 +81,7 @@ export class LoginComponent {
           this.mensagemErro = 'Não foi possível realizar o login. Tente novamente.';
         }
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
