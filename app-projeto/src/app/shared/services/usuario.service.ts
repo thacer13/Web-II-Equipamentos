@@ -52,8 +52,8 @@ export class UsuarioService {
 
   // Mudar para 'true' quando quiser testar integrado com o Spring Boot real
   private usarBackend = true;
-  private apiUrl = 'http://localhost:8082/api/clientes'; 
-  private loginUrl = 'http://localhost:8082/api/auth/login';
+  private apiUrl = 'http://localhost:8080/api/clientes'; 
+  private loginUrl = 'http://localhost:8080/api/auth/login';
 
   obterCredenciaisLembradas(): CredenciaisLembradas | null {
     if (typeof localStorage === 'undefined') {
