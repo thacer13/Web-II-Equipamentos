@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -69,9 +70,16 @@ export class ClienteComponent implements OnInit {
     });
   }
 
+  // RF005: o orçamento é buscado no servidor ao abrir, não reaproveitado da lista
   abrirOrcamento(solicitacao: Solicitacao) {
-    this.solicitacaoEmOrcamento = solicitacao;
-    this.showOrcamento = true;
+    this.solicitacaoService.detalharDoCliente(solicitacao.id).subscribe({
+      next: (detalhe) => {
+        this.solicitacaoEmOrcamento = detalhe;
+        this.showOrcamento = true;
+        this.cdr.markForCheck();
+      },
+      error: () => this.mostrarErro('Não foi possível carregar o orçamento.'),
+    });
   }
 
   fecharOrcamento() {
@@ -80,29 +88,34 @@ export class ClienteComponent implements OnInit {
     this.recarregar();
   }
 
+  // RF006 / RF007
   processarOrcamento(resposta: RespostaOrcamento): void {
     if (!this.solicitacaoEmOrcamento) return;
 
     const solicitacao = this.solicitacaoEmOrcamento;
     const valor = solicitacao.precoOrcado ?? 0;
-    const sucesso = this.solicitacaoService.responderOrcamento(
-      solicitacao,
-      resposta.decisao,
-      resposta.motivo
-    );
+    const operacao = resposta.decisao === 'APROVADA'
+      ? this.solicitacaoService.aprovar(solicitacao.id)
+      : this.solicitacaoService.rejeitar(solicitacao.id, resposta.motivo ?? '');
 
-    if (!sucesso) {
-      this.mensagem = 'Não foi possível responder ao orçamento.';
-      this.showMensagem = true;
-      return;
-    }
+    operacao.subscribe({
+      next: () => {
+        this.fecharOrcamento();
+        this.mensagem = resposta.decisao === 'APROVADA'
+          ? `Serviço Aprovado no Valor ${this.formatarValor(valor)}`
+          : 'Serviço Rejeitado';
+        this.showMensagem = true;
+        this.cdr.markForCheck();
+      },
+      error: (erro: HttpErrorResponse) =>
+        this.mostrarErro(erro.error?.mensagem ?? 'Não foi possível responder ao orçamento.'),
+    });
+  }
 
-    this.fecharOrcamento();
-    this.recarregar();
-    this.mensagem = resposta.decisao === 'APROVADA'
-      ? `Serviço Aprovado no Valor ${this.formatarValor(valor)}`
-      : 'Serviço Rejeitado';
+  private mostrarErro(mensagem: string) {
+    this.mensagem = mensagem;
     this.showMensagem = true;
+    this.cdr.markForCheck();
   }
 
   labelEstado(estado: EstadoSolicitacao): string {
@@ -169,15 +182,16 @@ export class ClienteComponent implements OnInit {
 
   // RF009
   resgatar(solicitacao: Solicitacao) {
-    this.solicitacaoService.atualizarEstado(
-      solicitacao,
-      'APROVADA',
-      undefined,
-      'Serviço resgatado pelo cliente.'
-    );
-    this.recarregar();
-    this.mensagem = 'Serviço Resgatado';
-    this.showMensagem = true;
+    this.solicitacaoService.resgatar(solicitacao.id).subscribe({
+      next: () => {
+        this.recarregar();
+        this.mensagem = 'Serviço Resgatado';
+        this.showMensagem = true;
+        this.cdr.markForCheck();
+      },
+      error: (erro: HttpErrorResponse) =>
+        this.mostrarErro(erro.error?.mensagem ?? 'Não foi possível resgatar o serviço.'),
+    });
   }
 
   // Ação disponível no RF008, conforme o estado atual (RF003).
