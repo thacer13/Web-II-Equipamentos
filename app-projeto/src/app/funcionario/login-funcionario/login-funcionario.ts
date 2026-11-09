@@ -47,6 +47,7 @@ export class LoginFuncionarioComponent implements OnInit {
   funcionarioAtual = this.usuarioEncontrado?.nome;
 
   linhas: LinhaSolicitacao[] = [];
+  erroCarregamento = '';
   statusOptions = [
     { label: ESTADO_LABEL.ABERTA, value: 'ABERTA' },
     { label: ESTADO_LABEL['ORÇADA'], value: 'ORÇADA' },
@@ -134,29 +135,23 @@ export class LoginFuncionarioComponent implements OnInit {
     columnFilter.hide();
   }
 
-  constructor() {
-    this.linhas = this.solicitacaoService
-      .listar()
-      .filter((s) => s.estado === 'ABERTA')
-      .map((s) => ({
-        solicitacao: s,
-        nomeCliente: this.resolverNomeCliente(s),
-        // sem new Date() como fallback: data ausente fica null
-        dataHoraObj: s.dataHora ? new Date(s.dataHora) : null
-      }));
-  }
-
-  private resolverNomeCliente(s: Solicitacao): string {
-    if (s.cliente?.nome) return s.cliente.nome;
-
-    if (s.cliente?.id !== undefined && isPlatformBrowser(this.platformId)) {
-      const usuario = this.usuarioService
-        .listarTodos()
-        .find((u) => u.id === s.cliente?.id);
-
-      if (usuario?.nome) return usuario.nome;
-    }
-    return s.cliente?.nome ?? '';
+  // RF011: abertas vindas do servidor (a página é pré-renderizada, então só no navegador)
+  private carregarAbertas(): void {
+    this.solicitacaoService.listarAbertas().subscribe({
+      next: (abertas) => {
+        this.linhas = abertas.map((s) => ({
+          solicitacao: s,
+          nomeCliente: s.cliente?.nome ?? '',
+          // sem new Date() como fallback: data ausente fica null
+          dataHoraObj: s.dataHora ? new Date(s.dataHora) : null
+        }));
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.erroCarregamento = 'Não foi possível carregar as solicitações abertas.';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   onOrcamentoClick(solicitacao: Solicitacao): void {
@@ -174,6 +169,10 @@ export class LoginFuncionarioComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.carregarAbertas();
+    }
+
     this.filterService.filters['contains'] = (value: any, filter: any): boolean => {
       if (filter === undefined || filter === null || filter === '') {
         return true;

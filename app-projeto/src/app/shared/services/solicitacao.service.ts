@@ -170,6 +170,52 @@ interface SolicitacaoDetalheApi extends SolicitacaoResumoApi {
   historico: HistoricoApi[];
 }
 
+interface SolicitacaoAbertaApi {
+  id: number;
+  dataHora: string;
+  cliente: string;
+  descricaoEquipamento: string;
+  categoriaEquipamento: string;
+  descricaoDefeito: string;
+}
+
+interface ClienteDaSolicitacaoApi {
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  cep: string;
+  logradouro: string;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string;
+  cidade: string;
+  estado: string;
+}
+
+interface SolicitacaoFuncionarioApi extends SolicitacaoDetalheApi {
+  cliente: ClienteDaSolicitacaoApi | null;
+}
+
+function paraCliente(api: ClienteDaSolicitacaoApi): Cliente {
+  return {
+    nome: api.nome,
+    email: api.email,
+    perfil: 'CLIENTE',
+    cpf: api.cpf,
+    telefone: api.telefone,
+    endereco: {
+      cep: api.cep,
+      logradouro: api.logradouro,
+      numero: api.numero ?? undefined,
+      complemento: api.complemento ?? undefined,
+      bairro: api.bairro,
+      cidade: api.cidade,
+      estado: api.estado,
+    },
+  };
+}
+
 function paraSolicitacao(api: SolicitacaoResumoApi, historico: HistoricoApi[] = []): Solicitacao {
   const maisRecentes = [...historico].reverse();
 
@@ -271,6 +317,39 @@ export class SolicitacaoService {
     return this.http
       .get<SolicitacaoDetalheApi>(`${this.apiUrl}/cliente/${id}`, { withCredentials: true })
       .pipe(map((detalhe) => paraSolicitacao(detalhe, detalhe.historico)));
+  }
+
+  // RF011: abertas para qualquer funcionário orçar
+  listarAbertas(): Observable<Solicitacao[]> {
+    return this.http
+      .get<SolicitacaoAbertaApi[]>(`${this.apiUrl}/abertas`, { withCredentials: true })
+      .pipe(map((lista) => lista.map((aberta) => ({
+        id: aberta.id,
+        dataHora: aberta.dataHora,
+        descricaoEquipamento: aberta.descricaoEquipamento,
+        categoriaEquipamento: aberta.categoriaEquipamento,
+        descricaoDefeito: aberta.descricaoDefeito,
+        estado: 'ABERTA' as EstadoSolicitacao,
+        historico: [],
+        cliente: { nome: aberta.cliente } as Cliente,
+      }))));
+  }
+
+  // RF012 / RF014: solicitação completa com os dados do cliente
+  detalharParaFuncionario(id: number): Observable<Solicitacao> {
+    return this.http
+      .get<SolicitacaoFuncionarioApi>(`${this.apiUrl}/funcionario/${id}`, { withCredentials: true })
+      .pipe(map((api) => ({
+        ...paraSolicitacao(api, api.historico),
+        cliente: api.cliente ? paraCliente(api.cliente) : undefined,
+      })));
+  }
+
+  // RF012
+  orcar(id: number, valor: number): Observable<Solicitacao> {
+    return this.http
+      .post<SolicitacaoResumoApi>(`${this.apiUrl}/${id}/orcamento`, { valor }, { withCredentials: true })
+      .pipe(map((resumo) => paraSolicitacao(resumo)));
   }
 
   // RF006

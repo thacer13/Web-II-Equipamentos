@@ -11,6 +11,14 @@
       </span>
     </div>
 
+    <p
+      *ngIf="!solicitacao && mensagemErro"
+      class="text-sm text-red-600">
+
+      {{ mensagemErro }}
+
+    </p>
+
     <div
       *ngIf="solicitacao"
       class="app-card w-full overflow-hidden">
@@ -198,6 +206,14 @@
           </p>
 
         </div>
+
+        <p
+          *ngIf="mensagemErro"
+          class="mt-6 text-sm text-red-600">
+
+          {{ mensagemErro }}
+
+        </p>
 
         <!-- BOTÕES -->
 

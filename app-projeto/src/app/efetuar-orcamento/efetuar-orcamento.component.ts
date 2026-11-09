@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,7 +11,6 @@ import { Solicitacao } from '../shared/models/solicitacao.model';
 import { SolicitacaoService } from '../shared/services/solicitacao.service';
 
 import { ConfirmationService } from 'primeng/api';
-import { UsuarioService } from '../shared/services/usuario.service';
 
 @Component({
   selector: 'app-efetuar-orcamento',
@@ -30,13 +30,16 @@ import { UsuarioService } from '../shared/services/usuario.service';
 export class EfetuarOrcamentoComponent implements OnInit {
   private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
   private location = inject(Location); 
-  private usuarioService = inject(UsuarioService);
+  // O app não usa Zone.js: respostas HTTP precisam pedir nova renderização.
+  private cdr = inject(ChangeDetectorRef);
 
   solicitacao: Solicitacao | null = null;
 
   valorOrcamento: number | null = null;
 
   salvandoOrcamento = false;
+
+  mensagemErro = '';
 
   constructor(
     private router: Router,
@@ -46,39 +49,29 @@ export class EfetuarOrcamentoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    if (!idParam) {
-      if (isPlatformBrowser(this.platformId)) {
-        this.router.navigate(['/funcionario/solicitacoes']);
-      }
+    // A rota é renderizada só no cliente, mas a sessão continua existindo apenas no navegador.
+    if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
-    const id = Number(idParam);
-    let solicitacaoRecebida: Solicitacao | null = null;
-
-    // Tenta capturar do history.state APENAS se estiver rodando no navegador
-    if (isPlatformBrowser(this.platformId)) {
-      solicitacaoRecebida = history.state?.solicitacao as Solicitacao;
+    if (!id) {
+      this.router.navigate(['/funcionario']);
+      return;
     }
 
-    // Cenário 1: Chegou via navegação com state no navegador
-    if (solicitacaoRecebida && solicitacaoRecebida.id === id) {
-      this.solicitacao = solicitacaoRecebida;
-    } 
-    // Cenário 2: SSR ou F5 (busca no serviço)
-    else {
-      const listagem = this.solicitacaoService.listar();
-      const solicitacaoEncontrada = listagem.find(s => s.id === id);
-
-      if (solicitacaoEncontrada) {
-        this.solicitacao = solicitacaoEncontrada;
-      } else if (isPlatformBrowser(this.platformId)) {
-        // Redireciona somente no browser se o item realmente não existir no serviço
-        this.router.navigate(['/funcionario/solicitacoes']);
-      }
-    }
+    // RF012: dados completos da solicitação e do cliente vêm do servidor
+    this.solicitacaoService.detalharParaFuncionario(id).subscribe({
+      next: (solicitacao) => {
+        this.solicitacao = solicitacao;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.mensagemErro = 'Não foi possível carregar a solicitação.';
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   get valorValido(): boolean {
@@ -121,21 +114,16 @@ export class EfetuarOrcamentoComponent implements OnInit {
     }
 
     this.salvandoOrcamento = true;
-    const valor = this.valorOrcamento!;
+    this.mensagemErro = '';
 
-    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
-    const nomeFuncionario = usuarioLogado ? usuarioLogado.nome : 'Funcionário';
-    const observacao = `Orçamento de ${this.formatarMoeda(valor)}.`;
-
-    this.solicitacaoService.atualizarEstado(
-      this.solicitacao,
-      'ORÇADA',
-      nomeFuncionario,
-      observacao,
-      valor
-    );
-
-    this.router.navigate(['/funcionario/solicitacoes']);
+    this.solicitacaoService.orcar(this.solicitacao.id, this.valorOrcamento!).subscribe({
+      next: () => this.router.navigate(['/funcionario']),
+      error: (erro: HttpErrorResponse) => {
+        this.salvandoOrcamento = false;
+        this.mensagemErro = erro.error?.mensagem ?? 'Não foi possível registrar o orçamento.';
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   private formatarMoeda(valor: number): string {
