@@ -30,7 +30,7 @@ services:
       - .:/workspace:cached
     ports:
       - "4200:4200" # Angular Dev Server
-      - "8082:8080" # Spring Boot API
+      - "8080:8080" # Spring Boot API (mesma porta usada pelo Angular)
     environment:
       DB_URL: jdbc:postgresql://database:5432/manutencao_db
       DB_USER: dev_user

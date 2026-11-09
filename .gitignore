@@ -5,7 +5,7 @@ dist/
 
 # Java / Spring Boot
 target/
-.mvn/
+.mvn/wrapper/maven-wrapper.jar
 *.jar
 
 # Dados do PostgreSQL (criados pelo Docker)

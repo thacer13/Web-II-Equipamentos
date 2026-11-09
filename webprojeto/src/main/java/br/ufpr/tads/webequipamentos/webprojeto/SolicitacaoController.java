@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.services.SolicitacaoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,6 +37,16 @@ public class SolicitacaoController {
         return service.listarDoFuncionario(
             emailDaSessao(request, "FUNCIONARIO")
         );
+    }
+
+    // RF011: o funcionário só precisa estar logado; a lista é a mesma para todos.
+    @GetMapping("/abertas")
+    public List<SolicitacaoAberta> listarAbertas(
+            HttpServletRequest request) {
+
+        emailDaSessao(request, "FUNCIONARIO");
+
+        return service.listarAbertas();
     }
 
     // RF003

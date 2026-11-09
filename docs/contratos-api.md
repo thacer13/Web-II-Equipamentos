@@ -83,7 +83,8 @@ A tabela abaixo está implementada em `model/EstadoSolicitacao.java`. Todo endpo
 
 | Método e rota | Corpo | Resposta | RF | Status |
 |---|---|---|---|---|
-| `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]` visíveis ao funcionário | RF011, RF013 | ✅ (filtros de período ⬜ T30/T31) |
+| `GET /solicitacoes/abertas` | — | `SolicitacaoAberta[]`: todas em ABERTA, por data/hora crescente | RF011 | ✅ T13 |
+| `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]` visíveis ao funcionário | RF013 | ✅ (filtros de período ⬜ T30/T31) |
 | `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoDetalhe` + dados do cliente | RF012, RF014 | ⬜ |
 | `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 | ⬜ |
 | `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 | ⬜ |
@@ -114,6 +115,16 @@ Rotas sugeridas; o responsável de cada tarefa confirma ao implementar.
   "categoriaEquipamento": "Notebook",
   "estado": "ORÇADA",
   "precoOrcado": 250.00        // null enquanto não orçada
+}
+
+// SolicitacaoAberta (página inicial do funcionário)
+{
+  "id": 21,
+  "dataHora": "2026-10-02T15:15:00",
+  "cliente": "João",
+  "descricaoEquipamento": "Notebook Samsung Book",
+  "categoriaEquipamento": "Notebook",
+  "descricaoDefeito": "Superaquecimento"
 }
 
 // SolicitacaoDetalhe = SolicitacaoResumo + historico
