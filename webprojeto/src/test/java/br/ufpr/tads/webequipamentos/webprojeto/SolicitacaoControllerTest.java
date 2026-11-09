@@ -2,6 +2,7 @@
 package br.ufpr.tads.webequipamentos.webprojeto;
 
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.services.SolicitacaoService;
 import org.junit.jupiter.api.Test;
@@ -184,6 +185,62 @@ class SolicitacaoControllerTest {
         );
 
         verify(service).listarDoCliente("joao@teste.com");
+    }
+
+    @Test
+    void abertasExigemSessao() {
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.listarAbertas(request)
+        );
+
+        assertEquals(
+            HttpStatus.UNAUTHORIZED,
+            erro.getStatusCode()
+        );
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void abertasRejeitamCliente() {
+
+        autenticar("joao@teste.com", "CLIENTE");
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.listarAbertas(request)
+        );
+
+        assertEquals(
+            HttpStatus.FORBIDDEN,
+            erro.getStatusCode()
+        );
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void abertasListadasParaFuncionario() {
+
+        autenticar("maria@teste.com", "FUNCIONARIO");
+
+        SolicitacaoAberta aberta = new SolicitacaoAberta(
+            3,
+            LocalDateTime.of(2026, 11, 9, 8, 30),
+            "João",
+            "Notebook",
+            "Notebook",
+            "Nao liga de jeito nenhum"
+        );
+
+        when(service.listarAbertas()).thenReturn(List.of(aberta));
+
+        assertEquals(
+            List.of(aberta),
+            controller.listarAbertas(request)
+        );
     }
 
     @Test

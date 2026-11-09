@@ -3,6 +3,7 @@ package br.ufpr.tads.webequipamentos.services;
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.exception.NaoEncontradoException;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,12 @@ public class SolicitacaoService {
         }
 
         return dao.listarVisiveis(emailFuncionario.trim());
+    }
+
+    // RF011
+    @Transactional(readOnly = true)
+    public List<SolicitacaoAberta> listarAbertas() {
+        return dao.listarAbertas();
     }
 
     // RF003

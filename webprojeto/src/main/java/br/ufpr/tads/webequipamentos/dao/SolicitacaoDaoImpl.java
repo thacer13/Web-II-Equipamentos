@@ -1,6 +1,7 @@
 package br.ufpr.tads.webequipamentos.dao;
 
 import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -47,6 +48,17 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     private static final String SELECT_DO_CLIENTE = SELECT_RESUMO + """
         JOIN usuario u ON u.id = s.cliente_id
         WHERE LOWER(u.email) = LOWER(?)
+        ORDER BY s.data_hora_abertura ASC, s.id ASC
+        """;
+
+    // RF011: todas as abertas, da mais antiga para a mais recente, para qualquer funcionário orçar.
+    private static final String SELECT_ABERTAS = """
+        SELECT s.id, s.data_hora_abertura, u.nome AS cliente, s.descricao_equipamento,
+               c.nome AS categoria_equipamento, s.descricao_defeito
+        FROM solicitacao s
+        JOIN usuario u ON u.id = s.cliente_id
+        JOIN categoria_equipamento c ON c.id = s.categoria_id
+        WHERE s.estado = 'ABERTA'
         ORDER BY s.data_hora_abertura ASC, s.id ASC
         """;
 
@@ -111,6 +123,18 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     @Override
     public List<SolicitacaoResumo> listarDoCliente(String emailCliente) {
         return jdbc.query(SELECT_DO_CLIENTE, MAPPER, emailCliente);
+    }
+
+    @Override
+    public List<SolicitacaoAberta> listarAbertas() {
+        return jdbc.query(SELECT_ABERTAS, (rs, rowNum) -> new SolicitacaoAberta(
+            rs.getInt("id"),
+            rs.getTimestamp("data_hora_abertura").toLocalDateTime(),
+            rs.getString("cliente"),
+            rs.getString("descricao_equipamento"),
+            rs.getString("categoria_equipamento"),
+            rs.getString("descricao_defeito")
+        ));
     }
 
     @Override
