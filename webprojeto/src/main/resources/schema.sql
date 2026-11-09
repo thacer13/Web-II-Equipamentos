@@ -1,4 +1,4 @@
-CREATE TABLE usuario (
+CREATE TABLE IF NOT EXISTS usuario (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) NOT NULL UNIQUE,
     senha_hash VARCHAR(255) NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE usuario (
     nome VARCHAR(150) NOT NULL
 );
 
-CREATE TABLE endereco (
+CREATE TABLE IF NOT EXISTS endereco (
     id SERIAL PRIMARY KEY,
     cep VARCHAR(9) NOT NULL,
     logradouro VARCHAR(150) NOT NULL,
@@ -17,26 +17,26 @@ CREATE TABLE endereco (
     estado VARCHAR(2) NOT NULL
 );
 
-CREATE TABLE cliente (
+CREATE TABLE IF NOT EXISTS cliente (
     id INTEGER PRIMARY KEY REFERENCES usuario(id),
     cpf VARCHAR(11) NOT NULL UNIQUE,
     telefone VARCHAR(20) NOT NULL,
     endereco_id INTEGER NOT NULL REFERENCES endereco(id)
 );
 
-CREATE TABLE funcionario (
+CREATE TABLE IF NOT EXISTS funcionario (
     id INTEGER PRIMARY KEY REFERENCES usuario(id),
     data_nascimento DATE NOT NULL,
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE categoria_equipamento (
+CREATE TABLE IF NOT EXISTS categoria_equipamento (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE solicitacao (
+CREATE TABLE IF NOT EXISTS solicitacao (
     id SERIAL PRIMARY KEY,
     cliente_id INTEGER NOT NULL REFERENCES cliente(id),
     categoria_id INTEGER NOT NULL REFERENCES categoria_equipamento(id),
@@ -53,7 +53,7 @@ CREATE TABLE solicitacao (
     data_hora_finalizacao TIMESTAMP
 );
 
-CREATE TABLE historico_solicitacao (
+CREATE TABLE IF NOT EXISTS historico_solicitacao (
     id SERIAL PRIMARY KEY,
     solicitacao_id INTEGER NOT NULL REFERENCES solicitacao(id),
     data_hora TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -66,4 +66,3 @@ CREATE TABLE historico_solicitacao (
     descricao_manutencao TEXT,
     orientacoes_cliente TEXT
 );
-
