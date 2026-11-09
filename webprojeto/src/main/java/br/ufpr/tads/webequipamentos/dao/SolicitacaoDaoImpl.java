@@ -1,5 +1,6 @@
 package br.ufpr.tads.webequipamentos.dao;
 
+import br.ufpr.tads.webequipamentos.dto.ClienteDaSolicitacao;
 import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
@@ -113,6 +114,39 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         VALUES (?, ?, ?, ?, ?)
         """;
 
+    private static final String SELECT_CLIENTE_DA_SOLICITACAO = """
+        SELECT u.nome, c.cpf, u.email, c.telefone,
+               e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
+        FROM solicitacao s
+        JOIN cliente c ON c.id = s.cliente_id
+        JOIN usuario u ON u.id = c.id
+        JOIN endereco e ON e.id = c.endereco_id
+        WHERE s.id = ?
+        """;
+
+    // RF012: só orça se ainda estiver ABERTA; se dois funcionários enviarem juntos, só um altera a linha.
+    private static final String UPDATE_ORCAMENTO = """
+        UPDATE solicitacao s
+           SET estado = 'ORÇADA',
+               valor_orcamento = ?,
+               funcionario_orcamento_id = f.id,
+               data_hora_orcamento = NOW()
+          FROM funcionario f
+          JOIN usuario u ON u.id = f.id
+         WHERE LOWER(u.email) = LOWER(?) AND f.ativo = TRUE
+           AND s.id = ? AND s.estado = 'ABERTA'
+        """;
+
+    private static final String INSERT_HISTORICO_ORCAMENTO = """
+        INSERT INTO historico_solicitacao
+            (solicitacao_id, data_hora, estado_anterior, estado_novo, funcionario_id, valor)
+        SELECT s.id, s.data_hora_orcamento, 'ABERTA', 'ORÇADA', f.id, ?
+        FROM solicitacao s
+        JOIN funcionario f ON f.id = s.funcionario_orcamento_id
+        JOIN usuario u ON u.id = f.id
+        WHERE s.id = ? AND LOWER(u.email) = LOWER(?)
+        """;
+
     private static final RowMapper<SolicitacaoResumo> MAPPER = (rs, rowNum) -> new SolicitacaoResumo(
         rs.getInt("id"),
         rs.getTimestamp("data_hora_abertura").toLocalDateTime(),
@@ -168,6 +202,33 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     @Override
     public boolean alterarEstado(Integer id, String estadoAtual, String novoEstado) {
         return jdbc.update(UPDATE_ESTADO, novoEstado, id, estadoAtual) == 1;
+    }
+
+    @Override
+    public Optional<ClienteDaSolicitacao> buscarClienteDaSolicitacao(Integer solicitacaoId) {
+        return jdbc.query(SELECT_CLIENTE_DA_SOLICITACAO, (rs, rowNum) -> new ClienteDaSolicitacao(
+            rs.getString("nome"),
+            rs.getString("cpf"),
+            rs.getString("email"),
+            rs.getString("telefone"),
+            rs.getString("cep"),
+            rs.getString("logradouro"),
+            rs.getString("numero"),
+            rs.getString("complemento"),
+            rs.getString("bairro"),
+            rs.getString("cidade"),
+            rs.getString("estado")
+        ), solicitacaoId).stream().findFirst();
+    }
+
+    @Override
+    public boolean orcar(Integer id, String emailFuncionario, BigDecimal valor) {
+        return jdbc.update(UPDATE_ORCAMENTO, valor, emailFuncionario, id) == 1;
+    }
+
+    @Override
+    public void registrarOrcamento(Integer solicitacaoId, String emailFuncionario, BigDecimal valor) {
+        jdbc.update(INSERT_HISTORICO_ORCAMENTO, valor, solicitacaoId, emailFuncionario);
     }
 
     @Override

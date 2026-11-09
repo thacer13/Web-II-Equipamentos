@@ -85,8 +85,8 @@ A tabela abaixo está implementada em `model/EstadoSolicitacao.java`. Todo endpo
 |---|---|---|---|---|
 | `GET /solicitacoes/abertas` | — | `SolicitacaoAberta[]`: todas em ABERTA, por data/hora crescente | RF011 | ✅ T13 |
 | `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]` visíveis ao funcionário | RF013 | ✅ (filtros de período ⬜ T30/T31) |
-| `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoDetalhe` + dados do cliente | RF012, RF014 | ⬜ |
-| `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 | ⬜ |
+| `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoParaFuncionario`: `SolicitacaoDetalhe` + `cliente` (nome, cpf, email, telefone, endereço) | RF012, RF014 | ✅ T15 |
+| `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 | ✅ T15 |
 | `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 | ⬜ |
 | `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 | ⬜ |
 | `POST /solicitacoes/{id}/finalizacao` | — | `SolicitacaoResumo` | RF016 | ⬜ |

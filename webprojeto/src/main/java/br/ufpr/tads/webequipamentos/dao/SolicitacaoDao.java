@@ -1,5 +1,6 @@
 package br.ufpr.tads.webequipamentos.dao;
 
+import br.ufpr.tads.webequipamentos.dto.ClienteDaSolicitacao;
 import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
@@ -26,6 +27,12 @@ public interface SolicitacaoDao {
     List<HistoricoItem> listarHistorico(Integer solicitacaoId);
 
     boolean alterarEstado(Integer id, String estadoAtual, String novoEstado);
+
+    Optional<ClienteDaSolicitacao> buscarClienteDaSolicitacao(Integer solicitacaoId);
+
+    boolean orcar(Integer id, String emailFuncionario, BigDecimal valor);
+
+    void registrarOrcamento(Integer solicitacaoId, String emailFuncionario, BigDecimal valor);
 
     void registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
                                      BigDecimal valor, String motivo);

@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoParaFuncionario;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.services.SolicitacaoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +50,31 @@ public class SolicitacaoController {
         emailDaSessao(request, "FUNCIONARIO");
 
         return service.listarAbertas();
+    }
+
+    // RF012 / RF014
+    @GetMapping("/funcionario/{id}")
+    public SolicitacaoParaFuncionario detalharParaFuncionario(
+            @PathVariable Integer id,
+            HttpServletRequest request) {
+
+        emailDaSessao(request, "FUNCIONARIO");
+
+        return service.detalharParaFuncionario(id);
+    }
+
+    // RF012
+    @PostMapping("/{id}/orcamento")
+    public SolicitacaoResumo orcar(
+            @PathVariable Integer id,
+            @RequestBody OrcamentoRequest req,
+            HttpServletRequest request) {
+
+        return service.orcar(
+            emailDaSessao(request, "FUNCIONARIO"),
+            id,
+            req
+        );
     }
 
     // RF003

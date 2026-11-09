@@ -2,9 +2,11 @@ package br.ufpr.tads.webequipamentos.services;
 
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
+import br.ufpr.tads.webequipamentos.dto.SolicitacaoParaFuncionario;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.exception.ConflitoException;
 import br.ufpr.tads.webequipamentos.exception.NaoEncontradoException;
@@ -12,10 +14,14 @@ import br.ufpr.tads.webequipamentos.model.EstadoSolicitacao;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 public class SolicitacaoService {
+
+    // Mesmo limite do campo do Angular e da coluna NUMERIC(10,2).
+    private static final BigDecimal VALOR_MAXIMO = new BigDecimal("99999999.99");
 
     private final SolicitacaoDao dao;
 
@@ -36,6 +42,55 @@ public class SolicitacaoService {
     @Transactional(readOnly = true)
     public List<SolicitacaoAberta> listarAbertas() {
         return dao.listarAbertas();
+    }
+
+    // RF012 / RF014: dados completos para o funcionário, incluindo o cliente.
+    @Transactional(readOnly = true)
+    public SolicitacaoParaFuncionario detalharParaFuncionario(Integer id) {
+        SolicitacaoResumo s = dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+
+        return new SolicitacaoParaFuncionario(
+            s.id(),
+            s.dataHora(),
+            s.descricaoEquipamento(),
+            s.descricaoDefeito(),
+            s.categoriaEquipamento(),
+            s.estado(),
+            s.precoOrcado(),
+            dao.buscarClienteDaSolicitacao(id).orElse(null),
+            dao.listarHistorico(id)
+        );
+    }
+
+    // RF012: ABERTA → ORÇADA com valor, funcionário e data/hora, em uma transação com o histórico.
+    @Transactional
+    public SolicitacaoResumo orcar(String emailFuncionario, Integer id, OrcamentoRequest req) {
+        if (emailFuncionario == null || emailFuncionario.isBlank()) {
+            throw new IllegalArgumentException("Funcionário não identificado.");
+        }
+
+        BigDecimal valor = req == null ? null : req.valor();
+
+        if (valor == null
+                || valor.signum() <= 0
+                || valor.compareTo(VALOR_MAXIMO) > 0
+                || valor.stripTrailingZeros().scale() > 2) {
+            throw new IllegalArgumentException("Informe um valor maior que zero, com até 2 casas decimais.");
+        }
+
+        SolicitacaoResumo atual = dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+
+        if (!EstadoSolicitacao.doBanco(atual.estado()).podeIrPara(EstadoSolicitacao.ORCADA)) {
+            throw new ConflitoException("Esta solicitação não está mais aberta para orçamento.");
+        }
+
+        if (!dao.orcar(id, emailFuncionario.trim(), valor)) {
+            throw new ConflitoException("Esta solicitação já foi orçada por outro funcionário.");
+        }
+
+        dao.registrarOrcamento(id, emailFuncionario.trim(), valor);
+
+        return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
     }
 
     // RF003

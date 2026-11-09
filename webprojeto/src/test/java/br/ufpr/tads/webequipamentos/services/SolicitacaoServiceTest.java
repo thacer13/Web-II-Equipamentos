@@ -3,6 +3,7 @@ package br.ufpr.tads.webequipamentos.services;
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
@@ -177,6 +178,65 @@ class SolicitacaoServiceTest {
 
         when(dao.buscarDoCliente(8, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
         assertThrows(ConflitoException.class, () -> service.resgatar("joao@teste.com", 8));
+    }
+
+    @Test
+    void orcaSolicitacaoAberta() {
+
+        BigDecimal valor = new BigDecimal("250.00");
+
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("ABERTA")), Optional.of(noEstado("ORÇADA")));
+        when(dao.orcar(7, "maria@teste.com", valor)).thenReturn(true);
+
+        assertEquals("ORÇADA", service.orcar(" maria@teste.com ", 7, new OrcamentoRequest(valor)).estado());
+
+        verify(dao).registrarOrcamento(7, "maria@teste.com", valor);
+    }
+
+    @Test
+    void rejeitaValoresInvalidosNoOrcamento() {
+
+        for (String valor : new String[] {"0", "-1", "10.555", "100000000.00"}) {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> service.orcar("maria@teste.com", 7, new OrcamentoRequest(new BigDecimal(valor)))
+            );
+        }
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> service.orcar("maria@teste.com", 7, new OrcamentoRequest(null))
+        );
+
+        verifyNoInteractions(dao);
+    }
+
+    @Test
+    void naoOrcaSolicitacaoJaOrcada() {
+
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("ORÇADA")));
+
+        assertThrows(
+            ConflitoException.class,
+            () -> service.orcar("maria@teste.com", 7, new OrcamentoRequest(new BigDecimal("100")))
+        );
+
+        verify(dao, never()).orcar(any(), any(), any());
+    }
+
+    @Test
+    void conflitoQuandoOutroFuncionarioOrcaAntes() {
+
+        BigDecimal valor = new BigDecimal("100");
+
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("ABERTA")));
+        when(dao.orcar(7, "maria@teste.com", valor)).thenReturn(false);
+
+        assertThrows(
+            ConflitoException.class,
+            () -> service.orcar("maria@teste.com", 7, new OrcamentoRequest(valor))
+        );
+
+        verify(dao, never()).registrarOrcamento(any(), any(), any());
     }
 
     @Test
