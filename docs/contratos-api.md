@@ -40,10 +40,10 @@ A tabela abaixo está implementada em `model/EstadoSolicitacao.java`. Todo endpo
 | ORÇADA → APROVADA | Cliente dono | — | — | valor | RF006 |
 | ORÇADA → REJEITADA | Cliente dono | `motivo` 3–1000 | — | motivo | RF007 |
 | REJEITADA → APROVADA | Cliente dono | — | — | (resgate) | RF009 |
-| APROVADA → ARRUMADA | Funcionário responsável | `descricaoManutencao` 1–2000, `orientacoesCliente` 1–2000 | funcionario_atual_id | funcionario_id, descricao_manutencao, orientacoes_cliente | RF014 |
+| APROVADA → ARRUMADA | Funcionário responsável | `descricaoManutencao` 3–2000, `orientacoesCliente` 3–2000 | funcionario_atual_id | data_hora, funcionario_id, descricao_manutencao, orientacoes_cliente | RF014 |
 | APROVADA → REDIRECIONADA | Funcionário responsável | `funcionarioDestinoId` ativo e diferente de si | funcionario_atual_id = destino | funcionario_id (origem), funcionario_destino_id | RF015 |
 | REDIRECIONADA → REDIRECIONADA | Funcionário destino atual | idem acima | funcionario_atual_id = novo destino | idem acima | RF015 |
-| REDIRECIONADA → ARRUMADA | Funcionário destino atual | idem APROVADA → ARRUMADA | — | idem | RF014 |
+| REDIRECIONADA → ARRUMADA | Funcionário destino atual | idem APROVADA → ARRUMADA | funcionario_atual_id | idem | RF014 |
 | ARRUMADA → PAGA | Cliente dono | — | data_hora_pagamento | valor | RF010 |
 | PAGA → FINALIZADA | Funcionário | — | funcionario_finalizacao_id, data_hora_finalizacao | funcionario_id | RF016 |
 
@@ -108,7 +108,7 @@ migração idempotente em `webprojeto/src/main/resources/schema.sql`.
 | `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]` visíveis ao funcionário | RF013 | ✅ (filtros de período ⬜ T30/T31) |
 | `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoParaFuncionario`: `SolicitacaoDetalhe` + `cliente` (nome, cpf, email, telefone, endereço) | RF012, RF014 | ✅ T15 |
 | `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 | ✅ T15 |
-| `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 | ⬜ |
+| `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 | ✅ T32 |
 | `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 | ⬜ |
 | `POST /solicitacoes/{id}/finalizacao` | — | `SolicitacaoResumo` | RF016 | ⬜ |
 

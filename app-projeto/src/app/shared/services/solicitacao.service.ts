@@ -352,6 +352,17 @@ export class SolicitacaoService {
       .pipe(map((resumo) => paraSolicitacao(resumo)));
   }
 
+  // RF014: conclusão da manutenção e registro do histórico no backend.
+  concluirManutencao(id: number, descricaoManutencao: string, orientacoesCliente: string): Observable<Solicitacao> {
+    return this.http
+      .post<SolicitacaoResumoApi>(
+        `${this.apiUrl}/${id}/manutencao`,
+        { descricaoManutencao, orientacoesCliente },
+        { withCredentials: true }
+      )
+      .pipe(map((resumo) => paraSolicitacao(resumo)));
+  }
+
   // RF006
   aprovar(id: number): Observable<Solicitacao> {
     return this.http

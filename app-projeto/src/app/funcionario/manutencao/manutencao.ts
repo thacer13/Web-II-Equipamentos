@@ -7,7 +7,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { Solicitacao } from '../../shared/models/solicitacao.model';
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
-import { UsuarioService } from '../../shared/services/usuario.service';
 
 @Component({
   selector: 'app-manutencao',
@@ -21,20 +20,24 @@ import { UsuarioService } from '../../shared/services/usuario.service';
   templateUrl: './manutencao.html',
   host: { 'ngSkipHydration': 'true' },
 })
-export class ManutencaoComponent {
+export class ManutencaoComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private solicitacaoService = inject(SolicitacaoService);
   private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
   private location = inject(Location);
-  private usuarioService = inject(UsuarioService);
 
   solicitacao: Solicitacao | null = null;
 
-  funcionarioLogado: string = 'Funcionário Exemplo';
   descricaoManutencao: string = '';
   orientacoesCliente: string = '';
   mensagemErro = '';
+  carregando = true;
+  salvandoManutencao = false;
+
+  get podeConcluir(): boolean {
+    return this.solicitacao?.estado === 'APROVADA' || this.solicitacao?.estado === 'REDIRECIONADA';
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -47,33 +50,38 @@ export class ManutencaoComponent {
     }
 
     const id = Number(idParam);
-    let solicitacaoRecebida: Solicitacao | null = null;
-
-    // Tenta capturar do history.state APENAS se estiver rodando no navegador
-    if (isPlatformBrowser(this.platformId)) {
-      solicitacaoRecebida = history.state?.solicitacao as Solicitacao;
+    if (!Number.isInteger(id) || id <= 0) {
+      this.carregando = false;
+      this.mensagemErro = 'Identificador de solicitação inválido.';
+      return;
     }
 
-    // Cenário 1: Chegou via navegação com state no navegador
-    if (solicitacaoRecebida && solicitacaoRecebida.id === id) {
-      this.solicitacao = solicitacaoRecebida;
-    } 
-    // Cenário 2: SSR ou F5 (busca no serviço)
-    else {
-      const listagem = this.solicitacaoService.listar();
-      const solicitacaoEncontrada = listagem.find(s => s.id === id);
-
-      if (solicitacaoEncontrada) {
-        this.solicitacao = solicitacaoEncontrada;
-      } else if (isPlatformBrowser(this.platformId)) {
-        // Redireciona somente no browser se o item realmente não existir no serviço
-        this.router.navigate(['/funcionario/solicitacoes']);
-      }
+    if (!isPlatformBrowser(this.platformId)) {
+      this.carregando = false;
+      return;
     }
+
+    this.solicitacaoService.detalharParaFuncionario(id).subscribe({
+      next: (solicitacao) => {
+        this.solicitacao = solicitacao;
+        this.carregando = false;
+      },
+      error: (erro: { error?: { mensagem?: string } }) => {
+        this.carregando = false;
+        this.mensagemErro =
+          erro?.error?.mensagem ||
+          'Não foi possível carregar a solicitação. Verifique sua conexão e tente novamente.';
+      },
+    });
   }
 
-  onConfirmarManutencao() {
-    if (!this.solicitacao) return;
+  onConfirmarManutencao(): void {
+    if (!this.solicitacao || this.salvandoManutencao) return;
+
+    if (!this.podeConcluir) {
+      this.mensagemErro = `A solicitação está no estado ${this.solicitacao.estado} e não permite manutenção.`;
+      return;
+    }
 
     const descricao = this.descricaoManutencao.trim().replace(/\s+/g, ' ');
     const orientacoes = this.orientacoesCliente.trim().replace(/\s+/g, ' ');
@@ -89,20 +97,18 @@ export class ManutencaoComponent {
     }
 
     this.mensagemErro = '';
-
-    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
-    const nomeFuncionario = usuarioLogado ? usuarioLogado.nome : 'Funcionário';
-
-    const observacao = `Manutenção: ${descricao} | Orientações: ${orientacoes}`;
-
-    this.solicitacaoService.atualizarEstado(
-      this.solicitacao,
-      'ARRUMADA',
-      nomeFuncionario,
-      observacao
-    );
-
-    this.router.navigate(['/funcionario/solicitacoes']);
+    this.salvandoManutencao = true;
+    this.solicitacaoService
+      .concluirManutencao(this.solicitacao.id, descricao, orientacoes)
+      .subscribe({
+        next: () => this.router.navigate(['/funcionario/solicitacoes']),
+        error: (erro: { error?: { mensagem?: string } }) => {
+          this.salvandoManutencao = false;
+          this.mensagemErro =
+            erro?.error?.mensagem ||
+            'Não foi possível concluir a manutenção. Atualize os dados e tente novamente.';
+        },
+      });
   }
 
   onRedirecionarClick() {
