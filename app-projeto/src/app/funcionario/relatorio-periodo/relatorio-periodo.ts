@@ -1,9 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { jsPDF } from 'jspdf';
+import { finalize } from 'rxjs';
 import { hoje, paraIso } from '../../shared/utils/datas';
 import { ReceitaDia, RelatorioReceitasService } from '../../shared/services/relatorio-receitas.service';
 
@@ -20,6 +21,7 @@ import { ReceitaDia, RelatorioReceitasService } from '../../shared/services/rela
 })
 export class RelatorioPeriodoComponent implements OnInit {
   private readonly relatorioService = inject(RelatorioReceitasService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   dataInicio: Date | null = null;
   dataFim: Date | null = null;
@@ -65,17 +67,20 @@ export class RelatorioPeriodoComponent implements OnInit {
     this.carregando = true;
     this.receitas = [];
 
-    this.relatorioService.listar(inicio, fim).subscribe({
+    this.relatorioService.listar(inicio, fim).pipe(
+      finalize(() => {
+        this.carregando = false;
+        this.changeDetector.markForCheck();
+      })
+    ).subscribe({
       next: (receitas) => {
         this.receitas = receitas;
-        this.carregando = false;
       },
       error: (erro: { error?: { mensagem?: unknown } }) => {
         const mensagem = erro.error?.mensagem;
         this.erro = typeof mensagem === 'string'
           ? mensagem
           : 'Não foi possível carregar o relatório de receitas.';
-        this.carregando = false;
       },
     });
   }
