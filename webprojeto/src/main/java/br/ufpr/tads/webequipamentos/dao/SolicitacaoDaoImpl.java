@@ -48,6 +48,7 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
 
     // O cliente é sempre o dono da sessão; nunca vem da URL nem do corpo da requisição.
     private static final String SELECT_DO_CLIENTE = SELECT_RESUMO + """
+        JOIN cliente cl ON cl.id = s.cliente_id AND cl.ativo = TRUE
         JOIN usuario u ON u.id = s.cliente_id
         WHERE LOWER(u.email) = LOWER(?)
         ORDER BY s.data_hora_abertura ASC, s.id ASC
@@ -65,6 +66,7 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         """;
 
     private static final String SELECT_UMA_DO_CLIENTE = SELECT_RESUMO + """
+        JOIN cliente cl ON cl.id = s.cliente_id AND cl.ativo = TRUE
         JOIN usuario u ON u.id = s.cliente_id
         WHERE s.id = ? AND LOWER(u.email) = LOWER(?)
         """;
@@ -89,7 +91,7 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         FROM cliente cl
         JOIN usuario u ON u.id = cl.id
         JOIN categoria_equipamento cat ON cat.id = ? AND cat.ativo = TRUE
-        WHERE LOWER(u.email) = LOWER(?)
+        WHERE cl.ativo = TRUE AND LOWER(u.email) = LOWER(?)
         RETURNING id
         """;
 

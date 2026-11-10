@@ -15,12 +15,11 @@ public class SenhaHash {
     private final SecureRandom random = new SecureRandom();
 
     public String gerarSalt() {
-        byte[] bytes = new byte[8];
+        byte[] bytes = new byte[16];
         random.nextBytes(bytes);
         return HexFormat.of().formatHex(bytes);
     }
 
-  
     public String gerarSenhaNumerica() {
         return String.format("%04d", random.nextInt(10000));
     }

@@ -5,6 +5,7 @@ import br.ufpr.tads.webequipamentos.dto.CadastroRequest;
 import br.ufpr.tads.webequipamentos.dto.LoginRequest;
 import br.ufpr.tads.webequipamentos.dto.UsuarioResponse;
 import br.ufpr.tads.webequipamentos.exception.ConflitoException;
+import br.ufpr.tads.webequipamentos.exception.NaoEncontradoException;
 import br.ufpr.tads.webequipamentos.model.Usuario;
 import br.ufpr.tads.webequipamentos.model.UsuarioLogin;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ class UsuarioServiceTest {
         String senhaEnviada = senhaCaptor.getValue();
 
         assertEquals("apto 12", usuario.complemento());
+        assertEquals(32, usuario.salt().length());
         assertTrue(senhaEnviada.matches("\\d{4}"));
         assertNotEquals(senhaEnviada, usuario.senhaHash());
         assertTrue(senhaHash.confere(senhaEnviada, usuario.salt(), usuario.senhaHash()));
@@ -76,6 +78,37 @@ class UsuarioServiceTest {
         verify(emailService, org.mockito.Mockito.never()).enviarEmailCadastro(any(), any());
     }
 
+    @Test
+    void naoPermiteAlterarDadosDeOutroUsuario() {
+        when(dao.buscarPorId(42)).thenReturn(Optional.of(usuarioExistente()));
+
+        assertThrows(
+            NaoEncontradoException.class,
+            () -> service.atualizar(42, cadastro(), "outra@example.com")
+        );
+
+        verify(dao, org.mockito.Mockito.never()).atualizar(any(Usuario.class));
+    }
+
+    @Test
+    void impedeAutoexclusao() {
+        when(dao.buscarPorId(42)).thenReturn(Optional.of(usuarioExistente()));
+
+        assertThrows(ConflitoException.class, () -> service.desativar(42, "maria@example.com"));
+
+        verify(dao, org.mockito.Mockito.never()).desativar(42);
+    }
+
+    @Test
+    void desativaUsuarioSemApagarRegistrosRelacionados() {
+        when(dao.buscarPorId(42)).thenReturn(Optional.of(usuarioExistente()));
+        when(dao.desativar(42)).thenReturn(true);
+
+        service.desativar(42, "funcionario@example.com");
+
+        verify(dao).desativar(42);
+    }
+
     private CadastroRequest cadastro() {
         return new CadastroRequest(
             "529.982.247-25",
@@ -84,6 +117,25 @@ class UsuarioServiceTest {
             "(41) 99999-8888",
             "",
             "80060-000",
+            "Rua XV de Novembro",
+            "10",
+            "apto 12",
+            "Centro",
+            "Curitiba",
+            "PR"
+        );
+    }
+
+    private Usuario usuarioExistente() {
+        return new Usuario(
+            42,
+            "52998224725",
+            "Maria Souza",
+            "maria@example.com",
+            "41999998888",
+            "hash",
+            "salt",
+            "80060000",
             "Rua XV de Novembro",
             "10",
             "apto 12",

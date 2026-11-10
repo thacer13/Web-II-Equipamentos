@@ -73,6 +73,21 @@ no servidor, armazenada como SHA-256 com salt e enviada ao e-mail informado.
 `complemento` é opcional e limitado a 100 caracteres; quando informado pelo
 ViaCEP ou pelo cliente, é persistido junto ao endereço.
 
+### Usuários
+
+| Método e rota | Perfil | Regra |
+|---|---|---|
+| `GET /usuarios`, `GET /usuarios/{id}` | Funcionário | Retorna somente dados de identificação; nunca hash, salt ou senha |
+| `POST /usuarios` | Funcionário | Cadastro administrativo; o cadastro público é `POST /clientes` |
+| `POST /usuarios/login` | Público | Alias legado de autenticação |
+| `PUT /usuarios/{id}` | Logado | Só permite atualizar a própria conta; outro titular recebe `404` |
+| `DELETE /usuarios/{id}` | Funcionário | Desativa logicamente; não permite desativar a própria conta |
+
+O `DELETE` marca `cliente.ativo = FALSE`; não remove cliente, usuário, endereço,
+solicitações nem histórico. Contas desativadas não podem autenticar nem criar ou
+consultar solicitações como cliente. O esquema inclui `cliente.ativo`, com
+migração idempotente em `webprojeto/src/main/resources/schema.sql`.
+
 ### Solicitações — cliente
 
 | Método e rota | Corpo | Resposta | RF | Status |

@@ -37,7 +37,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
         SELECT u.id, c.cpf, u.nome, u.email, c.telefone, u.senha_hash, u.salt,
                e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
         FROM usuario u
-        JOIN cliente c ON c.id = u.id
+        JOIN cliente c ON c.id = u.id AND c.ativo = TRUE
         JOIN endereco e ON e.id = c.endereco_id
         """;
 
@@ -50,7 +50,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
                END AS perfil
         FROM usuario u
         LEFT JOIN funcionario f ON f.id = u.id
-        LEFT JOIN cliente c ON c.id = u.id
+        LEFT JOIN cliente c ON c.id = u.id AND c.ativo = TRUE
         WHERE LOWER(u.email) = LOWER(?)
           AND (f.id IS NULL OR f.ativo = TRUE)
         """;
@@ -64,7 +64,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
     private static final String UPDATE_CLIENTE = """
         UPDATE cliente
            SET cpf = ?, telefone = ?
-         WHERE id = ?
+         WHERE id = ? AND ativo = TRUE
         """;
 
     private static final String UPDATE_ENDERECO = """
@@ -199,20 +199,10 @@ public class UsuarioDaoImpl implements UsuarioDao {
     }
 
     @Override
-    public boolean excluir(int id) {
-        Integer enderecoId = jdbc.query(
-            "SELECT endereco_id FROM cliente WHERE id = ?",
-            (rs, rowNum) -> rs.getInt("endereco_id"),
+    public boolean desativar(int id) {
+        return jdbc.update(
+            "UPDATE cliente SET ativo = FALSE WHERE id = ? AND ativo = TRUE",
             id
-        ).stream().findFirst().orElse(null);
-
-        int clienteLinhas = jdbc.update("DELETE FROM cliente WHERE id = ?", id);
-        int usuarioLinhas = jdbc.update("DELETE FROM usuario WHERE id = ?", id);
-
-        if (enderecoId != null) {
-            jdbc.update("DELETE FROM endereco WHERE id = ?", enderecoId);
-        }
-
-        return clienteLinhas > 0 && usuarioLinhas > 0;
+        ) == 1;
     }
 }

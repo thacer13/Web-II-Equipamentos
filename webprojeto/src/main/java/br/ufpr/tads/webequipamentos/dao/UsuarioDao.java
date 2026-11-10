@@ -16,5 +16,5 @@ public interface UsuarioDao {
     boolean existePorCpf(String cpf);
     boolean existePorEmail(String email);
     boolean atualizar(Usuario usuario);                    
-    boolean excluir(int id);                               
+    boolean desativar(int id);
 }

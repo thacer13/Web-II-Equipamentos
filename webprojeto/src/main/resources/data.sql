@@ -1,13 +1,15 @@
--- Contas de exemplo para desenvolvimento local; a senha de todas e 1234.
+-- Contas de demonstração; a senha de todas é 1234. Salt compartilhado somente para teste.
 INSERT INTO usuario (nome, email, senha_hash, salt)
 VALUES
-    ('Maria', 'maria.funcionario@example.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', ''),
-    ('Mário', 'mario.funcionario@example.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', ''),
-    ('João', 'joao.cliente@example.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', ''),
-    ('José', 'jose.cliente@example.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', ''),
-    ('Joana', 'joana.cliente@example.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', ''),
-    ('Joaquina', 'joaquina.cliente@example.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '')
-ON CONFLICT (email) DO NOTHING;
+    ('Maria', 'maria.funcionario@example.com', '684bf3c863d2278f46c1f6e2b1153e2824c7de9281292d554bc6ed19e1a9c296', 'demo-salt-v1:'),
+    ('Mário', 'mario.funcionario@example.com', '684bf3c863d2278f46c1f6e2b1153e2824c7de9281292d554bc6ed19e1a9c296', 'demo-salt-v1:'),
+    ('João', 'joao.cliente@example.com', '684bf3c863d2278f46c1f6e2b1153e2824c7de9281292d554bc6ed19e1a9c296', 'demo-salt-v1:'),
+    ('José', 'jose.cliente@example.com', '684bf3c863d2278f46c1f6e2b1153e2824c7de9281292d554bc6ed19e1a9c296', 'demo-salt-v1:'),
+    ('Joana', 'joana.cliente@example.com', '684bf3c863d2278f46c1f6e2b1153e2824c7de9281292d554bc6ed19e1a9c296', 'demo-salt-v1:'),
+    ('Joaquina', 'joaquina.cliente@example.com', '684bf3c863d2278f46c1f6e2b1153e2824c7de9281292d554bc6ed19e1a9c296', 'demo-salt-v1:')
+ON CONFLICT (email) DO UPDATE
+SET senha_hash = EXCLUDED.senha_hash,
+    salt = EXCLUDED.salt;
 
 INSERT INTO endereco (cep, logradouro, numero, bairro, cidade, estado)
 SELECT '80000-000', 'Rua Exemplo', '100', 'Centro', 'Curitiba', 'PR'

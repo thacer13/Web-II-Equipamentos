@@ -5,10 +5,16 @@ import br.ufpr.tads.webequipamentos.dto.LoginRequest;
 import br.ufpr.tads.webequipamentos.dto.UsuarioResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,10 +31,15 @@ public class UsuarioREST {
 
     private final UsuarioService service;
     private final AutenticacaoService autenticacaoService;
+    private final SecurityContextRepository securityContextRepository;
 
-    public UsuarioREST(UsuarioService service, AutenticacaoService autenticacaoService) {
+    public UsuarioREST(
+            UsuarioService service,
+            AutenticacaoService autenticacaoService,
+            SecurityContextRepository securityContextRepository) {
         this.service = service;
         this.autenticacaoService = autenticacaoService;
+        this.securityContextRepository = securityContextRepository;
     }
 
     @GetMapping
@@ -59,14 +70,34 @@ public class UsuarioREST {
     @PutMapping("/{id}")
     public UsuarioResponse alterar(
         @PathVariable Integer id,
-        @RequestBody CadastroRequest request
+        @RequestBody CadastroRequest request,
+        Authentication authentication,
+        HttpServletRequest servletRequest,
+        HttpServletResponse servletResponse
     ) {
-        return service.atualizar(id, request);
+        UsuarioResponse usuario = service.atualizar(id, request, authentication.getName());
+        if (!authentication.getName().equals(usuario.email())) {
+            Authentication atualizada = UsernamePasswordAuthenticationToken.authenticated(
+                usuario.email(),
+                null,
+                authentication.getAuthorities()
+            );
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(atualizada);
+            SecurityContextHolder.setContext(context);
+            securityContextRepository.saveContext(context, servletRequest, servletResponse);
+
+            HttpSession session = servletRequest.getSession(false);
+            if (session != null) {
+                session.setAttribute("email", usuario.email());
+            }
+        }
+        return usuario;
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void remover(@PathVariable Integer id) {
-        service.excluir(id);
+    public void remover(@PathVariable Integer id, Authentication authentication) {
+        service.desativar(id, authentication.getName());
     }
 }
