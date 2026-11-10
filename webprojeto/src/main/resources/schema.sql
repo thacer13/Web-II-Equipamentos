@@ -39,6 +39,12 @@ CREATE TABLE IF NOT EXISTS categoria_equipamento (
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_categoria_equipamento_nome_lower
+    ON categoria_equipamento (LOWER(nome));
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_usuario_email_lower
+    ON usuario (LOWER(email));
+
 CREATE TABLE IF NOT EXISTS solicitacao (
     id SERIAL PRIMARY KEY,
     cliente_id INTEGER NOT NULL REFERENCES cliente(id),
@@ -69,3 +75,21 @@ CREATE TABLE IF NOT EXISTS historico_solicitacao (
     descricao_manutencao TEXT,
     orientacoes_cliente TEXT
 );
+
+-- Integridade (T37): só estados conhecidos e orçamento positivo, também para quem altera o banco
+-- fora da API. DROP + ADD em vez de DO $$: o Spring executa este arquivo separando por ";".
+ALTER TABLE solicitacao DROP CONSTRAINT IF EXISTS solicitacao_estado_valido;
+ALTER TABLE solicitacao ADD CONSTRAINT solicitacao_estado_valido CHECK (estado IN
+    ('ABERTA', 'ORÇADA', 'APROVADA', 'REJEITADA', 'REDIRECIONADA', 'ARRUMADA', 'PAGA', 'FINALIZADA'));
+
+ALTER TABLE solicitacao DROP CONSTRAINT IF EXISTS solicitacao_valor_positivo;
+ALTER TABLE solicitacao ADD CONSTRAINT solicitacao_valor_positivo
+    CHECK (valor_orcamento IS NULL OR valor_orcamento > 0);
+
+ALTER TABLE historico_solicitacao DROP CONSTRAINT IF EXISTS historico_estados_validos;
+ALTER TABLE historico_solicitacao ADD CONSTRAINT historico_estados_validos CHECK (
+    estado_novo IN ('ABERTA', 'ORÇADA', 'APROVADA', 'REJEITADA', 'REDIRECIONADA', 'ARRUMADA', 'PAGA', 'FINALIZADA')
+    AND (estado_anterior IS NULL OR estado_anterior IN
+        ('ABERTA', 'ORÇADA', 'APROVADA', 'REJEITADA', 'REDIRECIONADA', 'ARRUMADA', 'PAGA', 'FINALIZADA')));
+
+CREATE INDEX IF NOT EXISTS idx_historico_solicitacao ON historico_solicitacao (solicitacao_id, data_hora);

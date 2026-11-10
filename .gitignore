@@ -34,3 +34,6 @@ $RECYCLE.BIN/
 # Configurações locais de IDEs (opcional)
 .vscode/
 .idea/
+
+# ZIP gerado por scripts/gerar-entrega.sh
+entrega/

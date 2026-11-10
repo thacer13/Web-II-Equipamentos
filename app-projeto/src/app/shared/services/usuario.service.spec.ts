@@ -157,14 +157,41 @@ describe('UsuarioService', () => {
     expect(service.buscarPorCpf('111.444.777-35')).toBeUndefined();
   });
 
-  it('remove apenas o usuário com o id informado', () => {
-    localStorage.setItem('usuarios', JSON.stringify([
-      { ...novoCliente(), id: 1000 },
-      { ...novoCliente({ email: 'joao@email.com', cpf: '11144477735' }), id: 2000 }
-    ]));
+  it('desativa funcionário usando o endpoint protegido', () => {
+    service.remover(1000).subscribe();
 
-    service.remover(1000);
+    const request = httpTestingController.expectOne('http://localhost:8080/api/funcionarios/1000');
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
 
-    expect(service.listarTodos().map(u => u.email)).toEqual(['joao@email.com']);
+  it('cadastra funcionário pela API sem enviar senha gerada no cliente', () => {
+    const funcionario = {
+      nome: 'João da Silva',
+      email: 'joao@email.com',
+      dataNascimento: '1990-01-01',
+      perfil: 'FUNCIONARIO' as const,
+      ativo: true
+    };
+    service.salvarFuncionario(funcionario).subscribe();
+
+    const request = httpTestingController.expectOne('http://localhost:8080/api/funcionarios');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      nome: 'João da Silva',
+      email: 'joao@email.com',
+      dataNascimento: '1990-01-01'
+    });
+    request.flush({ ...funcionario, id: 3 });
+  });
+
+  it('redefine a senha pela API e não expõe a senha temporária ao cliente', () => {
+    service.redefinirSenhaFuncionario(3).subscribe();
+
+    const request = httpTestingController.expectOne(
+      'http://localhost:8080/api/funcionarios/3/redefinir-senha'
+    );
+    expect(request.request.method).toBe('POST');
+    request.flush(null);
   });
 });

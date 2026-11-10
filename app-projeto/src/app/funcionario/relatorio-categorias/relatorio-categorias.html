@@ -12,9 +12,20 @@
           </p>
         </div>
 
-        <p-button type="button" label="Gerar PDF" icon="pi pi-file-pdf" (click)="gerarPdf()">
+        <p-button
+          type="button"
+          label="Gerar PDF"
+          icon="pi pi-file-pdf"
+          [disabled]="carregando || !!erro"
+          (click)="gerarPdf()">
         </p-button>
       </div>
+
+      @if (erro) {
+        <p class="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700" role="alert">
+          {{ erro }}
+        </p>
+      }
 
         <div class="grid gap-4 border-b border-gray-200 pb-6 sm:grid-cols-2">
           <div class="rounded-lg border border-gray-200 bg-gray-50 p-5">
@@ -38,12 +49,32 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-              @for (item of receitas; track item.categoria) {
-                <tr class="transition-colors hover:bg-gray-50">
-                  <td class="px-6 py-4 font-medium text-gray-800">{{ item.categoria }}</td>
-                  <td class="px-6 py-4 text-gray-600">{{ item.quantidade }}</td>
-                  <td class="px-6 py-4 font-semibold text-gray-800">{{ formatarMoeda(item.receita) }}</td>
+              @if (carregando) {
+                <tr>
+                  <td colspan="3" class="px-6 py-10 text-center text-gray-500">
+                    Carregando receitas do servidor...
+                  </td>
                 </tr>
+              } @else if (erro) {
+                <tr>
+                  <td colspan="3" class="px-6 py-10 text-center text-gray-500">
+                    Relatório indisponível.
+                  </td>
+                </tr>
+              } @else {
+                @for (item of receitas; track item.categoria) {
+                  <tr class="transition-colors hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-800">{{ item.categoria }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ item.quantidade }}</td>
+                    <td class="px-6 py-4 font-semibold text-gray-800">{{ formatarMoeda(item.receita) }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3" class="px-6 py-10 text-center text-gray-500">
+                      Nenhuma receita encontrada por categoria.
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
             <tfoot class="border-t-2 border-gray-200 bg-gray-50">

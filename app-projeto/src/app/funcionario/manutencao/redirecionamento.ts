@@ -42,10 +42,16 @@ export class RedirecionamentoComponent {
       this.funcionarioOrigem = usuarioLogado.nome;
     }
 
-    const funcionariosCadastrados = this.usuarioService.listarFuncionarios();
-    this.funcionariosNomes = funcionariosCadastrados
-      .filter(f => f.ativo !== false) // Pega somente os ativos. Ver se não dá para tirar isso (remover ativos de funcionarios)
-      .map(f => f.nome);
+    this.usuarioService.listarFuncionarios().subscribe({
+      next: funcionarios => {
+        this.funcionariosNomes = funcionarios
+          .filter(funcionario => funcionario.ativo)
+          .map(funcionario => funcionario.nome);
+      },
+      error: () => {
+        this.mensagemErro = 'Não foi possível carregar os funcionários disponíveis.';
+      }
+    });
 
     const idParam = this.route.snapshot.paramMap.get('id');
 

@@ -1,15 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
-import { Router } from '@angular/router';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { jsPDF } from 'jspdf';
-import { SolicitacaoService } from '../../shared/services/solicitacao.service';
-
-interface ReceitaCategoria {
-  categoria: string;
-  quantidade: number;
-  receita: number;
-}
+import { finalize } from 'rxjs';
+import {
+  ReceitaCategoria,
+  RelatorioReceitasCategoriaService,
+} from '../../shared/services/relatorio-receitas-categoria.service';
 
 @Component({
   selector: 'app-relatorio-categorias',
@@ -17,33 +14,41 @@ interface ReceitaCategoria {
   imports: [CommonModule, ButtonModule],
   templateUrl: './relatorio-categorias.html',
 })
-export class RelatorioCategoriasComponent {
-  private router = inject(Router);
-  private location = inject(Location);
-  private solicitacaoService = inject(SolicitacaoService);
+export class RelatorioCategoriasComponent implements OnInit {
+  private readonly relatorioService = inject(RelatorioReceitasCategoriaService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   receitas: ReceitaCategoria[] = [];
+  carregando = false;
+  erro = '';
 
-  constructor() {
-    this.receitas = this.calcularReceitasPorCategoria();
+  ngOnInit(): void {
+    this.consultar();
   }
 
-  private calcularReceitasPorCategoria(): ReceitaCategoria[] {
-    const lista: ReceitaCategoria[] = [];
+  consultar(): void {
+    this.carregando = true;
+    this.erro = '';
+    this.receitas = [];
 
-    for (const pagamento of this.solicitacaoService.listarReceitas()) {
-      let item = lista.find((r) => r.categoria === pagamento.categoria);
-
-      if (!item) {
-        item = { categoria: pagamento.categoria, quantidade: 0, receita: 0 };
-        lista.push(item);
-      }
-
-      item.quantidade++;
-      item.receita += pagamento.valor;
-    }
-
-    return lista.sort((a, b) => a.categoria.localeCompare(b.categoria));
+    this.relatorioService.listar().pipe(
+      finalize(() => {
+        this.carregando = false;
+        this.changeDetector.markForCheck();
+      })
+    ).subscribe({
+      next: (receitas) => {
+        this.receitas = receitas;
+        this.changeDetector.markForCheck();
+      },
+      error: (erro: { error?: { mensagem?: unknown } }) => {
+        const mensagem = erro.error?.mensagem;
+        this.erro = typeof mensagem === 'string'
+          ? mensagem
+          : 'Não foi possível carregar o relatório de receitas por categoria.';
+        this.changeDetector.markForCheck();
+      },
+    });
   }
 
   get totalServicos(): number {
@@ -51,7 +56,11 @@ export class RelatorioCategoriasComponent {
   }
 
   get totalReceita(): number {
-    return this.receitas.reduce((total, item) => total + item.receita, 0);
+    const totalCentavos = this.receitas.reduce(
+      (total, item) => total + Math.round(item.receita * 100),
+      0
+    );
+    return totalCentavos / 100;
   }
 
   formatarMoeda(valor: number): string {
@@ -62,6 +71,10 @@ export class RelatorioCategoriasComponent {
   }
 
   gerarPdf(): void {
+    if (this.carregando || this.erro) {
+      return;
+    }
+
     const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
     const margem = 15;
