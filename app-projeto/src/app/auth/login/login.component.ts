@@ -30,7 +30,6 @@ export class LoginComponent {
     const credenciais = this.usuarioService.obterCredenciaisLembradas();
     if (credenciais) {
       this.username = credenciais.email;
-      this.password = credenciais.senha;
       this.lembrarCredenciais = true;
     }
   }
@@ -55,7 +54,7 @@ export class LoginComponent {
     this.usuarioService.autenticar(email, senha).subscribe({
       next: (usuario) => {
         if (this.lembrarCredenciais) {
-          this.usuarioService.lembrarCredenciais(email, senha);
+          this.usuarioService.lembrarCredenciais(email);
         } else {
           this.usuarioService.esquecerCredenciais();
         }
@@ -69,6 +68,7 @@ export class LoginComponent {
         }
 
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (erro: unknown) => {
         if (erro instanceof HttpErrorResponse && erro.status === 401) {

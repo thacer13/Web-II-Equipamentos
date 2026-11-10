@@ -81,6 +81,14 @@ public class UsuarioService {
         return new UsuarioResponse(u.id(), u.nome(), u.email(), u.perfil());
     }
 
+    @Transactional(readOnly = true)
+    public UsuarioResponse buscarAutenticado(String email) {
+        return dao.buscarParaLogin(email.trim().toLowerCase())
+            .filter(u -> !"SEM_PERFIL".equals(u.perfil()))
+            .map(u -> new UsuarioResponse(u.id(), u.nome(), u.email(), u.perfil()))
+            .orElseThrow(NaoEncontradoException::new);
+    }
+
     public UsuarioResponse buscar(Integer id) {
         Usuario u = dao.buscarPorId(id).orElseThrow(NaoEncontradoException::new);
         return new UsuarioResponse(u.id(), u.nome(), u.email(), "CLIENTE");

@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { UsuarioService } from './usuario.service';
 import { Cliente } from '../models/cliente.model';
+import { Usuario } from '../models/usuario.model';
 
 function novoCliente(dados: Partial<Cliente> = {}): Cliente {
   return {
@@ -24,6 +27,7 @@ function novoCliente(dados: Partial<Cliente> = {}): Cliente {
 
 describe('UsuarioService', () => {
   let service: UsuarioService;
+  let httpTestingController: HttpTestingController;
 
   beforeEach(() => {
     const storage: Record<string, string> = {};
@@ -33,11 +37,15 @@ describe('UsuarioService', () => {
       removeItem: { value: (key: string) => { delete storage[key]; } }
     });
     vi.stubGlobal('localStorage', storage);
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
     service = TestBed.inject(UsuarioService);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
+    httpTestingController.verify();
     vi.unstubAllGlobals();
   });
 
@@ -74,16 +82,43 @@ describe('UsuarioService', () => {
   });
 
   it('lembra e remove as credenciais localmente', () => {
-    service.lembrarCredenciais('maria@email.com', 'senha-secreta');
+    service.lembrarCredenciais('maria@email.com');
 
     expect(service.obterCredenciaisLembradas()).toEqual({
-      email: 'maria@email.com',
-      senha: 'senha-secreta'
+      email: 'maria@email.com'
     });
 
     service.esquecerCredenciais();
 
     expect(service.obterCredenciaisLembradas()).toBeNull();
+  });
+
+  it('remove senhas lembradas anteriormente sem restaurá-las', () => {
+    localStorage.setItem('emailLembrado', 'maria@email.com');
+    localStorage.setItem('senhaLembrada', 'senha-antiga');
+
+    expect(service.obterCredenciaisLembradas()).toEqual({ email: 'maria@email.com' });
+    expect(localStorage.getItem('senhaLembrada')).toBeNull();
+  });
+
+  it('revalida a sessão no servidor e atualiza o usuário em cache', () => {
+    const usuario: Usuario = {
+      id: 2,
+      nome: 'Maria Funcionária',
+      email: 'funcionario@email.com',
+      perfil: 'FUNCIONARIO'
+    };
+
+    service.validarSessao().subscribe(resultado => {
+      expect(resultado).toEqual(usuario);
+    });
+
+    const request = httpTestingController.expectOne('http://localhost:8080/api/auth/session');
+    expect(request.request.method).toBe('GET');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush(usuario);
+
+    expect(service.obterUsuarioLogado()).toEqual(usuario);
   });
 
   it('busca por CPF com ou sem máscara', () => {

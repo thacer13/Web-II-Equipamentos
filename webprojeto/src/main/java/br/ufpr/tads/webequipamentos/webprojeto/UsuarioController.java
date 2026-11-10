@@ -9,6 +9,7 @@ import br.ufpr.tads.webequipamentos.services.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
@@ -28,19 +29,28 @@ public class UsuarioController {
 
     private final UsuarioService service;
     private final AutenticacaoService autenticacaoService;
+    private final SecurityContextLogoutHandler securityContextLogoutHandler =
+        new SecurityContextLogoutHandler();
     private final LogoutHandler logoutHandler = new CompositeLogoutHandler(
-        new SecurityContextLogoutHandler(),
+        securityContextLogoutHandler,
         new CookieClearingLogoutHandler("JSESSIONID")
     );
 
     public UsuarioController(UsuarioService service, AutenticacaoService autenticacaoService) {
         this.service = service;
         this.autenticacaoService = autenticacaoService;
+        securityContextLogoutHandler.setInvalidateHttpSession(true);
+        securityContextLogoutHandler.setClearAuthentication(true);
     }
 
     @GetMapping("/auth/csrf")
     public CsrfToken csrfToken(CsrfToken csrfToken) {
         return csrfToken;
+    }
+
+    @GetMapping("/auth/session")
+    public UsuarioResponse sessao(Authentication authentication) {
+        return service.buscarAutenticado(authentication.getName());
     }
 
     @PostMapping("/auth/login")

@@ -12,7 +12,6 @@ const LS_SENHA_LEMBRADA = "senhaLembrada";
 
 export interface CredenciaisLembradas {
   email: string;
-  senha: string;
 }
 
 export const DADOS_INICIAIS_USUARIOS: Usuario[] = [
@@ -54,7 +53,14 @@ export class UsuarioService {
   private usarBackend = true;
   private apiUrl = 'http://localhost:8080/api/clientes'; 
   private loginUrl = 'http://localhost:8080/api/auth/login';
+  private sessionUrl = 'http://localhost:8080/api/auth/session';
   private logoutUrl = 'http://localhost:8080/api/auth/logout';
+
+  constructor() {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(LS_SENHA_LEMBRADA);
+    }
+  }
 
   obterCredenciaisLembradas(): CredenciaisLembradas | null {
     if (typeof localStorage === 'undefined') {
@@ -62,14 +68,14 @@ export class UsuarioService {
     }
 
     const email = localStorage.getItem(LS_EMAIL_LEMBRADO);
-    const senha = localStorage.getItem(LS_SENHA_LEMBRADA);
-    return email && senha ? { email, senha } : null;
+    localStorage.removeItem(LS_SENHA_LEMBRADA);
+    return email ? { email } : null;
   }
 
-  lembrarCredenciais(email: string, senha: string): void {
+  lembrarCredenciais(email: string): void {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(LS_EMAIL_LEMBRADO, email);
-      localStorage.setItem(LS_SENHA_LEMBRADA, senha);
+      localStorage.removeItem(LS_SENHA_LEMBRADA);
     }
   }
 
@@ -107,16 +113,24 @@ export class UsuarioService {
     return usr ? JSON.parse(usr) : null;
   }
 
+  limparUsuarioLogado(): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(LS_USUARIO_LOGADO);
+    }
+  }
+
+  validarSessao(): Observable<Usuario> {
+    return this.http.get<Usuario>(this.sessionUrl, { withCredentials: true }).pipe(
+      tap(usuario => this.salvarUsuarioLogado(usuario))
+    );
+  }
+
   logout(): Observable<void> {
     const request = this.usarBackend
       ? this.http.post<void>(this.logoutUrl, {})
       : of(undefined);
 
-    return request.pipe(tap(() => {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(LS_USUARIO_LOGADO);
-      }
-    }));
+    return request.pipe(tap(() => this.limparUsuarioLogado()));
   }
 
   cadastrarCliente(cliente: Cliente): Observable<any> { // Inserir
