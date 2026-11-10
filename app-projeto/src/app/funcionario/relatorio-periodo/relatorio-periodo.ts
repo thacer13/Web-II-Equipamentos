@@ -1,18 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { jsPDF } from 'jspdf';
 import { hoje, paraIso } from '../../shared/utils/datas';
-import { SolicitacaoService } from '../../shared/services/solicitacao.service';
-
-interface ReceitaDia {
-  data: string;
-  quantidade: number;
-  receita: number;
-}
+import { ReceitaDia, RelatorioReceitasService } from '../../shared/services/relatorio-receitas.service';
 
 @Component({
   selector: 'app-relatorio-periodo',
@@ -25,10 +18,8 @@ interface ReceitaDia {
   ],
   templateUrl: './relatorio-periodo.html',
 })
-export class RelatorioPeriodoComponent {
-  private router = inject(Router);
-  private location = inject(Location);
-  private solicitacaoService = inject(SolicitacaoService);
+export class RelatorioPeriodoComponent implements OnInit {
+  private readonly relatorioService = inject(RelatorioReceitasService);
 
   dataInicio: Date | null = null;
   dataFim: Date | null = null;
@@ -37,74 +28,55 @@ export class RelatorioPeriodoComponent {
   readonly minDate = new Date(2020, 0, 1);
   readonly maxDate = hoje();
 
-  receitasOriginais: ReceitaDia[] = [];
   receitas: ReceitaDia[] = [];
+  carregando = false;
+  erro = '';
 
-  constructor() {
-    this.receitasOriginais = this.calcularReceitasPorDia();
-    this.receitas = [...this.receitasOriginais];
-  }
-
-  private calcularReceitasPorDia(): ReceitaDia[] {
-    const lista: ReceitaDia[] = [];
-
-    for (const pagamento of this.solicitacaoService.listarReceitas()) {
-      const data = this.diaLocal(pagamento.dataPagamento);
-      let dia = lista.find((item) => item.data === data);
-
-      if (!dia) {
-        dia = { data, quantidade: 0, receita: 0 };
-        lista.push(dia);
-      }
-
-      dia.quantidade++;
-      dia.receita += pagamento.valor;
-    }
-
-    return lista.sort((a, b) => a.data.localeCompare(b.data));
-  }
-
-  // Converte a data/hora do pagamento para o dia (aaaa-mm-dd) no horário local
-  private diaLocal(dataHora: string): string {
-    const d = new Date(dataHora);
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const dia = String(d.getDate()).padStart(2, '0');
-
-    return `${d.getFullYear()}-${mes}-${dia}`;
+  ngOnInit(): void {
+    this.consultar();
   }
 
   consultar(): void {
-    const foraDoLimite = (data: Date | null) =>
-      !!data && (data < this.minDate || data > this.maxDate);
+    const foraDoLimite = (data: Date | null) => {
+      if (!data) {
+        return false;
+      }
+      const iso = paraIso(data);
+      return iso < paraIso(this.minDate) || iso > paraIso(this.maxDate);
+    };
 
     if (foraDoLimite(this.dataInicio) || foraDoLimite(this.dataFim)) {
-      alert('As datas devem estar entre 01/01/2020 e hoje.');
+      this.erro = 'As datas devem estar entre 01/01/2020 e hoje.';
+      this.receitas = [];
       return;
     }
 
-    if (
-      this.dataInicio &&
-      this.dataFim &&
-      this.dataInicio > this.dataFim
-    ) {
-      alert('A data inicial não pode ser maior que a data final.');
+    const inicio = this.dataInicio ? paraIso(this.dataInicio) : undefined;
+    const fim = this.dataFim ? paraIso(this.dataFim) : undefined;
+    if (inicio && fim && inicio > fim) {
+      this.erro = 'A data inicial não pode ser maior que a data final.';
+      this.receitas = [];
       return;
     }
 
-    this.periodoInicio = this.dataInicio;
-    this.periodoFim = this.dataFim;
+    this.periodoInicio = this.dataInicio ? new Date(this.dataInicio) : null;
+    this.periodoFim = this.dataFim ? new Date(this.dataFim) : null;
+    this.erro = '';
+    this.carregando = true;
+    this.receitas = [];
 
-    const inicio = this.dataInicio ? paraIso(this.dataInicio) : '';
-    const fim = this.dataFim ? paraIso(this.dataFim) : '';
-
-    this.receitas = this.receitasOriginais.filter((item) => {
-      const depoisDoInicio =
-        !inicio || item.data >= inicio;
-
-      const antesDoFim =
-        !fim || item.data <= fim;
-
-      return depoisDoInicio && antesDoFim;
+    this.relatorioService.listar(inicio, fim).subscribe({
+      next: (receitas) => {
+        this.receitas = receitas;
+        this.carregando = false;
+      },
+      error: (erro: { error?: { mensagem?: unknown } }) => {
+        const mensagem = erro.error?.mensagem;
+        this.erro = typeof mensagem === 'string'
+          ? mensagem
+          : 'Não foi possível carregar o relatório de receitas.';
+        this.carregando = false;
+      },
     });
   }
 
@@ -113,7 +85,7 @@ export class RelatorioPeriodoComponent {
     this.dataFim = null;
     this.periodoInicio = null;
     this.periodoFim = null;
-    this.receitas = [...this.receitasOriginais];
+    this.consultar();
   }
 
   get totalServicos(): number {
@@ -124,10 +96,11 @@ export class RelatorioPeriodoComponent {
   }
 
   get totalReceita(): number {
-    return this.receitas.reduce(
-      (total, item) => total + item.receita,
+    const totalCentavos = this.receitas.reduce(
+      (total, item) => total + Math.round(item.receita * 100),
       0
     );
+    return totalCentavos / 100;
   }
 
   formatarData(data: string): string {
@@ -163,6 +136,10 @@ export class RelatorioPeriodoComponent {
   }
 
   gerarPdf(): void {
+    if (this.carregando || this.erro) {
+      return;
+    }
+
     const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
     const margem = 15;

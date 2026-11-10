@@ -60,6 +60,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/solicitacoes/cliente",
                     "/api/solicitacoes/cliente/**")
                     .hasRole("CLIENTE")
+                .requestMatchers(HttpMethod.GET, "/api/relatorios/**")
+                    .hasRole("FUNCIONARIO")
                 .requestMatchers(HttpMethod.POST, "/api/solicitacoes",
                     "/api/solicitacoes/*/aprovacao", "/api/solicitacoes/*/rejeicao",
                     "/api/solicitacoes/*/resgate", "/api/solicitacoes/*/pagamento")
