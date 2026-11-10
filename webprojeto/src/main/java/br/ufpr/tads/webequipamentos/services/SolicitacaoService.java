@@ -45,9 +45,15 @@ public class SolicitacaoService {
     }
 
     // RF012 / RF014: dados completos para o funcionário, incluindo o cliente.
+    // Usa a mesma regra de visibilidade da listagem (RF013): fora dela responde 404, sem revelar que existe.
     @Transactional(readOnly = true)
-    public SolicitacaoParaFuncionario detalharParaFuncionario(Integer id) {
-        SolicitacaoResumo s = dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+    public SolicitacaoParaFuncionario detalharParaFuncionario(String emailFuncionario, Integer id) {
+        if (emailFuncionario == null || emailFuncionario.isBlank()) {
+            throw new IllegalArgumentException("Funcionário não identificado.");
+        }
+
+        SolicitacaoResumo s = dao.buscarVisivelAoFuncionario(id, emailFuncionario.trim())
+            .orElseThrow(NaoEncontradoException::new);
 
         return new SolicitacaoParaFuncionario(
             s.id(),

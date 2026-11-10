@@ -240,6 +240,30 @@ class SolicitacaoServiceTest {
     }
 
     @Test
+    void detalheDoFuncionarioSoComSolicitacaoVisivel() {
+
+        when(dao.buscarVisivelAoFuncionario(7, "maria@teste.com"))
+            .thenReturn(Optional.of(noEstado("ORÇADA")));
+        when(dao.listarHistorico(7)).thenReturn(List.of());
+
+        assertEquals("ORÇADA", service.detalharParaFuncionario(" maria@teste.com ", 7).estado());
+    }
+
+    @Test
+    void detalheDeSolicitacaoDeOutroFuncionarioNaoEncontrado() {
+
+        when(dao.buscarVisivelAoFuncionario(7, "mario@teste.com")).thenReturn(Optional.empty());
+
+        assertThrows(
+            NaoEncontradoException.class,
+            () -> service.detalharParaFuncionario("mario@teste.com", 7)
+        );
+
+        verify(dao, never()).buscarClienteDaSolicitacao(any());
+        verify(dao, never()).listarHistorico(any());
+    }
+
+    @Test
     void rejeitaDefeitoCurto() {
 
         NovaSolicitacaoRequest req = new NovaSolicitacaoRequest(

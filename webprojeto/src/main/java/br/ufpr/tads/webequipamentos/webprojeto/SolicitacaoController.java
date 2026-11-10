@@ -58,9 +58,10 @@ public class SolicitacaoController {
             @PathVariable Integer id,
             HttpServletRequest request) {
 
-        emailDaSessao(request, "FUNCIONARIO");
-
-        return service.detalharParaFuncionario(id);
+        return service.detalharParaFuncionario(
+            emailDaSessao(request, "FUNCIONARIO"),
+            id
+        );
     }
 
     // RF012

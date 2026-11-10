@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface SolicitacaoDao {
     List<SolicitacaoResumo> listarVisiveis(String emailFuncionario);
 
+    Optional<SolicitacaoResumo> buscarVisivelAoFuncionario(Integer id, String emailFuncionario);
+
     List<SolicitacaoResumo> listarDoCliente(String emailCliente);
 
     List<SolicitacaoAberta> listarAbertas();

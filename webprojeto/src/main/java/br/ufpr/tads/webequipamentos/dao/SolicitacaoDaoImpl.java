@@ -15,7 +15,10 @@ import java.util.Optional;
 @Repository
 public class SolicitacaoDaoImpl implements SolicitacaoDao {
 
-    private static final String SELECT_VISIVEIS = """
+    // RF013: abertas sem responsável aparecem para todos; as demais só para o responsável.
+    // REDIRECIONADA vale só para o funcionário de destino (funcionario_atual_id), como pede o enunciado.
+    // A mesma regra serve para a listagem e para o detalhe, para trocar o id na URL não expor nada.
+    private static final String FROM_VISIVEIS = """
         WITH funcionario_logado AS (
             SELECT f.id
             FROM funcionario f
@@ -28,14 +31,21 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         FROM solicitacao s
         JOIN categoria_equipamento c ON c.id = s.categoria_id
         CROSS JOIN funcionario_logado f
-        WHERE (s.estado = 'ABERTA'
-               AND s.funcionario_atual_id IS NULL
-               AND s.funcionario_orcamento_id IS NULL)
-           OR (CASE
-                 WHEN s.estado = 'REDIRECIONADA' THEN s.funcionario_atual_id
-                 ELSE COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
-               END) = f.id
+        WHERE ((s.estado = 'ABERTA'
+                AND s.funcionario_atual_id IS NULL
+                AND s.funcionario_orcamento_id IS NULL)
+            OR (CASE
+                  WHEN s.estado = 'REDIRECIONADA' THEN s.funcionario_atual_id
+                  ELSE COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
+                END) = f.id)
+        """;
+
+    private static final String SELECT_VISIVEIS = FROM_VISIVEIS + """
         ORDER BY s.data_hora_abertura ASC, s.id ASC
+        """;
+
+    private static final String SELECT_UMA_VISIVEL = FROM_VISIVEIS + """
+          AND s.id = ?
         """;
 
     private static final String SELECT_RESUMO = """
@@ -168,6 +178,13 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     @Override
     public List<SolicitacaoResumo> listarVisiveis(String emailFuncionario) {
         return jdbc.query(SELECT_VISIVEIS, MAPPER, emailFuncionario);
+    }
+
+    @Override
+    public Optional<SolicitacaoResumo> buscarVisivelAoFuncionario(Integer id, String emailFuncionario) {
+        return jdbc.query(SELECT_UMA_VISIVEL, MAPPER, emailFuncionario, id)
+            .stream()
+            .findFirst();
     }
 
     @Override
