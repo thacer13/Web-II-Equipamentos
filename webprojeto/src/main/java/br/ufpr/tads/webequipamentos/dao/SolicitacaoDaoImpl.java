@@ -15,7 +15,10 @@ import java.util.Optional;
 @Repository
 public class SolicitacaoDaoImpl implements SolicitacaoDao {
 
-    private static final String SELECT_VISIVEIS = """
+    // RF013: abertas sem responsável aparecem para todos; as demais só para o responsável.
+    // REDIRECIONADA vale só para o funcionário de destino (funcionario_atual_id), como pede o enunciado.
+    // A mesma regra serve para a listagem e para o detalhe, para trocar o id na URL não expor nada.
+    private static final String FROM_VISIVEIS = """
         WITH funcionario_logado AS (
             SELECT f.id
             FROM funcionario f
@@ -28,14 +31,21 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         FROM solicitacao s
         JOIN categoria_equipamento c ON c.id = s.categoria_id
         CROSS JOIN funcionario_logado f
-        WHERE (s.estado = 'ABERTA'
-               AND s.funcionario_atual_id IS NULL
-               AND s.funcionario_orcamento_id IS NULL)
-           OR (CASE
-                 WHEN s.estado = 'REDIRECIONADA' THEN s.funcionario_atual_id
-                 ELSE COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
-               END) = f.id
+        WHERE ((s.estado = 'ABERTA'
+                AND s.funcionario_atual_id IS NULL
+                AND s.funcionario_orcamento_id IS NULL)
+            OR (CASE
+                  WHEN s.estado = 'REDIRECIONADA' THEN s.funcionario_atual_id
+                  ELSE COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
+                END) = f.id)
+        """;
+
+    private static final String SELECT_VISIVEIS = FROM_VISIVEIS + """
         ORDER BY s.data_hora_abertura ASC, s.id ASC
+        """;
+
+    private static final String SELECT_UMA_VISIVEL = FROM_VISIVEIS + """
+          AND s.id = ?
         """;
 
     private static final String SELECT_RESUMO = """
@@ -139,14 +149,15 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
            AND s.id = ? AND s.estado = 'ABERTA'
         """;
 
+    // O valor vem da própria linha recém-orçada, para o histórico nunca divergir da solicitação.
     private static final String INSERT_HISTORICO_ORCAMENTO = """
         INSERT INTO historico_solicitacao
             (solicitacao_id, data_hora, estado_anterior, estado_novo, funcionario_id, valor)
-        SELECT s.id, s.data_hora_orcamento, 'ABERTA', 'ORÇADA', f.id, ?
+        SELECT s.id, s.data_hora_orcamento, 'ABERTA', 'ORÇADA', f.id, s.valor_orcamento
         FROM solicitacao s
         JOIN funcionario f ON f.id = s.funcionario_orcamento_id
         JOIN usuario u ON u.id = f.id
-        WHERE s.id = ? AND LOWER(u.email) = LOWER(?)
+        WHERE s.id = ? AND s.estado = 'ORÇADA' AND LOWER(u.email) = LOWER(?)
         """;
 
     private static final RowMapper<SolicitacaoResumo> MAPPER = (rs, rowNum) -> new SolicitacaoResumo(
@@ -168,6 +179,13 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     @Override
     public List<SolicitacaoResumo> listarVisiveis(String emailFuncionario) {
         return jdbc.query(SELECT_VISIVEIS, MAPPER, emailFuncionario);
+    }
+
+    @Override
+    public Optional<SolicitacaoResumo> buscarVisivelAoFuncionario(Integer id, String emailFuncionario) {
+        return jdbc.query(SELECT_UMA_VISIVEL, MAPPER, emailFuncionario, id)
+            .stream()
+            .findFirst();
     }
 
     @Override
@@ -197,8 +215,8 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     }
 
     @Override
-    public void registrarAbertura(Integer solicitacaoId) {
-        jdbc.update(INSERT_HISTORICO_ABERTURA, solicitacaoId);
+    public int registrarAbertura(Integer solicitacaoId) {
+        return jdbc.update(INSERT_HISTORICO_ABERTURA, solicitacaoId);
     }
 
     @Override
@@ -229,14 +247,14 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     }
 
     @Override
-    public void registrarOrcamento(Integer solicitacaoId, String emailFuncionario, BigDecimal valor) {
-        jdbc.update(INSERT_HISTORICO_ORCAMENTO, valor, solicitacaoId, emailFuncionario);
+    public int registrarOrcamento(Integer solicitacaoId, String emailFuncionario) {
+        return jdbc.update(INSERT_HISTORICO_ORCAMENTO, solicitacaoId, emailFuncionario);
     }
 
     @Override
-    public void registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
+    public int registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
                                             BigDecimal valor, String motivo) {
-        jdbc.update(INSERT_HISTORICO_CLIENTE, solicitacaoId, estadoAnterior, estadoNovo, valor, motivo);
+        return jdbc.update(INSERT_HISTORICO_CLIENTE, solicitacaoId, estadoAnterior, estadoNovo, valor, motivo);
     }
 
     @Override

@@ -272,6 +272,31 @@ class SolicitacaoControllerTest {
     }
 
     @Test
+    void detalheDoFuncionarioUsaEmailDaSessao() {
+
+        autenticar("maria@teste.com", "FUNCIONARIO");
+
+        controller.detalharParaFuncionario(7, request);
+
+        verify(service).detalharParaFuncionario("maria@teste.com", 7);
+    }
+
+    @Test
+    void detalheDoFuncionarioRejeitaCliente() {
+
+        autenticar("joao@teste.com", "CLIENTE");
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.detalharParaFuncionario(7, request)
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, erro.getStatusCode());
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
     void criacaoRejeitaFuncionario() {
 
         autenticar("maria@teste.com", "FUNCIONARIO");

@@ -45,9 +45,15 @@ public class SolicitacaoService {
     }
 
     // RF012 / RF014: dados completos para o funcionário, incluindo o cliente.
+    // Usa a mesma regra de visibilidade da listagem (RF013): fora dela responde 404, sem revelar que existe.
     @Transactional(readOnly = true)
-    public SolicitacaoParaFuncionario detalharParaFuncionario(Integer id) {
-        SolicitacaoResumo s = dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+    public SolicitacaoParaFuncionario detalharParaFuncionario(String emailFuncionario, Integer id) {
+        if (emailFuncionario == null || emailFuncionario.isBlank()) {
+            throw new IllegalArgumentException("Funcionário não identificado.");
+        }
+
+        SolicitacaoResumo s = dao.buscarVisivelAoFuncionario(id, emailFuncionario.trim())
+            .orElseThrow(NaoEncontradoException::new);
 
         return new SolicitacaoParaFuncionario(
             s.id(),
@@ -88,7 +94,7 @@ public class SolicitacaoService {
             throw new ConflitoException("Esta solicitação já foi orçada por outro funcionário.");
         }
 
-        dao.registrarOrcamento(id, emailFuncionario.trim(), valor);
+        exigirHistorico(dao.registrarOrcamento(id, emailFuncionario.trim()));
 
         return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
     }
@@ -129,7 +135,7 @@ public class SolicitacaoService {
         Integer id = dao.inserir(emailCliente.trim(), req.categoriaId(), equipamento, defeito)
             .orElseThrow(() -> new IllegalArgumentException("Categoria inválida ou inativa."));
 
-        dao.registrarAbertura(id);
+        exigirHistorico(dao.registrarAbertura(id));
 
         return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
     }
@@ -207,15 +213,22 @@ public class SolicitacaoService {
             throw new ConflitoException("A solicitação foi alterada por outro usuário. Atualize a página.");
         }
 
-        dao.registrarTransicaoDoCliente(
+        exigirHistorico(dao.registrarTransicaoDoCliente(
             id,
             origem.valorBanco(),
             destino.valorBanco(),
             registrarValor ? atual.precoOrcado() : null,
             motivo
-        );
+        ));
 
         return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+    }
+
+    // Toda mudança de estado grava exatamente um histórico; se não gravar, a exceção desfaz a transação inteira.
+    private static void exigirHistorico(int linhas) {
+        if (linhas != 1) {
+            throw new IllegalStateException("Não foi possível registrar o histórico da solicitação.");
+        }
     }
 
     private static String normalizar(String texto) {

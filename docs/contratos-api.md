@@ -121,8 +121,20 @@ Rotas sugeridas; o responsável de cada tarefa confirma ao implementar.
 | `GET /categorias` | Lista categorias; o cliente recebe só as ativas | RF004, RF017 | 🚧 T21 |
 | `POST /categorias`, `PUT /categorias/{id}`, `DELETE /categorias/{id}` | CRUD; `DELETE` só desativa | RF017 | 🚧 T21 |
 | `GET/POST/PUT/DELETE /funcionarios` | CRUD; `DELETE` só desativa e não permite remover a si mesmo | RF018 | 🚧 T23 |
-| `GET /relatorios/receitas?inicio=&fim=` | Receita por dia no período | RF019 | ⬜ T35 |
-| `GET /relatorios/receitas-categoria` | Receita por categoria | RF020 | ⬜ T36 |
+| `GET /relatorios/receitas?inicio=&fim=` | Funcionário; datas opcionais `aaaa-mm-dd`; retorna pagamentos agrupados pela data efetiva de pagamento | RF019 | ✅ T35 |
+| `GET /relatorios/receitas-categoria` | Funcionário; pagamentos efetivos agrupados por categoria de equipamento | RF020 | ✅ T36 |
+
+O relatório RF019 soma `valor_orcamento` uma vez para cada solicitação com
+`data_hora_pagamento` preenchida e agrupa pela data desse timestamp. Assim,
+pagamentos continuam contabilizados após a solicitação passar de `PAGA` para
+`FINALIZADA`; solicitações apenas orçadas ou marcadas como pagas sem timestamp
+não entram no resultado. `inicio` é inclusivo e `fim` inclui o dia inteiro.
+Sem ambas as datas, retorna todo o histórico de pagamentos.
+O relatório RF020 usa os mesmos critérios de pagamento e agrupa cada solicitação
+paga pela categoria associada no banco, somando seu orçamento uma única vez.
+Categorias sem pagamentos efetivos não aparecem; categorias inativas com
+pagamentos históricos permanecem no relatório. A tabela e o PDF consomem os
+mesmos agregados retornados pela API.
 
 ## Formatos de resposta
 
