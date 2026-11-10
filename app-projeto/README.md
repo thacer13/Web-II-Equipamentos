@@ -405,6 +405,13 @@ A API Spring Boot utiliza normalmente:
 
 `8080`
 
+No ambiente Docker, o Spring aplica `schema.sql` e `data.sql` ao iniciar a API.
+As contas de demonstração usam a senha `1234`:
+
+- Funcionários: `maria.funcionario@example.com`, `mario.funcionario@example.com`
+- Clientes: `joao.cliente@example.com`, `jose.cliente@example.com`,
+  `joana.cliente@example.com`, `joaquina.cliente@example.com`
+
 ## Como rodar o projeto
 
 ### Pré-requisitos

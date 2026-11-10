@@ -35,6 +35,7 @@ services:
       DB_URL: jdbc:postgresql://database:5432/manutencao_db
       DB_USER: dev_user
       DB_PASS: dev_password
+      SPRING_SQL_INIT_MODE: always
       MAIL_USER: manutencaoequipamentosweb@gmail.com
       MAIL_PASS: cdlsazacrgrgazen
     depends_on:
