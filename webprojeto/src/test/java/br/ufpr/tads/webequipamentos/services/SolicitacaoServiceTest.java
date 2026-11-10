@@ -185,7 +185,9 @@ class SolicitacaoServiceTest {
 
         BigDecimal valor = new BigDecimal("250.00");
 
-        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("ABERTA")), Optional.of(noEstado("ORÇADA")));
+        when(dao.buscarResumo(7))
+            .thenReturn(Optional.of(noEstado("ABERTA")))
+            .thenReturn(Optional.of(noEstado("ORÇADA")));
         when(dao.orcar(7, "maria@teste.com", valor)).thenReturn(true);
 
         assertEquals("ORÇADA", service.orcar(" maria@teste.com ", 7, new OrcamentoRequest(valor)).estado());

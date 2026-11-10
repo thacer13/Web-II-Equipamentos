@@ -5,6 +5,9 @@
         <div>
           <h1 class="text-2xl font-semibold text-gray-800">Gerenciar Categorias</h1>
           <p class="mt-1 text-sm text-gray-500">Cadastre, edite e desative categorias de equipamentos.</p>
+          @if (mensagemErro) {
+            <p class="mt-2 text-sm text-red-600">{{ mensagemErro }}</p>
+          }
         </div>
         <div class="flex gap-2">
           <p-button type="button" label="Adicionar Categoria" (click)="abrirNova()"></p-button>
@@ -88,11 +91,14 @@
   [closable]="true"
   [style]="{ width: 'min(420px, 92vw)' }">
   <p class="text-sm text-gray-700">
-    Deseja remover a categoria
+    Deseja desativar a categoria
     <strong>{{ categoriaSelecionada?.nome }}</strong>?
   </p>
+  @if (mensagemErroConfirmacao) {
+    <p class="mt-2 text-sm text-red-600">{{ mensagemErroConfirmacao }}</p>
+  }
   <ng-template #footer>
     <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (click)="showConfirmacao = false"></p-button>
-    <p-button type="button" label="Remover" severity="danger" (click)="confirmarRemocao()"></p-button>
+    <p-button type="button" label="Desativar" severity="danger" (click)="confirmarRemocao()"></p-button>
   </ng-template>
 </p-dialog>

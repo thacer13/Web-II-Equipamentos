@@ -1,65 +1,92 @@
-import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { of, throwError } from 'rxjs';
+import { Funcionario } from '../../shared/models/funcionario.model';
+import { UsuarioService } from '../../shared/services/usuario.service';
 import { ListaFuncionariosComponent } from './lista-funcionarios';
 
 describe('ListaFuncionariosComponent', () => {
   let component: ListaFuncionariosComponent;
-  let storage: Record<string, string>;
+  let funcionarios: Funcionario[];
+  let usuarioService: {
+    listarFuncionarios: ReturnType<typeof vi.fn>;
+    obterUsuarioLogado: ReturnType<typeof vi.fn>;
+    salvarFuncionario: ReturnType<typeof vi.fn>;
+    redefinirSenhaFuncionario: ReturnType<typeof vi.fn>;
+    remover: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
-    storage = {};
-    Object.defineProperties(storage, {
-      getItem: { value: (key: string) => storage[key] ?? null },
-      setItem: { value: (key: string, value: string) => { storage[key] = value; } },
-      removeItem: { value: (key: string) => { delete storage[key]; } }
-    });
-    vi.stubGlobal('localStorage', storage);
+    funcionarios = [
+      {
+        id: 1,
+        nome: 'Maria',
+        email: 'maria@email.com',
+        perfil: 'FUNCIONARIO',
+        dataNascimento: '1990-01-01',
+        ativo: true
+      },
+      {
+        id: 2,
+        nome: 'João',
+        email: 'joao@email.com',
+        perfil: 'FUNCIONARIO',
+        dataNascimento: '1991-02-02',
+        ativo: true
+      }
+    ];
+    usuarioService = {
+      listarFuncionarios: vi.fn(() => of(funcionarios)),
+      obterUsuarioLogado: vi.fn(() => null),
+      salvarFuncionario: vi.fn(() => of(funcionarios[0])),
+      redefinirSenhaFuncionario: vi.fn(() => of(undefined)),
+      remover: vi.fn(() => of(undefined))
+    };
 
     await TestBed.configureTestingModule({
       imports: [ListaFuncionariosComponent],
-      providers: [
-        { provide: Router, useValue: { navigate: vi.fn() } },
-        { provide: Location, useValue: { back: vi.fn() } }
-      ]
+      providers: [{ provide: UsuarioService, useValue: usuarioService }]
     }).compileComponents();
 
     component = TestBed.createComponent(ListaFuncionariosComponent).componentInstance;
+    component.ngOnInit();
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('exclui o funcionário da lista e persiste a remoção', () => {
-    const funcionario = component.funcionarios.find((item) => item.nome === 'Maria')!;
+  it('solicita desativação à API e fecha a confirmação após sucesso', () => {
+    const funcionario = component.funcionarios[0];
 
     component.pedirRemocao(funcionario);
     component.confirmarRemocao();
 
-    expect(component.funcionarios.some((item) => item.id === funcionario.id)).toBe(false);
-    expect(JSON.parse(storage['funcionarios-crud']).some((item: { id: number }) => item.id === funcionario.id)).toBe(false);
+    expect(usuarioService.remover).toHaveBeenCalledWith(funcionario.id);
     expect(component.showConfirmacao).toBe(false);
   });
 
-  it('permite excluir um funcionário que já estava inativo', () => {
-    const funcionario = component.funcionarios.find((item) => item.nome === 'Maria')!;
-    funcionario.ativo = false;
-
-    component.pedirRemocao(funcionario);
-    component.confirmarRemocao();
-
-    expect(component.funcionarios.some((item) => item.id === funcionario.id)).toBe(false);
+  it('não permite desativar funcionários inativos ou o último funcionário ativo', () => {
+    const ultimoAtivo = component.funcionarios[0];
+    component.funcionarios = [ultimoAtivo];
+    expect(component.podeRemover(ultimoAtivo)).toBe(false);
+    expect(component.podeRemover({ ...ultimoAtivo, ativo: false })).toBe(false);
   });
 
-  it('rejeita datas de nascimento fora do intervalo permitido', () => {
+  it('exibe mensagem devolvida pela API ao falhar a desativação', () => {
+    usuarioService.remover.mockReturnValue(
+      throwError(() => ({ error: { mensagem: 'Não foi possível desativar.' } }))
+    );
+    component.pedirRemocao(component.funcionarios[0]);
+    component.confirmarRemocao();
+
+    expect(component.mensagemErroConfirmacao).toBe('Não foi possível desativar.');
+    expect(component.showConfirmacao).toBe(true);
+  });
+
+  it('rejeita data de nascimento anterior ao limite permitido', () => {
     component.nome = 'Novo Funcionário';
     component.email = 'novo@teste.com';
-    component.dataNascimento = '2019-12-31';
+    component.dataNascimento = new Date(1949, 11, 31);
 
     component.salvarFuncionario();
 
-    expect(component.mensagemErro).toBe('A data de nascimento deve estar entre 01/01/2020 e hoje.');
-    expect(component.funcionarios.some((item) => item.email === component.email)).toBe(false);
+    expect(component.mensagemErro).toBe('A data de nascimento deve estar entre 01/01/1950 e hoje.');
+    expect(usuarioService.salvarFuncionario).not.toHaveBeenCalled();
   });
 });

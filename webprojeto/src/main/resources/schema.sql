@@ -39,6 +39,12 @@ CREATE TABLE IF NOT EXISTS categoria_equipamento (
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_categoria_equipamento_nome_lower
+    ON categoria_equipamento (LOWER(nome));
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_usuario_email_lower
+    ON usuario (LOWER(email));
+
 CREATE TABLE IF NOT EXISTS solicitacao (
     id SERIAL PRIMARY KEY,
     cliente_id INTEGER NOT NULL REFERENCES cliente(id),

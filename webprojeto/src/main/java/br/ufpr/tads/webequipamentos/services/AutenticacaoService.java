@@ -38,6 +38,7 @@ public class AutenticacaoService {
         servletRequest.changeSessionId();
         session.setAttribute("email", usuario.email());
         session.setAttribute("perfil", usuario.perfil());
+        session.setAttribute("id", usuario.id());
 
         Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
             usuario.email(),

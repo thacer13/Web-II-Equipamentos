@@ -51,6 +51,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/usuarios/login",
                     "/api/clientes").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/categorias").authenticated()
+                .requestMatchers("/api/funcionarios", "/api/funcionarios/**",
+                    "/api/categorias", "/api/categorias/**")
+                    .hasRole("FUNCIONARIO")
                 .requestMatchers(HttpMethod.GET, "/api/solicitacoes/funcionario",
                     "/api/solicitacoes/funcionario/**", "/api/solicitacoes/abertas")
                     .hasRole("FUNCIONARIO")

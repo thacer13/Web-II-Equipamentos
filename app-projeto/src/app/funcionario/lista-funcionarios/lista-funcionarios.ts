@@ -1,14 +1,13 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { UsuarioService } from '../../shared/services/usuario.service';
 import { Funcionario } from '../../shared/models/funcionario.model';
-import { deIso, hoje, paraIso } from '../../shared/utils/datas';
+import { hoje, paraIso } from '../../shared/utils/datas';
 
 @Component({
   selector: 'app-funcionarios',
@@ -25,8 +24,6 @@ import { deIso, hoje, paraIso } from '../../shared/utils/datas';
 })
 
 export class ListaFuncionariosComponent implements OnInit {
-  private location = inject(Location);
-
   funcionarios: Funcionario[] = [];
   funcionarioSelecionado: Funcionario | null = null;
 
@@ -41,6 +38,8 @@ export class ListaFuncionariosComponent implements OnInit {
   readonly minDate = new Date(1950, 0, 1);
   readonly maxDate = hoje();
   mensagemErro = '';
+  mensagemErroConfirmacao = '';
+  mensagemSucesso = '';
   funcionarioLogadoId?: number;
 
   constructor(private usuarioService: UsuarioService) {}
@@ -55,7 +54,14 @@ export class ListaFuncionariosComponent implements OnInit {
   }
 
   carregarFuncionarios(): void {
-    this.funcionarios = this.usuarioService.listarFuncionarios();
+    this.usuarioService.listarFuncionarios().subscribe({
+      next: funcionarios => {
+        this.funcionarios = funcionarios;
+      },
+      error: erro => {
+        this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível carregar os funcionários.');
+      }
+    });
   }
 
   abrirNovo(): void {
@@ -64,6 +70,7 @@ export class ListaFuncionariosComponent implements OnInit {
     this.email = '';
     this.dataNascimento = null;
     this.mensagemErro = '';
+    this.mensagemSucesso = '';
     this.showFormulario = true;
   }
 
@@ -90,6 +97,7 @@ export class ListaFuncionariosComponent implements OnInit {
       this.dataNascimento = null;
     }
     this.mensagemErro = '';
+    this.mensagemSucesso = '';
     this.showFormulario = true;
   }
 
@@ -113,50 +121,55 @@ export class ListaFuncionariosComponent implements OnInit {
       return;
     }
 
-    // Validação de E-mail Único (ignorando o próprio registro em caso de edição)
-    const emailExistente = this.usuarioService.buscarPorEmail(this.email);
-    if (emailExistente && emailExistente.id !== this.editandoId) {
-      this.mensagemErro = 'Este e-mail já está cadastrado no sistema.';
-      return;
-    }
-
-    // Prepara o objeto para salvar
     const funcionarioParaSalvar: Funcionario = {
       id: this.editandoId !== null ? this.editandoId : undefined,
-      nome: this.nome,
-      email: this.email,
+      nome: this.nome.trim().replace(/\s+/g, ' '),
+      email: this.email.trim().toLowerCase(),
       dataNascimento: paraIso(this.dataNascimento),
       perfil: 'FUNCIONARIO',
-      ativo: true // Será ignorado pelo Service caso seja edição, mantendo o status atual
+      ativo: true
     };
 
-    // Salva via Service (LocalStorage) e atualiza a tela
-    this.usuarioService.salvarFuncionario(funcionarioParaSalvar);
-    this.carregarFuncionarios();
-    this.showFormulario = false;
+    this.usuarioService.salvarFuncionario(funcionarioParaSalvar).subscribe({
+      next: funcionarioSalvo => {
+        const usuarioLogado = this.usuarioService.obterUsuarioLogado();
+        if (usuarioLogado?.id === funcionarioSalvo.id) {
+          this.usuarioService.salvarUsuarioLogado({
+            ...usuarioLogado,
+            nome: funcionarioSalvo.nome,
+            email: funcionarioSalvo.email
+          });
+        }
+        this.showFormulario = false;
+        this.carregarFuncionarios();
+      },
+      error: erro => {
+        this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível salvar o funcionário.');
+      }
+    });
   }
 
   gerarNovaSenhaManual(): void {
-    if (this.editandoId !== null) {
-      const funcionario = this.funcionarios.find(f => f.id === this.editandoId);
-      if (funcionario) {
-        const novaSenha = this.usuarioService.gerarSenhaAleatoria();
-        funcionario.senha = novaSenha; // Atualiza a senha no objeto atual
-        
-        // Salva a alteração
-        this.usuarioService.salvarFuncionario(funcionario);
-        
-        // Feedback visual
-        alert(`[SIMULAÇÃO] Nova senha (${novaSenha}) gerada e enviada para ${funcionario.email}`);
-      }
+    if (this.editandoId === null) {
+      return;
     }
+    this.mensagemErro = '';
+    this.mensagemSucesso = '';
+    this.usuarioService.redefinirSenhaFuncionario(this.editandoId).subscribe({
+      next: () => {
+        this.mensagemSucesso = 'Uma nova senha temporária foi enviada para o e-mail do funcionário.';
+      },
+      error: erro => {
+        this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível redefinir a senha.');
+      }
+    });
   }
 
   podeRemover(funcionario: Funcionario): boolean {
     if (funcionario.id === this.funcionarioLogadoId) {
       return false;
     } 
-    return this.funcionarios.length > 1;
+    return funcionario.ativo && this.funcionarios.filter(item => item.ativo).length > 1;
   }
 
   pedirRemocao(funcionario: Funcionario): void {
@@ -165,22 +178,33 @@ export class ListaFuncionariosComponent implements OnInit {
     }
 
     this.funcionarioSelecionado = funcionario;
+    this.mensagemErroConfirmacao = '';
     this.showConfirmacao = true;
   }
 
   confirmarRemocao(): void {
     if (this.funcionarioSelecionado && this.funcionarioSelecionado.id !== undefined) {
-      if (this.funcionarioSelecionado.id === this.funcionarioLogadoId) {
-        alert('Ação bloqueada: Você não pode excluir a si mesmo.');
-        this.showConfirmacao = false;
-        return;
-      }
-
-      this.usuarioService.remover(this.funcionarioSelecionado.id);
-      
-      this.carregarFuncionarios();
-      this.showConfirmacao = false;
-      this.funcionarioSelecionado = null;
+      this.usuarioService.remover(this.funcionarioSelecionado.id).subscribe({
+        next: () => {
+          this.carregarFuncionarios();
+          this.showConfirmacao = false;
+          this.funcionarioSelecionado = null;
+        },
+        error: erro => {
+          this.mensagemErroConfirmacao = this.mensagemErroApi(erro, 'Não foi possível desativar o funcionário.');
+        }
+      });
     }
+  }
+
+  private mensagemErroApi(erro: unknown, padrao: string): string {
+    if (typeof erro === 'object' && erro !== null && 'error' in erro) {
+      const resposta = erro.error;
+      if (typeof resposta === 'object' && resposta !== null
+          && 'mensagem' in resposta && typeof resposta.mensagem === 'string') {
+        return resposta.mensagem;
+      }
+    }
+    return padrao;
   }
 }

@@ -32,15 +32,6 @@ export const DADOS_INICIAIS_USUARIOS: Usuario[] = [
       estado: 'PR'
     },
   } as Cliente,
-  {
-    id: 2,
-    nome: 'Maria Funcionária',
-    email: 'funcionario@teste.com',
-    senha: '123',
-    perfil: 'FUNCIONARIO',
-    dataNascimento: '09/09/2009',
-    ativo: true,
-  } as Funcionario
 ];
 
 @Injectable({
@@ -52,6 +43,7 @@ export class UsuarioService {
   // Mudar para 'true' quando quiser testar integrado com o Spring Boot real
   private usarBackend = true;
   private apiUrl = 'http://localhost:8080/api/clientes'; 
+  private funcionariosUrl = 'http://localhost:8080/api/funcionarios';
   private loginUrl = 'http://localhost:8080/api/auth/login';
   private sessionUrl = 'http://localhost:8080/api/auth/session';
   private logoutUrl = 'http://localhost:8080/api/auth/logout';
@@ -241,52 +233,31 @@ export class UsuarioService {
     return usuarios.find((usuario: Usuario) => (usuario as Cliente).cpf?.replace(/\D/g, '') === cpfLimpo) as Cliente; // Retorna o Cliente Usuário que encontrar com o mesmo cpf
   }
 
-  remover(id: number): void {
-    let usuarios = this.listarTodos();
-    usuarios = usuarios.filter(usuario => usuario.id !== id);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(LS_CHAVE, JSON.stringify(usuarios));
-    }
+  remover(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.funcionariosUrl}/${id}`);
   }
 
   gerarSenhaAleatoria(): string {
     return Math.floor(1000 + Math.random() * 9000).toString();
   }
 
-  listarFuncionarios(): Funcionario[] {
-    const usuarios = this.listarTodos();
-    return usuarios.filter(usuario => usuario.perfil === 'FUNCIONARIO') as Funcionario[];
+  listarFuncionarios(): Observable<Funcionario[]> {
+    return this.http.get<Funcionario[]>(this.funcionariosUrl);
   }
 
-  salvarFuncionario(funcionario: Funcionario): void {
-    const usuarios = this.listarTodos();
-    
-    funcionario.nome = funcionario.nome.trim().replace(/\s+/g, ' ');
-    funcionario.email = funcionario.email.trim().toLowerCase();
+  salvarFuncionario(funcionario: Funcionario): Observable<Funcionario> {
+    const payload = {
+      nome: funcionario.nome.trim().replace(/\s+/g, ' '),
+      email: funcionario.email.trim().toLowerCase(),
+      dataNascimento: funcionario.dataNascimento
+    };
 
-    if (funcionario.id) {
-      // EDITAR: Encontra o usuário existente e atualiza os dados
-      const index = usuarios.findIndex(u => u.id === funcionario.id);
-      if (index !== -1) {
-        usuarios[index].nome = funcionario.nome;
-        usuarios[index].email = funcionario.email;
-        (usuarios[index] as Funcionario).dataNascimento = funcionario.dataNascimento;
-        (usuarios[index] as Funcionario).ativo = funcionario.ativo;
-        if (funcionario.senha) usuarios[index].senha = funcionario.senha;
-      }
-    } else {
-      // INSERIR: Gera ID, define perfil padrão, gera senha e define como ativo
-      funcionario.id = new Date().getTime();
-      funcionario.perfil = 'FUNCIONARIO';
-      funcionario.ativo = true;
-      funcionario.senha = this.gerarSenhaAleatoria();
-      usuarios.push(funcionario);
-      
-      console.log(`[SIMULAÇÃO DE E-MAIL] Para: ${funcionario.email} | Bem-vindo, ${funcionario.nome}! Sua senha temporária é: ${funcionario.senha}`);
-    }
+    return funcionario.id
+      ? this.http.put<Funcionario>(`${this.funcionariosUrl}/${funcionario.id}`, payload)
+      : this.http.post<Funcionario>(this.funcionariosUrl, payload);
+  }
 
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(LS_CHAVE, JSON.stringify(usuarios));
-    }
+  redefinirSenhaFuncionario(id: number): Observable<void> {
+    return this.http.post<void>(`${this.funcionariosUrl}/${id}/redefinir-senha`, {});
   }
 }

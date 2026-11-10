@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -20,8 +19,6 @@ import { Categoria, CategoriaService } from '../../shared/services/categoria.ser
   templateUrl: './categorias.html',
 })
 export class CategoriasComponent {
-  private router = inject(Router);
-  private location = inject(Location);
   private categoriaService = inject(CategoriaService);
 
   categorias: Categoria[] = [];
@@ -30,6 +27,7 @@ export class CategoriasComponent {
   editandoId: number | null = null;
   nome = '';
   mensagemErro = '';
+  mensagemErroConfirmacao = '';
   categoriaSelecionada: Categoria | null = null;
 
   constructor() {
@@ -51,6 +49,7 @@ export class CategoriasComponent {
   }
 
   salvarCategoria(): void {
+    this.mensagemErro = '';
     const nome = this.nome.trim().replace(/\s+/g, ' ');
 
     if (!nome) {
@@ -63,42 +62,23 @@ export class CategoriasComponent {
       return;
     }
 
-    const duplicada = this.categorias.some((categoria) =>
-      categoria.nome.toLowerCase() === nome.toLowerCase() &&
-      categoria.id !== this.editandoId
-    );
-
-    if (duplicada) {
-      this.mensagemErro = 'Já existe uma categoria com esse nome.';
-      return;
-    }
-
-    if (this.editandoId === null) {
-      const proximoId =
-        this.categorias.length > 0
-          ? Math.max(...this.categorias.map((categoria) => categoria.id)) + 1
-          : 1;
-
-      this.categorias.push({
-        id: proximoId,
-        nome,
-        ativo: true
-      });
-    } else {
-      const categoria =
-        this.categorias.find((item) => item.id === this.editandoId);
-
-      if (categoria) {
-        categoria.nome = nome;
+    this.categoriaService.salvar({
+      id: this.editandoId ?? undefined,
+      nome
+    }).subscribe({
+      next: () => {
+        this.showFormulario = false;
+        this.carregar();
+      },
+      error: erro => {
+        this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível salvar a categoria.');
       }
-    }
-
-    this.salvarLocal();
-    this.showFormulario = false;
+    });
   }
 
   pedirRemocao(categoria: Categoria): void {
     this.categoriaSelecionada = categoria;
+    this.mensagemErroConfirmacao = '';
     this.showConfirmacao = true;
   }
 
@@ -107,24 +87,37 @@ export class CategoriasComponent {
       return;
     }
 
-    this.categorias = this.categorias.filter((item) => item.id !== this.categoriaSelecionada?.id);
-
-    this.salvarLocal();
-
-    this.showConfirmacao = false;
-    this.categoriaSelecionada = null;
-  }
-
-  ativar(categoria: Categoria): void {
-    categoria.ativo = true;
-    this.salvarLocal();
+    this.categoriaService.desativar(this.categoriaSelecionada.id).subscribe({
+      next: () => {
+        this.showConfirmacao = false;
+        this.categoriaSelecionada = null;
+        this.carregar();
+      },
+      error: erro => {
+        this.mensagemErroConfirmacao = this.mensagemErroApi(erro, 'Não foi possível desativar a categoria.');
+      }
+    });
   }
 
   private carregar(): void {
-    this.categorias = this.categoriaService.listar();
+    this.categoriaService.listar().subscribe({
+      next: categorias => {
+        this.categorias = categorias;
+      },
+      error: erro => {
+        this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível carregar as categorias.');
+      }
+    });
   }
 
-  private salvarLocal(): void {
-    this.categoriaService.salvar(this.categorias);
+  private mensagemErroApi(erro: unknown, padrao: string): string {
+    if (typeof erro === 'object' && erro !== null && 'error' in erro) {
+      const resposta = erro.error;
+      if (typeof resposta === 'object' && resposta !== null
+          && 'mensagem' in resposta && typeof resposta.mensagem === 'string') {
+        return resposta.mensagem;
+      }
+    }
+    return padrao;
   }
 }

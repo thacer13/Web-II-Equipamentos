@@ -26,4 +26,16 @@ public class EmailService {
 
         mailSender.send(mensagem);
     }
+
+    public void enviarSenhaTemporaria(String destinatario, String senha) {
+        SimpleMailMessage mensagem = new SimpleMailMessage();
+        mensagem.setTo(destinatario);
+        mensagem.setSubject("Acesso ao Sistema de Manutenção de Equipamentos");
+        mensagem.setText(
+            "Olá!\n\n" +
+            "Sua senha temporária para acessar o sistema é: " + senha + "\n\n" +
+            "Atenciosamente,\nEquipe de Suporte"
+        );
+        mailSender.send(mensagem);
+    }
 }
