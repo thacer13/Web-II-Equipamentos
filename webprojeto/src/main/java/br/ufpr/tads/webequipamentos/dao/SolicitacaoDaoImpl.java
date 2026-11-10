@@ -149,14 +149,15 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
            AND s.id = ? AND s.estado = 'ABERTA'
         """;
 
+    // O valor vem da própria linha recém-orçada, para o histórico nunca divergir da solicitação.
     private static final String INSERT_HISTORICO_ORCAMENTO = """
         INSERT INTO historico_solicitacao
             (solicitacao_id, data_hora, estado_anterior, estado_novo, funcionario_id, valor)
-        SELECT s.id, s.data_hora_orcamento, 'ABERTA', 'ORÇADA', f.id, ?
+        SELECT s.id, s.data_hora_orcamento, 'ABERTA', 'ORÇADA', f.id, s.valor_orcamento
         FROM solicitacao s
         JOIN funcionario f ON f.id = s.funcionario_orcamento_id
         JOIN usuario u ON u.id = f.id
-        WHERE s.id = ? AND LOWER(u.email) = LOWER(?)
+        WHERE s.id = ? AND s.estado = 'ORÇADA' AND LOWER(u.email) = LOWER(?)
         """;
 
     private static final RowMapper<SolicitacaoResumo> MAPPER = (rs, rowNum) -> new SolicitacaoResumo(
@@ -214,8 +215,8 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     }
 
     @Override
-    public void registrarAbertura(Integer solicitacaoId) {
-        jdbc.update(INSERT_HISTORICO_ABERTURA, solicitacaoId);
+    public int registrarAbertura(Integer solicitacaoId) {
+        return jdbc.update(INSERT_HISTORICO_ABERTURA, solicitacaoId);
     }
 
     @Override
@@ -246,14 +247,14 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     }
 
     @Override
-    public void registrarOrcamento(Integer solicitacaoId, String emailFuncionario, BigDecimal valor) {
-        jdbc.update(INSERT_HISTORICO_ORCAMENTO, valor, solicitacaoId, emailFuncionario);
+    public int registrarOrcamento(Integer solicitacaoId, String emailFuncionario) {
+        return jdbc.update(INSERT_HISTORICO_ORCAMENTO, solicitacaoId, emailFuncionario);
     }
 
     @Override
-    public void registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
+    public int registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
                                             BigDecimal valor, String motivo) {
-        jdbc.update(INSERT_HISTORICO_CLIENTE, solicitacaoId, estadoAnterior, estadoNovo, valor, motivo);
+        return jdbc.update(INSERT_HISTORICO_CLIENTE, solicitacaoId, estadoAnterior, estadoNovo, valor, motivo);
     }
 
     @Override

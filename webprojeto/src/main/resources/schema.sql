@@ -69,3 +69,21 @@ CREATE TABLE IF NOT EXISTS historico_solicitacao (
     descricao_manutencao TEXT,
     orientacoes_cliente TEXT
 );
+
+-- Integridade (T37): só estados conhecidos e orçamento positivo, também para quem altera o banco
+-- fora da API. DROP + ADD em vez de DO $$: o Spring executa este arquivo separando por ";".
+ALTER TABLE solicitacao DROP CONSTRAINT IF EXISTS solicitacao_estado_valido;
+ALTER TABLE solicitacao ADD CONSTRAINT solicitacao_estado_valido CHECK (estado IN
+    ('ABERTA', 'ORÇADA', 'APROVADA', 'REJEITADA', 'REDIRECIONADA', 'ARRUMADA', 'PAGA', 'FINALIZADA'));
+
+ALTER TABLE solicitacao DROP CONSTRAINT IF EXISTS solicitacao_valor_positivo;
+ALTER TABLE solicitacao ADD CONSTRAINT solicitacao_valor_positivo
+    CHECK (valor_orcamento IS NULL OR valor_orcamento > 0);
+
+ALTER TABLE historico_solicitacao DROP CONSTRAINT IF EXISTS historico_estados_validos;
+ALTER TABLE historico_solicitacao ADD CONSTRAINT historico_estados_validos CHECK (
+    estado_novo IN ('ABERTA', 'ORÇADA', 'APROVADA', 'REJEITADA', 'REDIRECIONADA', 'ARRUMADA', 'PAGA', 'FINALIZADA')
+    AND (estado_anterior IS NULL OR estado_anterior IN
+        ('ABERTA', 'ORÇADA', 'APROVADA', 'REJEITADA', 'REDIRECIONADA', 'ARRUMADA', 'PAGA', 'FINALIZADA')));
+
+CREATE INDEX IF NOT EXISTS idx_historico_solicitacao ON historico_solicitacao (solicitacao_id, data_hora);

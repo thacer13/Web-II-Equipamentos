@@ -47,6 +47,7 @@ class SolicitacaoServiceTest {
         when(dao.inserir("joao@teste.com", 2, "Notebook Dell", "Tela piscando sem parar"))
             .thenReturn(Optional.of(7));
         when(dao.buscarResumo(7)).thenReturn(Optional.of(criada));
+        when(dao.registrarAbertura(7)).thenReturn(1);
 
         assertEquals(criada, service.criar(" joao@teste.com ", req));
 
@@ -105,6 +106,7 @@ class SolicitacaoServiceTest {
         when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
         when(dao.alterarEstado(7, "ORÇADA", "APROVADA")).thenReturn(true);
         when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("APROVADA")));
+        when(dao.registrarTransicaoDoCliente(7, "ORÇADA", "APROVADA", new BigDecimal("250.00"), null)).thenReturn(1);
 
         assertEquals("APROVADA", service.aprovar("joao@teste.com", 7).estado());
 
@@ -148,6 +150,7 @@ class SolicitacaoServiceTest {
         when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
         when(dao.alterarEstado(7, "ORÇADA", "REJEITADA")).thenReturn(true);
         when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("REJEITADA")));
+        when(dao.registrarTransicaoDoCliente(7, "ORÇADA", "REJEITADA", null, "Muito caro")).thenReturn(1);
 
         service.rejeitar("joao@teste.com", 7, new RejeicaoRequest("  Muito   caro "));
 
@@ -171,6 +174,7 @@ class SolicitacaoServiceTest {
         when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("REJEITADA")));
         when(dao.alterarEstado(7, "REJEITADA", "APROVADA")).thenReturn(true);
         when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("APROVADA")));
+        when(dao.registrarTransicaoDoCliente(7, "REJEITADA", "APROVADA", null, null)).thenReturn(1);
 
         service.resgatar("joao@teste.com", 7);
 
@@ -187,10 +191,32 @@ class SolicitacaoServiceTest {
 
         when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("ABERTA")), Optional.of(noEstado("ORÇADA")));
         when(dao.orcar(7, "maria@teste.com", valor)).thenReturn(true);
+        when(dao.registrarOrcamento(7, "maria@teste.com")).thenReturn(1);
 
         assertEquals("ORÇADA", service.orcar(" maria@teste.com ", 7, new OrcamentoRequest(valor)).estado());
 
-        verify(dao).registrarOrcamento(7, "maria@teste.com", valor);
+        verify(dao).registrarOrcamento(7, "maria@teste.com");
+    }
+
+    // A exceção sai do método @Transactional, então o UPDATE do estado é desfeito junto.
+    @Test
+    void falhaQuandoHistoricoNaoEGravado() {
+
+        when(dao.buscarDoCliente(7, "joao@teste.com")).thenReturn(Optional.of(noEstado("ORÇADA")));
+        when(dao.alterarEstado(7, "ORÇADA", "APROVADA")).thenReturn(true);
+        when(dao.registrarTransicaoDoCliente(any(), any(), any(), any(), any())).thenReturn(0);
+
+        assertThrows(IllegalStateException.class, () -> service.aprovar("joao@teste.com", 7));
+
+        BigDecimal valor = new BigDecimal("100");
+        when(dao.buscarResumo(8)).thenReturn(Optional.of(noEstado("ABERTA")));
+        when(dao.orcar(8, "maria@teste.com", valor)).thenReturn(true);
+        when(dao.registrarOrcamento(8, "maria@teste.com")).thenReturn(0);
+
+        assertThrows(
+            IllegalStateException.class,
+            () -> service.orcar("maria@teste.com", 8, new OrcamentoRequest(valor))
+        );
     }
 
     @Test
@@ -236,7 +262,7 @@ class SolicitacaoServiceTest {
             () -> service.orcar("maria@teste.com", 7, new OrcamentoRequest(valor))
         );
 
-        verify(dao, never()).registrarOrcamento(any(), any(), any());
+        verify(dao, never()).registrarOrcamento(any(), any());
     }
 
     @Test

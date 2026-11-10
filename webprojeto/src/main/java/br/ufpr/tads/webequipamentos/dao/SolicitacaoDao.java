@@ -20,7 +20,7 @@ public interface SolicitacaoDao {
     Optional<Integer> inserir(String emailCliente, Integer categoriaId,
                               String descricaoEquipamento, String descricaoDefeito);
 
-    void registrarAbertura(Integer solicitacaoId);
+    int registrarAbertura(Integer solicitacaoId);
 
     Optional<SolicitacaoResumo> buscarResumo(Integer id);
 
@@ -34,8 +34,8 @@ public interface SolicitacaoDao {
 
     boolean orcar(Integer id, String emailFuncionario, BigDecimal valor);
 
-    void registrarOrcamento(Integer solicitacaoId, String emailFuncionario, BigDecimal valor);
+    int registrarOrcamento(Integer solicitacaoId, String emailFuncionario);
 
-    void registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
+    int registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
                                      BigDecimal valor, String motivo);
 }
