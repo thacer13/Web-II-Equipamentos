@@ -38,6 +38,7 @@ describe('ViacepService', () => {
     http.expectOne('https://viacep.com.br/ws/80060000/json/').flush({
       cep: '80060-000',
       logradouro: 'Rua XV de Novembro',
+      complemento: 'Sala 2',
       bairro: 'Centro',
       localidade: 'Curitiba',
       uf: 'PR'
@@ -46,6 +47,7 @@ describe('ViacepService', () => {
     expect(resultado).toEqual({
       cep: '80060-000',
       logradouro: 'Rua XV de Novembro',
+      complemento: 'Sala 2',
       bairro: 'Centro',
       cidade: 'Curitiba',
       estado: 'PR'

@@ -22,8 +22,8 @@ public class UsuarioDaoImpl implements UsuarioDao {
 
     private static final String INSERT_ENDERECO = """
         INSERT INTO endereco
-            (cep, logradouro, numero, bairro, cidade, estado)
-        VALUES (?, ?, ?, ?, ?, ?)
+            (cep, logradouro, numero, complemento, bairro, cidade, estado)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         RETURNING id
         """;
 
@@ -35,7 +35,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
 
     private static final String SELECT_BASE = """
         SELECT u.id, c.cpf, u.nome, u.email, c.telefone, u.senha_hash, u.salt,
-               e.cep, e.logradouro, e.numero, e.bairro, e.cidade, e.estado
+               e.cep, e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado
         FROM usuario u
         JOIN cliente c ON c.id = u.id
         JOIN endereco e ON e.id = c.endereco_id
@@ -69,7 +69,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
 
     private static final String UPDATE_ENDERECO = """
         UPDATE endereco
-           SET cep = ?, logradouro = ?, numero = ?, bairro = ?,
+           SET cep = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?,
                cidade = ?, estado = ?
          WHERE id = (SELECT endereco_id FROM cliente WHERE id = ?)
         """;
@@ -85,6 +85,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
         rs.getString("cep"),
         rs.getString("logradouro"),
         rs.getString("numero"),
+        rs.getString("complemento"),
         rs.getString("bairro"),
         rs.getString("cidade"),
         rs.getString("estado")
@@ -122,6 +123,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
             u.cep(),
             u.logradouro(),
             u.numero(),
+            u.complemento(),
             u.bairro(),
             u.cidade(),
             u.estado()
@@ -187,6 +189,7 @@ public class UsuarioDaoImpl implements UsuarioDao {
             u.cep(),
             u.logradouro(),
             u.numero(),
+            u.complemento(),
             u.bairro(),
             u.cidade(),
             u.estado(),

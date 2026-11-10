@@ -46,6 +46,7 @@ export class CadastroComponent implements OnInit {
       cep: ['', [Validators.required, validarCep()]],
       logradouro: ['', [Validators.required, naoVazio(), Validators.minLength(2), Validators.maxLength(LIMITES.logradouro)]],
       numero: ['', [Validators.required, naoVazio(), Validators.maxLength(LIMITES.numero)]],
+      complemento: ['', [Validators.maxLength(100)]],
       bairro: ['', [Validators.required, naoVazio(), Validators.minLength(2), Validators.maxLength(LIMITES.bairro)]],
       cidade: ['', [Validators.required, naoVazio(), Validators.minLength(2), Validators.maxLength(LIMITES.cidade)]],
       estado: ['', [Validators.required, validarEstado()]]
@@ -60,6 +61,7 @@ export class CadastroComponent implements OnInit {
           if (dados) {
             this.cadastroForm.patchValue({
               logradouro: dados.logradouro,
+              complemento: dados.complemento ?? '',
               bairro: dados.bairro,
               cidade: dados.cidade,
               estado: dados.estado
@@ -69,7 +71,7 @@ export class CadastroComponent implements OnInit {
             alert('CEP não encontrado.');
           }
         },
-        error: (err) => console.error('Erro ao buscar CEP', err)
+        error: () => alert('Não foi possível consultar o CEP. Tente novamente ou preencha o endereço manualmente.')
       });
     }
   }
@@ -89,22 +91,13 @@ export class CadastroComponent implements OnInit {
     const cepLimpo = somenteDigitos(dadosForm.cep);
     const logradouro = normalizarTexto(dadosForm.logradouro);
     const numero = normalizarTexto(dadosForm.numero);
+    const complemento = normalizarTexto(dadosForm.complemento ?? '');
     const bairro = normalizarTexto(dadosForm.bairro);
     const cidade = normalizarTexto(dadosForm.cidade);
     const estado = normalizarTexto(dadosForm.estado).toUpperCase();
 
-    if (!nome || !email || !logradouro || !numero || !bairro || !cidade || !estado) {
+    if (!nome || !email || !logradouro || !numero || complemento.length > 100 || !bairro || !cidade || !estado) {
       alert('Preencha todos os campos obrigatórios corretamente.');
-      return;
-    }
-
-    if (this.usuarioService.buscarPorEmail(email)) {
-      alert('E-mail já cadastrado.');
-      return;
-    }
-
-    if(this.usuarioService.buscarPorCpf(cpfLimpo)) {
-      alert('CPF já cadastrado.');
       return;
     }
 
@@ -118,6 +111,7 @@ export class CadastroComponent implements OnInit {
         cep: cepLimpo,
         logradouro,
         numero,
+        complemento,
         bairro,
         cidade,
         estado
@@ -130,7 +124,7 @@ export class CadastroComponent implements OnInit {
         this.router.navigate(['/auth/login']);
       },
       error: (err) => {
-        alert(err.error?.message || 'Erro ao realizar cadastro.');
+        alert(err.error?.mensagem || err.error?.message || 'Erro ao realizar cadastro.');
       }
     });
   }

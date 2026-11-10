@@ -37,6 +37,7 @@ describe('UsuarioService', () => {
       removeItem: { value: (key: string) => { delete storage[key]; } }
     });
     vi.stubGlobal('localStorage', storage);
+    localStorage.setItem('usuarios', '[]');
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()]
     });
@@ -57,13 +58,40 @@ describe('UsuarioService', () => {
     expect(service.listarTodos()).toEqual([]);
   });
 
-  it('cadastra cliente com id, perfil CLIENTE e senha de 4 dígitos', () => {
-    service.cadastrarCliente(novoCliente());
+  it('envia os dados cadastrais e o complemento para o backend', () => {
+    let response: Usuario | undefined;
+    service.cadastrarCliente(novoCliente({
+      endereco: {
+        ...novoCliente().endereco,
+        complemento: 'Sala 2'
+      }
+    })).subscribe(resultado => (response = resultado));
 
-    const [salvo] = service.listarTodos();
-    expect(salvo.id).toBeDefined();
-    expect(salvo.perfil).toBe('CLIENTE');
-    expect(salvo.senha).toMatch(/^\d{4}$/);
+    const request = httpTestingController.expectOne('http://localhost:8080/api/clientes');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      cpf: '52998224725',
+      nome: 'Maria Souza',
+      email: 'maria@email.com',
+      telefone: '41999998888',
+      senha: '',
+      cep: '80060000',
+      logradouro: 'Rua XV de Novembro',
+      numero: '100',
+      complemento: 'Sala 2',
+      bairro: 'Centro',
+      cidade: 'Curitiba',
+      estado: 'PR'
+    });
+    const usuario: Usuario = {
+      id: 12,
+      nome: 'Maria Souza',
+      email: 'maria@email.com',
+      perfil: 'CLIENTE'
+    };
+    request.flush(usuario);
+
+    expect(response).toEqual(usuario);
   });
 
   it('gera senha sempre entre 1000 e 9999', () => {
@@ -75,7 +103,7 @@ describe('UsuarioService', () => {
   });
 
   it('busca por e-mail sem diferenciar maiúsculas', () => {
-    service.cadastrarCliente(novoCliente());
+    localStorage.setItem('usuarios', JSON.stringify([novoCliente()]));
 
     expect(service.buscarPorEmail('MARIA@Email.com')?.nome).toBe('Maria Souza');
     expect(service.buscarPorEmail('outra@email.com')).toBeUndefined();
@@ -122,7 +150,7 @@ describe('UsuarioService', () => {
   });
 
   it('busca por CPF com ou sem máscara', () => {
-    service.cadastrarCliente(novoCliente());
+    localStorage.setItem('usuarios', JSON.stringify([novoCliente()]));
 
     expect(service.buscarPorCpf('529.982.247-25')?.nome).toBe('Maria Souza');
     expect(service.buscarPorCpf('52998224725')?.nome).toBe('Maria Souza');
@@ -130,13 +158,10 @@ describe('UsuarioService', () => {
   });
 
   it('remove apenas o usuário com o id informado', () => {
-    // O id vem do timestamp, então os cadastros precisam de instantes diferentes.
-    vi.useFakeTimers();
-    vi.setSystemTime(1000);
-    service.cadastrarCliente(novoCliente());
-    vi.setSystemTime(2000);
-    service.cadastrarCliente(novoCliente({ email: 'joao@email.com', cpf: '11144477735' }));
-    vi.useRealTimers();
+    localStorage.setItem('usuarios', JSON.stringify([
+      { ...novoCliente(), id: 1000 },
+      { ...novoCliente({ email: 'joao@email.com', cpf: '11144477735' }), id: 2000 }
+    ]));
 
     service.remover(1000);
 

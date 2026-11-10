@@ -65,7 +65,13 @@ A tabela abaixo está implementada em `model/EstadoSolicitacao.java`. Todo endpo
 |---|---|---|---|---|
 | `POST /auth/login` | público | `{ email, senha }` | `UsuarioResponse { id, nome, email, perfil }` | ✅ |
 | `POST /auth/logout` | logado | — | 204 | ✅ |
-| `POST /clientes` | público | `CadastroRequest` | 201 `UsuarioResponse` | ✅ RF001 |
+| `POST /clientes` | público | `{ cpf, nome, email, telefone, cep, logradouro, numero, complemento?, bairro, cidade, estado }` | 201 `UsuarioResponse` | ✅ RF001 |
+
+O cadastro normaliza CPF, telefone e CEP para dígitos e o e-mail para minúsculas.
+CPF e e-mail já cadastrados retornam `409`. A senha de quatro dígitos é gerada
+no servidor, armazenada como SHA-256 com salt e enviada ao e-mail informado.
+`complemento` é opcional e limitado a 100 caracteres; quando informado pelo
+ViaCEP ou pelo cliente, é persistido junto ao endereço.
 
 ### Solicitações — cliente
 

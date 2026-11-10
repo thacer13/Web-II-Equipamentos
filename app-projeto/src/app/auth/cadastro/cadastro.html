@@ -136,6 +136,22 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
+          <label for="complemento" class="text-sm font-medium text-gray-500">Complemento (opcional)</label>
+          <input
+            id="complemento"
+            type="text"
+            formControlName="complemento"
+            pInputText
+            maxlength="100"
+            autocomplete="address-line2"
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base text-gray-800 bg-white shadow-sm transition-colors placeholder:text-gray-400 hover:border-green-600 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          />
+          @if (cadastroForm.get('complemento')?.touched && cadastroForm.get('complemento')?.invalid) {
+            <small class="text-sm text-red-600">O complemento deve ter até 100 caracteres.</small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1.5">
           <label for="bairro" class="text-sm font-medium text-gray-500">Bairro</label>
           <input
             id="bairro"

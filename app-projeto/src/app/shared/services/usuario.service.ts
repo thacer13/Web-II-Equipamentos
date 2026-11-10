@@ -133,7 +133,7 @@ export class UsuarioService {
     return request.pipe(tap(() => this.limparUsuarioLogado()));
   }
 
-  cadastrarCliente(cliente: Cliente): Observable<any> { // Inserir
+  cadastrarCliente(cliente: Cliente): Observable<Usuario> {
     const nome = cliente.nome?.trim().replace(/\s+/g, ' ') ?? '';
     const email = cliente.email?.trim().toLowerCase() ?? '';
     const cpf = cliente.cpf?.replace(/\D/g, '') ?? '';
@@ -142,6 +142,7 @@ export class UsuarioService {
     const cep = endereco?.cep?.replace(/\D/g, '') ?? '';
     const logradouro = endereco?.logradouro?.trim().replace(/\s+/g, ' ') ?? '';
     const numero = endereco?.numero?.trim() ?? '';
+    const complemento = endereco?.complemento?.trim().replace(/\s+/g, ' ') ?? '';
     const bairro = endereco?.bairro?.trim().replace(/\s+/g, ' ') ?? '';
     const cidade = endereco?.cidade?.trim().replace(/\s+/g, ' ') ?? '';
     const estado = endereco?.estado?.trim().toUpperCase() ?? '';
@@ -158,7 +159,7 @@ export class UsuarioService {
     if (telefone.length < 10 || telefone.length > 11) {
       throw new Error('Telefone inválido.');
     }
-    if (cep.length !== 8 || !logradouro || logradouro.length > 150 || !numero || numero.length > 10 || !bairro || bairro.length > 100 || !cidade || cidade.length > 100 || !/^[A-Z]{2}$/.test(estado)) {
+    if (cep.length !== 8 || !logradouro || logradouro.length > 150 || !numero || numero.length > 10 || complemento.length > 100 || !bairro || bairro.length > 100 || !cidade || cidade.length > 100 || !/^[A-Z]{2}$/.test(estado)) {
       throw new Error('Endereço inválido.');
     }
 
@@ -169,6 +170,7 @@ export class UsuarioService {
     endereco.cep = cep;
     endereco.logradouro = logradouro;
     endereco.numero = numero;
+    endereco.complemento = complemento;
     endereco.bairro = bairro;
     endereco.cidade = cidade;
     endereco.estado = estado;
@@ -183,11 +185,12 @@ export class UsuarioService {
         cep: cliente.endereco?.cep,
         logradouro: cliente.endereco?.logradouro,
         numero: cliente.endereco?.numero,
+        complemento: cliente.endereco?.complemento || null,
         bairro: cliente.endereco?.bairro,
         cidade: cliente.endereco?.cidade,
         estado: cliente.endereco?.estado
       };
-      return this.http.post(this.apiUrl, payload);
+      return this.http.post<Usuario>(this.apiUrl, payload);
     }
 
     const usuarios = this.listarTodos();

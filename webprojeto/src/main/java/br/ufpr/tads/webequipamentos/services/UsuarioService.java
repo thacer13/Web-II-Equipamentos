@@ -56,6 +56,7 @@ public class UsuarioService {
             Validacoes.somenteDigitos(req.cep()),
             req.logradouro().trim(),
             req.numero().trim(),
+            normalizarComplemento(req.complemento()),
             req.bairro().trim(),
             req.cidade().trim(),
             req.estado().trim().toUpperCase()
@@ -127,6 +128,7 @@ public class UsuarioService {
             Validacoes.somenteDigitos(req.cep()),
             req.logradouro().trim(),
             req.numero().trim(),
+            normalizarComplemento(req.complemento()),
             req.bairro().trim(),
             req.cidade().trim(),
             req.estado().trim().toUpperCase()
@@ -178,6 +180,10 @@ public class UsuarioService {
             log.error("Número inválido recebido: '{}'", req.numero());
             throw new IllegalArgumentException("Número inválido.");
         }
+        if (req.complemento() != null && req.complemento().trim().length() > 100) {
+            log.error("Complemento inválido recebido: '{}'", req.complemento());
+            throw new IllegalArgumentException("Complemento deve ter até 100 caracteres.");
+        }
         if (!Validacoes.textoEntre(req.bairro(), 2, 100)) {
             log.error("Bairro inválido recebido: '{}'", req.bairro());
             throw new IllegalArgumentException("Bairro inválido.");
@@ -190,5 +196,12 @@ public class UsuarioService {
             log.error("Estado inválido recebido: '{}'", req.estado());
             throw new IllegalArgumentException("Estado inválido.");
         }
+    }
+
+    private String normalizarComplemento(String complemento) {
+        if (complemento == null || complemento.isBlank()) {
+            return null;
+        }
+        return complemento.trim();
     }
 }
