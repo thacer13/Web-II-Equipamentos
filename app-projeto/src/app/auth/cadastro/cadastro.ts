@@ -27,6 +27,8 @@ import { Cliente } from '../../shared/models/cliente.model';
 })
 export class CadastroComponent implements OnInit {
   cadastroForm!: FormGroup;
+  enviando = false;
+  mensagemErro = '';
 
   private fb = inject(FormBuilder);
   private viaCepService = inject(ViacepService);
@@ -68,18 +70,21 @@ export class CadastroComponent implements OnInit {
             });
             document.getElementById('numero')?.focus();
           } else {
-            alert('CEP não encontrado.');
+            this.mensagemErro = 'CEP não encontrado.';
           }
         },
-        error: () => alert('Não foi possível consultar o CEP. Tente novamente ou preencha o endereço manualmente.')
+        error: () => {
+          this.mensagemErro = 'Não foi possível consultar o CEP. Tente novamente ou preencha o endereço manualmente.';
+        }
       });
     }
   }
 
   onSubmit() {
+    this.mensagemErro = '';
     if (this.cadastroForm.invalid) {
       this.cadastroForm.markAllAsTouched();
-      alert('Preencha todos os campos obrigatórios corretamente.');
+      this.mensagemErro = 'Preencha todos os campos obrigatórios corretamente.';
       return;
     }
 
@@ -97,7 +102,7 @@ export class CadastroComponent implements OnInit {
     const estado = normalizarTexto(dadosForm.estado).toUpperCase();
 
     if (!nome || !email || !logradouro || !numero || complemento.length > 100 || !bairro || !cidade || !estado) {
-      alert('Preencha todos os campos obrigatórios corretamente.');
+      this.mensagemErro = 'Preencha todos os campos obrigatórios corretamente.';
       return;
     }
 
@@ -118,13 +123,14 @@ export class CadastroComponent implements OnInit {
       }
     };
 
+    this.enviando = true;
     this.usuarioService.cadastrarCliente(novoCliente).subscribe({
       next: () => {
-        alert('Cadastro realizado com sucesso! Sua senha de acesso foi enviada para o e-mail cadastrado.');
         this.router.navigate(['/auth/login']);
       },
       error: (err) => {
-        alert(err.error?.mensagem || err.error?.message || 'Erro ao realizar cadastro.');
+        this.enviando = false;
+        this.mensagemErro = err.error?.mensagem || err.error?.message || 'Erro ao realizar cadastro.';
       }
     });
   }

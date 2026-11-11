@@ -1,11 +1,6 @@
-<div class="app-shell">
-    @if (carregando) {
-        <p class="text-sm text-gray-600">Carregando solicitação...</p>
-    }
-
-    @if (mensagemErro && !solicitacao) {
-        <p class="text-sm text-red-600">{{ mensagemErro }}</p>
-    }
+<div class="app-shell" ngSkipHydration>
+    <p *ngIf="carregando" class="app-shell__narrow p-6 text-sm text-gray-600">Carregando solicitação...</p>
+    <p *ngIf="mensagemErro && !solicitacao" class="app-shell__narrow p-6 text-sm text-red-600">{{ mensagemErro }}</p>
 
     <div *ngIf="solicitacao" class="app-shell__narrow app-card overflow-hidden">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
@@ -19,7 +14,14 @@
             <p><span class="font-medium">Cliente:</span> {{ solicitacao.cliente?.nome || 'Não informado' }}</p>
             <p><span class="font-medium">Produto:</span> {{ solicitacao.descricaoEquipamento }}</p>
             <p><span class="font-medium">Problema:</span> {{ solicitacao.descricaoDefeito }}</p>
+            <p><span class="font-medium">Estado Atual:</span> <span class="font-semibold">{{ solicitacao.estado }}</span></p>
         </div>
+
+        @if (solicitacao && !podeRedirecionar) {
+            <p class="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-800">
+                Esta solicitação está com estado "{{ solicitacao.estado }}" e não pode ser redirecionada no momento.
+            </p>
+        }
 
         <form class="flex flex-col gap-4 p-6">
             <div class="flex flex-col gap-1">
@@ -27,12 +29,13 @@
                 <p-select
                     inputId="funcionarioDestino"
                     [(ngModel)]="funcionarioDestinoId"
-                    name="funcionarioDestinoId"
+                    name="funcionarioDestino"
                     [options]="funcionariosDisponiveis"
                     optionLabel="nome"
                     optionValue="id"
                     placeholder="Selecione um funcionário"
-                    [fluid]="true">
+                    [fluid]="true"
+                    [disabled]="salvando || !podeRedirecionar">
                 </p-select>
             </div>
 
@@ -50,7 +53,8 @@
                 <p-button
                     type="button"
                     label="Redirecionar"
-                    (click)="onConfirmarRedirecionamento()">
+                    (click)="onConfirmarRedirecionamento()"
+                    [disabled]="salvando || !podeRedirecionar || !funcionarioDestinoId">
                 </p-button>
             </div>
         </form>

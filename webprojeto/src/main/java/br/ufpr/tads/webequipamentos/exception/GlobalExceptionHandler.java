@@ -17,6 +17,11 @@ public class GlobalExceptionHandler {
         return resposta(HttpStatus.CONFLICT, e.getMessage());
     }
 
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<Map<String, String>> acessoNegado(AcessoNegadoException e) {
+        return resposta(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<Map<String, String>> duplicado(DuplicateKeyException e) {
         return resposta(HttpStatus.CONFLICT, "CPF ou e-mail já cadastrado.");

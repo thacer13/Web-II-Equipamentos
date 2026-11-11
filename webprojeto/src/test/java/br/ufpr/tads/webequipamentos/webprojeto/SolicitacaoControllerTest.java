@@ -2,8 +2,12 @@
 package br.ufpr.tads.webequipamentos.webprojeto;
 
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.ManutencaoRequest;
+import br.ufpr.tads.webequipamentos.dto.RedirecionamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
+import br.ufpr.tads.webequipamentos.services.ManutencaoService;
+import br.ufpr.tads.webequipamentos.services.RedirecionamentoService;
 import br.ufpr.tads.webequipamentos.services.SolicitacaoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -25,8 +29,14 @@ class SolicitacaoControllerTest {
     private final SolicitacaoService service =
         mock(SolicitacaoService.class);
 
+    private final ManutencaoService manutencaoService =
+        mock(ManutencaoService.class);
+
+    private final RedirecionamentoService redirecionamentoService =
+        mock(RedirecionamentoService.class);
+
     private final SolicitacaoController controller =
-        new SolicitacaoController(service);
+        new SolicitacaoController(service, manutencaoService, redirecionamentoService);
 
     private final MockHttpServletRequest request =
         new MockHttpServletRequest();
@@ -343,6 +353,62 @@ class SolicitacaoControllerTest {
         assertEquals(criada, controller.criar(req, request));
 
         verify(service).criar("joao@teste.com", req);
+    }
+
+    @Test
+    void conclusaoManutencaoRejeitaCliente() {
+        autenticar("cliente@teste.com", "CLIENTE");
+        ManutencaoRequest req = new ManutencaoRequest("Troca da tela", "Evitar quedas");
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.concluirManutencao(7, req, request)
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, erro.getStatusCode());
+        verifyNoInteractions(manutencaoService);
+    }
+
+    @Test
+    void conclusaoManutencaoUsaIdentidadeDaSessao() {
+        autenticar(" maria@teste.com ", "FUNCIONARIO");
+        ManutencaoRequest req = new ManutencaoRequest("Troca da tela", "Evitar quedas");
+        SolicitacaoResumo arrumada = new SolicitacaoResumo(
+            7, LocalDateTime.of(2026, 11, 9, 15, 30), "Notebook", "Tela quebrada",
+            "Notebook", "ARRUMADA", null
+        );
+        when(manutencaoService.concluir("maria@teste.com", 7, req)).thenReturn(arrumada);
+
+        assertEquals(arrumada, controller.concluirManutencao(7, req, request));
+        verify(manutencaoService).concluir("maria@teste.com", 7, req);
+    }
+
+    @Test
+    void redirecionamentoRejeitaCliente() {
+        autenticar("cliente@teste.com", "CLIENTE");
+        RedirecionamentoRequest req = new RedirecionamentoRequest(2);
+
+        ResponseStatusException erro = assertThrows(
+            ResponseStatusException.class,
+            () -> controller.redirecionar(7, req, request)
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, erro.getStatusCode());
+        verifyNoInteractions(redirecionamentoService);
+    }
+
+    @Test
+    void redirecionamentoUsaIdentidadeDaSessao() {
+        autenticar(" maria@teste.com ", "FUNCIONARIO");
+        RedirecionamentoRequest req = new RedirecionamentoRequest(2);
+        SolicitacaoResumo redirecionada = new SolicitacaoResumo(
+            7, LocalDateTime.of(2026, 11, 9, 15, 30), "Notebook", "Tela quebrada",
+            "Notebook", "REDIRECIONADA", null
+        );
+        when(redirecionamentoService.redirecionar("maria@teste.com", 7, req)).thenReturn(redirecionada);
+
+        assertEquals(redirecionada, controller.redirecionar(7, req, request));
+        verify(redirecionamentoService).redirecionar("maria@teste.com", 7, req);
     }
 
     private void autenticar(

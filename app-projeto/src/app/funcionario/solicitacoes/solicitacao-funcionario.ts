@@ -72,17 +72,24 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
   }
 
   carregarSolicitacoes(): void {
+    const parametros = this.parametrosFiltro();
+    if (parametros === null) {
+      return;
+    }
+
     this.carregando = true;
-    this.finalizacaoService.listarDoFuncionario().subscribe({
+    this.finalizacaoService.listarDoFuncionario(parametros.inicio, parametros.fim).subscribe({
       next: solicitacoes => {
         this.solicitacoes = solicitacoes;
         this.carregando = false;
-        const hojeIso = paraIso(this.dataHoje);
-        const maisAntiga = solicitacoes
-          .map(s => s.dataHora.slice(0, 10))
-          .filter(data => data <= hojeIso)
-          .sort()[0];
-        this.dataMinima = (maisAntiga && deIso(maisAntiga)) || this.dataHoje;
+        if (this.filtro === 'TODAS') {
+          const hojeIso = paraIso(this.dataHoje);
+          const maisAntiga = solicitacoes
+            .map(s => s.dataHora.slice(0, 10))
+            .filter(data => data <= hojeIso)
+            .sort()[0];
+          this.dataMinima = (maisAntiga && deIso(maisAntiga)) || this.dataHoje;
+        }
         this.cdr.markForCheck();
       },
       error: () => {
@@ -91,6 +98,31 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  filtroAlterado(): void {
+    this.mensagemErro = '';
+    this.carregarSolicitacoes();
+  }
+
+  private parametrosFiltro(): { inicio?: string; fim?: string } | null {
+    if (this.filtro === 'TODAS') {
+      return {};
+    }
+
+    if (this.filtro === 'HOJE') {
+      const hojeIso = paraIso(this.dataHoje);
+      return { inicio: hojeIso, fim: hojeIso };
+    }
+
+    const inicio = this.dataInicio ? paraIso(this.dataInicio) : undefined;
+    const fim = this.dataFim ? paraIso(this.dataFim) : undefined;
+    if (inicio && fim && inicio > fim) {
+      this.mensagemErro = 'A data inicial não pode ser maior que a data final.';
+      this.solicitacoes = [];
+      return null;
+    }
+    return { inicio, fim };
   }
 
   get solicitacoesFiltradas(): Solicitacao[] {

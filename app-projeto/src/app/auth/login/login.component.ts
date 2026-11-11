@@ -36,7 +36,7 @@ export class LoginComponent {
 
   onSubmit(): void {
     const email = this.username.trim().toLowerCase();
-    const senha = this.password.trim();
+    const senha = this.password;
 
     if (!email || !senha) {
       this.mensagemErro = 'Informe e-mail e senha.';

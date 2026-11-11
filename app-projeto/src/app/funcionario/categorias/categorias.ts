@@ -29,6 +29,8 @@ export class CategoriasComponent {
   mensagemErro = '';
   mensagemErroConfirmacao = '';
   categoriaSelecionada: Categoria | null = null;
+  salvando = false;
+  desativando = false;
 
   constructor() {
     this.carregar();
@@ -49,6 +51,9 @@ export class CategoriasComponent {
   }
 
   salvarCategoria(): void {
+    if (this.salvando) {
+      return;
+    }
     this.mensagemErro = '';
     const nome = this.nome.trim().replace(/\s+/g, ' ');
 
@@ -62,6 +67,7 @@ export class CategoriasComponent {
       return;
     }
 
+    this.salvando = true;
     this.categoriaService.salvar({
       id: this.editandoId ?? undefined,
       nome
@@ -69,9 +75,11 @@ export class CategoriasComponent {
       next: () => {
         this.showFormulario = false;
         this.carregar();
+        this.salvando = false;
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível salvar a categoria.');
+        this.salvando = false;
       }
     });
   }
@@ -83,18 +91,21 @@ export class CategoriasComponent {
   }
 
   confirmarRemocao(): void {
-    if (!this.categoriaSelecionada) {
+    if (this.desativando || !this.categoriaSelecionada) {
       return;
     }
 
+    this.desativando = true;
     this.categoriaService.desativar(this.categoriaSelecionada.id).subscribe({
       next: () => {
         this.showConfirmacao = false;
         this.categoriaSelecionada = null;
         this.carregar();
+        this.desativando = false;
       },
       error: erro => {
         this.mensagemErroConfirmacao = this.mensagemErroApi(erro, 'Não foi possível desativar a categoria.');
+        this.desativando = false;
       }
     });
   }

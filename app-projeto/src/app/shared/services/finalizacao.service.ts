@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Solicitacao } from '../models/solicitacao.model';
 import { EstadoSolicitacao } from '../models/estado-solicitacao.model';
@@ -19,9 +19,20 @@ export class FinalizacaoService {
   private http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:8080/api/solicitacoes';
 
-  listarDoFuncionario(): Observable<Solicitacao[]> {
+  listarDoFuncionario(inicio?: string, fim?: string): Observable<Solicitacao[]> {
+    let params = new HttpParams();
+    if (inicio) {
+      params = params.set('inicio', inicio);
+    }
+    if (fim) {
+      params = params.set('fim', fim);
+    }
+
     return this.http
-      .get<SolicitacaoResumoApi[]>(`${this.apiUrl}/funcionario`, { withCredentials: true })
+      .get<SolicitacaoResumoApi[]>(`${this.apiUrl}/funcionario`, {
+        params,
+        withCredentials: true
+      })
       .pipe(map(lista => lista.map(item => ({
         id: item.id,
         dataHora: item.dataHora,

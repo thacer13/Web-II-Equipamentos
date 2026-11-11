@@ -1,12 +1,6 @@
 <div class="app-shell" ngSkipHydration>
-    @if (carregando) {
-        <p class="text-sm text-gray-600">Carregando solicitação...</p>
-    }
-
-    @if (mensagemErro && !solicitacao) {
-        <p class="text-sm text-red-600">{{ mensagemErro }}</p>
-    }
-
+    <p *ngIf="carregando" class="app-shell__narrow p-6 text-sm text-gray-600">Carregando solicitação...</p>
+    <p *ngIf="mensagemErro && !solicitacao" class="app-shell__narrow p-6 text-sm text-red-600">{{ mensagemErro }}</p>
     <div *ngIf="solicitacao" class="app-shell__narrow app-card overflow-hidden">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
             <h2 class="text-lg font-semibold text-gray-800">
@@ -19,7 +13,14 @@
             <p><span class="font-medium">Cliente:</span> {{ solicitacao.cliente?.nome || 'Não informado' }}</p>
             <p><span class="font-medium">Produto:</span> {{ solicitacao.descricaoEquipamento }}</p>
             <p><span class="font-medium">Problema:</span> {{ solicitacao.descricaoDefeito }}</p>
+            <p><span class="font-medium">Estado Atual:</span> <span class="font-semibold">{{ solicitacao.estado }}</span></p>
         </div>
+
+        @if (solicitacao && !podeConcluir) {
+            <p class="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-800">
+                Esta solicitação está com estado "{{ solicitacao.estado }}" e não pode receber manutenção no momento.
+            </p>
+        }
 
         <form class="flex flex-col gap-4 p-6">
             <div class="flex flex-col gap-1">
@@ -65,11 +66,13 @@
                 <p-button
                     label="Redirecionar"
                     severity="secondary"
-                    (click)="onRedirecionarClick()">
+                    (click)="onRedirecionarClick()"
+                    [disabled]="salvandoManutencao || !podeConcluir">
                 </p-button>
                 <p-button
                     label="Efetuar Manutenção"
-                    (click)="onConfirmarManutencao()">
+                    (click)="onConfirmarManutencao()"
+                    [disabled]="salvandoManutencao || !podeConcluir">
                 </p-button>
             </div>
         </form>
