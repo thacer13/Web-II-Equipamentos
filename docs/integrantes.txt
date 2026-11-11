@@ -1,8 +1,9 @@
 Equipe 7 - Sistema de Manutenção de Equipamentos (Web II)
 
 Nome completo                         | GRR          | E-mail
-Paulo Roberto Rocha Wojciski          | GRR20250215  | PREENCHER
-João Guilherme Terlecki Pereira       | GRR20254293  | PREENCHER
-Thales Cercal                         | GRR20254788  | PREENCHER
-Fabricio Renan Plautz                 | GRR20253136  | PREENCHER
-Fernando Augusto Bueno Canquerini     | GRR20254201  | PREENCHER
+Paulo Roberto Rocha Wojciski          | GRR20250215  | paulo.wojciski@ufpr.br
+João Guilherme Terlecki Pereira       | GRR20254293  | joao.terlecki@ufpr.br
+Thales Cercal                         | GRR20254788  | thacer13@gmail.com
+Fabricio Renan Plautz                 | GRR20253136  | fabricioplautz@ufpr.br
+Fernando Augusto Bueno Canquerini     | GRR20254201  | fernandobueno@ufpr.br
+Matheus Gabriel Lino e Silva          | GRR20251192  | matheus.gabriel.les@gmail.com

@@ -57,3 +57,15 @@ Pontos que o enunciado não define e a forma como a equipe decidiu tratá-los.
 
 - A receita considera somente solicitações pagas, pela data do pagamento.
 - Os relatórios são gerados em PDF no navegador.
+- Os valores são calculados pela API a partir dos pagamentos registrados no banco.
+
+## Pagamento
+
+- O pagamento é uma confirmação registrada no sistema, sem integração com banco, cartão ou gateway externo.
+- O pagamento só é permitido após a conclusão da manutenção e fica registrado com data e hora.
+
+## Filtros e datas
+
+- Os filtros HOJE, PERÍODO e TODAS são aplicados na lista de solicitações do funcionário na interface Angular.
+- As datas e os valores são apresentados ao usuário no formato brasileiro, preservando os formatos usados na API e no banco.
+
