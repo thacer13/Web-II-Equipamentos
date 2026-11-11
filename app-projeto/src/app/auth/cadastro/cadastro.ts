@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { validarCpf } from './cpf.validator';
@@ -34,6 +34,7 @@ export class CadastroComponent implements OnInit {
   private viaCepService = inject(ViacepService);
   private usuarioService = inject(UsuarioService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.inicializarFormulario();   
@@ -72,9 +73,11 @@ export class CadastroComponent implements OnInit {
           } else {
             this.mensagemErro = 'CEP não encontrado.';
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.mensagemErro = 'Não foi possível consultar o CEP. Tente novamente ou preencha o endereço manualmente.';
+          this.cdr.markForCheck();
         }
       });
     }
@@ -131,6 +134,7 @@ export class CadastroComponent implements OnInit {
       error: (err) => {
         this.enviando = false;
         this.mensagemErro = err.error?.mensagem || err.error?.message || 'Erro ao realizar cadastro.';
+        this.cdr.markForCheck();
       }
     });
   }

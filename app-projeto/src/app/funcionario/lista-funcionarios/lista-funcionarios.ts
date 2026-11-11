@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -45,7 +45,10 @@ export class ListaFuncionariosComponent implements OnInit {
   redefinindoSenha = false;
   removendo = false;
 
-  constructor(private usuarioService: UsuarioService) {}
+  constructor(
+    private usuarioService: UsuarioService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.carregarFuncionarios();
@@ -60,9 +63,11 @@ export class ListaFuncionariosComponent implements OnInit {
     this.usuarioService.listarFuncionarios().subscribe({
       next: funcionarios => {
         this.funcionarios.set(funcionarios);
+        this.cdr.markForCheck();
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível carregar os funcionários.');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -153,10 +158,12 @@ export class ListaFuncionariosComponent implements OnInit {
         this.showFormulario = false;
         this.carregarFuncionarios();
         this.salvando = false;
+        this.cdr.markForCheck();
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível salvar o funcionário.');
         this.salvando = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -175,10 +182,12 @@ export class ListaFuncionariosComponent implements OnInit {
       next: () => {
         this.mensagemSucesso = 'Uma nova senha temporária foi enviada para o e-mail do funcionário.';
         this.redefinindoSenha = false;
+        this.cdr.markForCheck();
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível redefinir a senha.');
         this.redefinindoSenha = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -212,10 +221,12 @@ export class ListaFuncionariosComponent implements OnInit {
           this.showConfirmacao = false;
           this.funcionarioSelecionado = null;
           this.removendo = false;
+          this.cdr.markForCheck();
         },
         error: erro => {
           this.mensagemErroConfirmacao = this.mensagemErroApi(erro, 'Não foi possível desativar o funcionário.');
           this.removendo = false;
+          this.cdr.markForCheck();
         }
       });
     }

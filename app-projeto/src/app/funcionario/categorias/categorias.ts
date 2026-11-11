@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -20,6 +20,7 @@ import { Categoria, CategoriaService } from '../../shared/services/categoria.ser
 })
 export class CategoriasComponent {
   private categoriaService = inject(CategoriaService);
+  private cdr = inject(ChangeDetectorRef);
 
   readonly categorias = signal<Categoria[]>([]);
   showFormulario = false;
@@ -76,10 +77,12 @@ export class CategoriasComponent {
         this.showFormulario = false;
         this.carregar();
         this.salvando = false;
+        this.cdr.markForCheck();
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível salvar a categoria.');
         this.salvando = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -102,10 +105,12 @@ export class CategoriasComponent {
         this.categoriaSelecionada = null;
         this.carregar();
         this.desativando = false;
+        this.cdr.markForCheck();
       },
       error: erro => {
         this.mensagemErroConfirmacao = this.mensagemErroApi(erro, 'Não foi possível desativar a categoria.');
         this.desativando = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -114,9 +119,11 @@ export class CategoriasComponent {
     this.categoriaService.listar().subscribe({
       next: categorias => {
         this.categorias.set(categorias);
+        this.cdr.markForCheck();
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível carregar as categorias.');
+        this.cdr.markForCheck();
       }
     });
   }

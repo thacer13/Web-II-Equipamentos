@@ -54,12 +54,14 @@ export class ManutencaoComponent implements OnInit {
       next: (solicitacao) => {
         this.solicitacao = solicitacao;
         this.carregando = false;
+        this.cdr.markForCheck();
       },
       error: (erro: { error?: { mensagem?: string } }) => {
         this.carregando = false;
         this.mensagemErro =
           erro?.error?.mensagem ||
           'Não foi possível carregar a solicitação. Verifique sua conexão e tente novamente.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -96,6 +98,7 @@ export class ManutencaoComponent implements OnInit {
           this.mensagemErro =
             erro?.error?.mensagem ||
             'Não foi possível concluir a manutenção. Atualize os dados e tente novamente.';
+          this.cdr.markForCheck();
         },
       });
   }

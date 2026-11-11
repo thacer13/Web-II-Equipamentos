@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -32,6 +32,7 @@ export class RedirecionamentoComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private solicitacaoService = inject(SolicitacaoService);
   private usuarioService = inject(UsuarioService);
+  private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private location = inject(Location); 
 
@@ -76,12 +77,14 @@ export class RedirecionamentoComponent implements OnInit {
       next: (solicitacao) => {
         this.solicitacao = solicitacao;
         this.carregando = false;
+        this.cdr.markForCheck();
       },
       error: (erro: { error?: { mensagem?: string } }) => {
         this.carregando = false;
         this.mensagemErro =
           erro?.error?.mensagem ||
           'Não foi possível carregar a solicitação. Verifique sua conexão e tente novamente.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -92,11 +95,13 @@ export class RedirecionamentoComponent implements OnInit {
         this.funcionariosDisponiveis = funcionarios
           .filter((f) => f.ativo && f.id !== logadoId && (!logadoEmail || f.email.toLowerCase() !== logadoEmail.toLowerCase()))
           .map((f) => ({ id: f.id!, nome: f.nome }));
+        this.cdr.markForCheck();
       },
       error: (erro: { error?: { mensagem?: string } }) => {
         this.mensagemErro =
           erro?.error?.mensagem ||
           'Não foi possível carregar a lista de funcionários disponíveis.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -131,6 +136,7 @@ export class RedirecionamentoComponent implements OnInit {
         this.mensagemErro =
           erro?.error?.mensagem ||
           'Não foi possível redirecionar a solicitação. Atualize os dados e tente novamente.';
+        this.cdr.markForCheck();
       },
     });
   }

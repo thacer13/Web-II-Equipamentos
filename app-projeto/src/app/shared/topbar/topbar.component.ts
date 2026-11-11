@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { UsuarioService } from '../services/usuario.service';
@@ -66,6 +66,7 @@ export class TopbarComponent {
   private platformId = inject(PLATFORM_ID);
   private usuarios = inject(UsuarioService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   logoutError = '';
 
   private get usuarioLogado() {
@@ -92,6 +93,7 @@ export class TopbarComponent {
       next: () => this.router.navigate(['/auth/login']),
       error: () => {
         this.logoutError = 'Não foi possível encerrar a sessão. Tente novamente.';
+        this.cdr.markForCheck();
       }
     });
   }
