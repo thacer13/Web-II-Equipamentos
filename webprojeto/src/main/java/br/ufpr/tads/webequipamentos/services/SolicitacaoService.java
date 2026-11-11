@@ -2,8 +2,10 @@ package br.ufpr.tads.webequipamentos.services;
 
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.ManutencaoRequest;
 import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
+import br.ufpr.tads.webequipamentos.dto.RedirecionamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoParaFuncionario;
@@ -95,6 +97,58 @@ public class SolicitacaoService {
         }
 
         exigirHistorico(dao.registrarOrcamento(id, emailFuncionario.trim()));
+
+        return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+    }
+
+    @Transactional
+    public SolicitacaoResumo registrarManutencao(
+            String emailFuncionario, Integer id, ManutencaoRequest req) {
+        validarFuncionarioEId(emailFuncionario, id);
+
+        String descricao = normalizar(req == null ? null : req.descricaoManutencao());
+        String orientacoes = normalizar(req == null ? null : req.orientacoesCliente());
+        if (!Validacoes.textoEntre(descricao, 3, 2000)
+                || !Validacoes.textoEntre(orientacoes, 3, 2000)) {
+            throw new IllegalArgumentException(
+                "A descrição e as orientações devem ter entre 3 e 2000 caracteres."
+            );
+        }
+
+        String email = emailFuncionario.trim();
+        SolicitacaoResumo atual = dao.buscarVisivelAoFuncionario(id, email)
+            .orElseThrow(NaoEncontradoException::new);
+        EstadoSolicitacao origem = EstadoSolicitacao.doBanco(atual.estado());
+        origem.validarTransicao(EstadoSolicitacao.ARRUMADA);
+
+        if (!dao.registrarManutencao(id, email, origem.valorBanco(), descricao, orientacoes)) {
+            throw new ConflitoException(
+                "A solicitação foi alterada ou não está mais disponível para manutenção."
+            );
+        }
+
+        return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
+    }
+
+    @Transactional
+    public SolicitacaoResumo redirecionar(
+            String emailFuncionario, Integer id, RedirecionamentoRequest req) {
+        validarFuncionarioEId(emailFuncionario, id);
+        if (req == null || req.funcionarioDestinoId() == null || req.funcionarioDestinoId() <= 0) {
+            throw new IllegalArgumentException("Selecione um funcionário válido.");
+        }
+
+        String email = emailFuncionario.trim();
+        SolicitacaoResumo atual = dao.buscarVisivelAoFuncionario(id, email)
+            .orElseThrow(NaoEncontradoException::new);
+        EstadoSolicitacao origem = EstadoSolicitacao.doBanco(atual.estado());
+        origem.validarTransicao(EstadoSolicitacao.REDIRECIONADA);
+
+        if (!dao.redirecionar(id, email, origem.valorBanco(), req.funcionarioDestinoId())) {
+            throw new ConflitoException(
+                "A solicitação foi alterada ou não pode ser redirecionada para esse funcionário."
+            );
+        }
 
         return dao.buscarResumo(id).orElseThrow(NaoEncontradoException::new);
     }
@@ -228,6 +282,15 @@ public class SolicitacaoService {
     private static void exigirHistorico(int linhas) {
         if (linhas != 1) {
             throw new IllegalStateException("Não foi possível registrar o histórico da solicitação.");
+        }
+    }
+
+    private static void validarFuncionarioEId(String emailFuncionario, Integer id) {
+        if (emailFuncionario == null || emailFuncionario.isBlank()) {
+            throw new IllegalArgumentException("Funcionário não identificado.");
+        }
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Solicitação inválida.");
         }
     }
 

@@ -36,6 +36,12 @@ public interface SolicitacaoDao {
 
     int registrarOrcamento(Integer solicitacaoId, String emailFuncionario);
 
+    boolean registrarManutencao(Integer id, String emailFuncionario, String estadoAnterior,
+                                String descricaoManutencao, String orientacoesCliente);
+
+    boolean redirecionar(Integer id, String emailFuncionario, String estadoAnterior,
+                         Integer funcionarioDestinoId);
+
     int registrarTransicaoDoCliente(Integer solicitacaoId, String estadoAnterior, String estadoNovo,
                                      BigDecimal valor, String motivo);
 }

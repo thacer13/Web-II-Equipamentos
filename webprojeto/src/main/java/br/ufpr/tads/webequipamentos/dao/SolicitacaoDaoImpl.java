@@ -160,6 +160,62 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         WHERE s.id = ? AND s.estado = 'ORÇADA' AND LOWER(u.email) = LOWER(?)
         """;
 
+    private static final String UPDATE_MANUTENCAO = """
+        UPDATE solicitacao s
+           SET estado = 'ARRUMADA'
+          FROM funcionario f
+          JOIN usuario u ON u.id = f.id
+         WHERE s.id = ?
+           AND LOWER(u.email) = LOWER(?)
+           AND f.ativo = TRUE
+           AND f.id = COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
+           AND s.estado = ?
+        """;
+
+    private static final String INSERT_HISTORICO_MANUTENCAO = """
+        INSERT INTO historico_solicitacao
+            (solicitacao_id, estado_anterior, estado_novo, funcionario_id,
+             descricao_manutencao, orientacoes_cliente)
+        SELECT s.id, ?, 'ARRUMADA', f.id, ?, ?
+          FROM solicitacao s
+          JOIN funcionario f ON f.id = COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
+          JOIN usuario u ON u.id = f.id
+         WHERE s.id = ?
+           AND LOWER(u.email) = LOWER(?)
+           AND f.ativo = TRUE
+           AND s.estado = 'ARRUMADA'
+        """;
+
+    private static final String UPDATE_REDIRECIONAMENTO = """
+        UPDATE solicitacao s
+           SET estado = 'REDIRECIONADA',
+               funcionario_atual_id = destino.id
+          FROM funcionario origem
+          JOIN usuario u ON u.id = origem.id
+          JOIN funcionario destino ON destino.id = ?
+         WHERE s.id = ?
+           AND LOWER(u.email) = LOWER(?)
+           AND origem.ativo = TRUE
+           AND destino.ativo = TRUE
+           AND destino.id <> origem.id
+           AND origem.id = COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
+           AND s.estado = ?
+        """;
+
+    private static final String INSERT_HISTORICO_REDIRECIONAMENTO = """
+        INSERT INTO historico_solicitacao
+            (solicitacao_id, estado_anterior, estado_novo, funcionario_id, funcionario_destino_id)
+        SELECT s.id, ?, 'REDIRECIONADA', origem.id, destino.id
+          FROM solicitacao s
+          JOIN funcionario origem ON origem.ativo = TRUE
+          JOIN usuario u ON u.id = origem.id AND LOWER(u.email) = LOWER(?)
+          JOIN funcionario destino ON destino.id = ?
+         WHERE s.id = ?
+           AND destino.ativo = TRUE
+           AND s.estado = 'REDIRECIONADA'
+           AND s.funcionario_atual_id = destino.id
+        """;
+
     private static final RowMapper<SolicitacaoResumo> MAPPER = (rs, rowNum) -> new SolicitacaoResumo(
         rs.getInt("id"),
         rs.getTimestamp("data_hora_abertura").toLocalDateTime(),
@@ -249,6 +305,27 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
     @Override
     public int registrarOrcamento(Integer solicitacaoId, String emailFuncionario) {
         return jdbc.update(INSERT_HISTORICO_ORCAMENTO, solicitacaoId, emailFuncionario);
+    }
+
+    @Override
+    public boolean registrarManutencao(Integer id, String emailFuncionario, String estadoAnterior,
+                                       String descricaoManutencao, String orientacoesCliente) {
+        if (jdbc.update(UPDATE_MANUTENCAO, id, emailFuncionario, estadoAnterior) != 1) {
+            return false;
+        }
+        return jdbc.update(INSERT_HISTORICO_MANUTENCAO, estadoAnterior, descricaoManutencao,
+            orientacoesCliente, id, emailFuncionario) == 1;
+    }
+
+    @Override
+    public boolean redirecionar(Integer id, String emailFuncionario, String estadoAnterior,
+                                Integer funcionarioDestinoId) {
+        if (jdbc.update(UPDATE_REDIRECIONAMENTO, funcionarioDestinoId, id, emailFuncionario,
+                estadoAnterior) != 1) {
+            return false;
+        }
+        return jdbc.update(INSERT_HISTORICO_REDIRECIONAMENTO, estadoAnterior, emailFuncionario,
+            funcionarioDestinoId, id) == 1;
     }
 
     @Override

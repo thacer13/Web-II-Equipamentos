@@ -1,4 +1,12 @@
 <div class="app-shell">
+    @if (carregando) {
+        <p class="text-sm text-gray-600">Carregando solicitação...</p>
+    }
+
+    @if (mensagemErro && !solicitacao) {
+        <p class="text-sm text-red-600">{{ mensagemErro }}</p>
+    }
+
     <div *ngIf="solicitacao" class="app-shell__narrow app-card overflow-hidden">
         <div class="border-b border-gray-200 bg-white px-6 py-4">
             <h2 class="text-lg font-semibold text-gray-800">
@@ -18,9 +26,11 @@
                 <label for="funcionarioDestino" class="text-sm font-semibold text-gray-700">Redirecionar para</label>
                 <p-select
                     inputId="funcionarioDestino"
-                    [(ngModel)]="funcionarioDestino"
-                    name="funcionarioDestino"
+                    [(ngModel)]="funcionarioDestinoId"
+                    name="funcionarioDestinoId"
                     [options]="funcionariosDisponiveis"
+                    optionLabel="nome"
+                    optionValue="id"
                     placeholder="Selecione um funcionário"
                     [fluid]="true">
                 </p-select>

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -7,7 +7,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { Solicitacao } from '../../shared/models/solicitacao.model';
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
-import { UsuarioService } from '../../shared/services/usuario.service';
 
 @Component({
   selector: 'app-manutencao',
@@ -25,51 +24,39 @@ export class ManutencaoComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private solicitacaoService = inject(SolicitacaoService);
-  private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
+  private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
   private location = inject(Location);
-  private usuarioService = inject(UsuarioService);
 
   solicitacao: Solicitacao | null = null;
 
-  funcionarioLogado: string = 'Funcionário Exemplo';
+  carregando = true;
   descricaoManutencao: string = '';
   orientacoesCliente: string = '';
   mensagemErro = '';
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    if (!isPlatformBrowser(this.platformId)) return;
 
-    if (!idParam) {
-      if (isPlatformBrowser(this.platformId)) {
-        this.router.navigate(['/funcionario/solicitacoes']);
-      }
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = Number(idParam);
+    if (!idParam || !Number.isInteger(id) || id <= 0) {
+      this.router.navigate(['/funcionario/solicitacoes']);
       return;
     }
 
-    const id = Number(idParam);
-    let solicitacaoRecebida: Solicitacao | null = null;
-
-    // Tenta capturar do history.state APENAS se estiver rodando no navegador
-    if (isPlatformBrowser(this.platformId)) {
-      solicitacaoRecebida = history.state?.solicitacao as Solicitacao;
-    }
-
-    // Cenário 1: Chegou via navegação com state no navegador
-    if (solicitacaoRecebida && solicitacaoRecebida.id === id) {
-      this.solicitacao = solicitacaoRecebida;
-    } 
-    // Cenário 2: SSR ou F5 (busca no serviço)
-    else {
-      const listagem = this.solicitacaoService.listar();
-      const solicitacaoEncontrada = listagem.find(s => s.id === id);
-
-      if (solicitacaoEncontrada) {
-        this.solicitacao = solicitacaoEncontrada;
-      } else if (isPlatformBrowser(this.platformId)) {
-        // Redireciona somente no browser se o item realmente não existir no serviço
-        this.router.navigate(['/funcionario/solicitacoes']);
+    this.solicitacaoService.detalharParaFuncionario(id).subscribe({
+      next: solicitacao => {
+        this.solicitacao = solicitacao;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.carregando = false;
+        this.mensagemErro = 'Não foi possível carregar a solicitação.';
+        this.cdr.markForCheck();
       }
-    }
+    });
   }
 
   onConfirmarManutencao() {
@@ -90,27 +77,21 @@ export class ManutencaoComponent {
 
     this.mensagemErro = '';
 
-    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
-    const nomeFuncionario = usuarioLogado ? usuarioLogado.nome : 'Funcionário';
-
-    const observacao = `Manutenção: ${descricao} | Orientações: ${orientacoes}`;
-
-    this.solicitacaoService.atualizarEstado(
-      this.solicitacao,
-      'ARRUMADA',
-      nomeFuncionario,
-      observacao
-    );
-
-    this.router.navigate(['/funcionario/solicitacoes']);
+    this.solicitacaoService.registrarManutencao(this.solicitacao.id, {
+      descricaoManutencao: descricao,
+      orientacoesCliente: orientacoes,
+    }).subscribe({
+      next: () => this.router.navigate(['/funcionario/solicitacoes']),
+      error: () => {
+        this.mensagemErro = 'Não foi possível registrar a manutenção.';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   onRedirecionarClick() {
     if (!this.solicitacao) return;
-    
-    this.router.navigate(['/redirecionamento', this.solicitacao.id], {
-      state: { solicitacao: this.solicitacao }
-    });
+    this.router.navigate(['/redirecionamento', this.solicitacao.id]);
   }
 
   voltar(): void {

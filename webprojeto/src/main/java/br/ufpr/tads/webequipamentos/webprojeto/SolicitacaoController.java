@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
+import br.ufpr.tads.webequipamentos.dto.ManutencaoRequest;
 import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
+import br.ufpr.tads.webequipamentos.dto.RedirecionamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoParaFuncionario;
@@ -72,6 +74,32 @@ public class SolicitacaoController {
             HttpServletRequest request) {
 
         return service.orcar(
+            emailDaSessao(request, "FUNCIONARIO"),
+            id,
+            req
+        );
+    }
+
+    @PostMapping("/{id}/manutencao")
+    public SolicitacaoResumo registrarManutencao(
+            @PathVariable Integer id,
+            @RequestBody ManutencaoRequest req,
+            HttpServletRequest request) {
+
+        return service.registrarManutencao(
+            emailDaSessao(request, "FUNCIONARIO"),
+            id,
+            req
+        );
+    }
+
+    @PostMapping("/{id}/redirecionamento")
+    public SolicitacaoResumo redirecionar(
+            @PathVariable Integer id,
+            @RequestBody RedirecionamentoRequest req,
+            HttpServletRequest request) {
+
+        return service.redirecionar(
             emailDaSessao(request, "FUNCIONARIO"),
             id,
             req

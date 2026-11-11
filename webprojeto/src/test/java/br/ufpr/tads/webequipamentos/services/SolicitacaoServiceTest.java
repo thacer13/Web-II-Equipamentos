@@ -2,9 +2,11 @@ package br.ufpr.tads.webequipamentos.services;
 
 import br.ufpr.tads.webequipamentos.dao.SolicitacaoDao;
 import br.ufpr.tads.webequipamentos.dto.HistoricoItem;
+import br.ufpr.tads.webequipamentos.dto.ManutencaoRequest;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
 import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
+import br.ufpr.tads.webequipamentos.dto.RedirecionamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.exception.ConflitoException;
@@ -289,6 +291,65 @@ class SolicitacaoServiceTest {
 
         verify(dao, never()).buscarClienteDaSolicitacao(any());
         verify(dao, never()).listarHistorico(any());
+    }
+
+    @Test
+    void registraManutencaoNoFuncionarioResponsavel() {
+        when(dao.buscarVisivelAoFuncionario(7, "maria@teste.com"))
+            .thenReturn(Optional.of(noEstado("APROVADA")));
+        when(dao.registrarManutencao(
+            7, "maria@teste.com", "APROVADA", "Troca de tela", "Evitar quedas"
+        )).thenReturn(true);
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("ARRUMADA")));
+
+        assertEquals(
+            "ARRUMADA",
+            service.registrarManutencao(
+                " maria@teste.com ",
+                7,
+                new ManutencaoRequest(" Troca   de tela ", " Evitar  quedas ")
+            ).estado()
+        );
+
+        verify(dao).registrarManutencao(
+            7, "maria@teste.com", "APROVADA", "Troca de tela", "Evitar quedas"
+        );
+    }
+
+    @Test
+    void redirecionaSolicitacaoParaFuncionarioAtivo() {
+        when(dao.buscarVisivelAoFuncionario(7, "maria@teste.com"))
+            .thenReturn(Optional.of(noEstado("APROVADA")));
+        when(dao.redirecionar(7, "maria@teste.com", "APROVADA", 12)).thenReturn(true);
+        when(dao.buscarResumo(7)).thenReturn(Optional.of(noEstado("REDIRECIONADA")));
+
+        assertEquals(
+            "REDIRECIONADA",
+            service.redirecionar(
+                " maria@teste.com ",
+                7,
+                new RedirecionamentoRequest(12)
+            ).estado()
+        );
+
+        verify(dao).redirecionar(7, "maria@teste.com", "APROVADA", 12);
+    }
+
+    @Test
+    void naoRegistraManutencaoParaEstadoInvalido() {
+        when(dao.buscarVisivelAoFuncionario(7, "maria@teste.com"))
+            .thenReturn(Optional.of(noEstado("ORÇADA")));
+
+        assertThrows(
+            ConflitoException.class,
+            () -> service.registrarManutencao(
+                "maria@teste.com",
+                7,
+                new ManutencaoRequest("Troca de tela", "Evitar quedas")
+            )
+        );
+
+        verify(dao, never()).registrarManutencao(any(), any(), any(), any(), any());
     }
 
     @Test

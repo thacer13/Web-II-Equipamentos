@@ -155,9 +155,7 @@ export class LoginFuncionarioComponent implements OnInit {
   }
 
   onOrcamentoClick(solicitacao: Solicitacao): void {
-    this.router.navigate(['/efetuar-orcamento', solicitacao.id], {
-      state: { solicitacao },
-    });
+    this.router.navigate(['/efetuar-orcamento', solicitacao.id]);
   }
 
   corEstado(estado: EstadoSolicitacao): string {

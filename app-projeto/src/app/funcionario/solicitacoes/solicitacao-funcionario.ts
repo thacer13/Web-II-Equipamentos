@@ -144,16 +144,12 @@ export class SolicitacaoFuncionarioComponent implements OnInit, OnDestroy {
 
   executarAcao(solicitacao: Solicitacao): void {
     if (solicitacao.estado === 'ABERTA') {
-      this.router.navigate(['/efetuar-orcamento', solicitacao.id], {
-        state: { solicitacao }
-      });
+      this.router.navigate(['/efetuar-orcamento', solicitacao.id]);
       return;
     }
 
     if (solicitacao.estado === 'APROVADA' || solicitacao.estado === 'REDIRECIONADA') {
-      this.router.navigate(['/manutencao', solicitacao.id], {
-        state: { solicitacao }
-      });
+      this.router.navigate(['/manutencao', solicitacao.id]);
       return;
     }
 

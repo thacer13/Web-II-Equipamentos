@@ -1,114 +1,49 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap, throwError } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Usuario } from '../models/usuario.model';
 import { Cliente } from '../models/cliente.model';
 import { Funcionario } from '../models/funcionario.model';
 
-const LS_CHAVE = "usuarios"
-const LS_USUARIO_LOGADO = "usuarioLogado";
-const LS_EMAIL_LEMBRADO = "emailLembrado";
-const LS_SENHA_LEMBRADA = "senhaLembrada";
-
 export interface CredenciaisLembradas {
   email: string;
 }
-
-export const DADOS_INICIAIS_USUARIOS: Usuario[] = [
-  {
-    id: 1,
-    nome: 'Joe Cliente',
-    email: 'cliente@teste.com',
-    cpf: '10110110110',
-    telefone: '47999999999',
-    senha: '123',
-    perfil: 'CLIENTE',
-    endereco: {
-      cep: '80060000',
-      logradouro: 'Rua XV de Novembro',
-      numero: '100',
-      bairro: 'Centro',
-      cidade: 'Curitiba',
-      estado: 'PR'
-    },
-  } as Cliente,
-];
-
 @Injectable({
   providedIn: 'root',
 })
 export class UsuarioService {
   private http = inject(HttpClient);
+  private usuarioLogado: Usuario | null = null;
+  private emailLembrado: string | null = null;
 
-  // Mudar para 'true' quando quiser testar integrado com o Spring Boot real
-  private usarBackend = true;
   private apiUrl = 'http://localhost:8080/api/clientes'; 
   private funcionariosUrl = 'http://localhost:8080/api/funcionarios';
   private loginUrl = 'http://localhost:8080/api/auth/login';
   private sessionUrl = 'http://localhost:8080/api/auth/session';
   private logoutUrl = 'http://localhost:8080/api/auth/logout';
 
-  constructor() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(LS_SENHA_LEMBRADA);
-    }
-  }
-
   obterCredenciaisLembradas(): CredenciaisLembradas | null {
-    if (typeof localStorage === 'undefined') {
-      return null;
-    }
-
-    const email = localStorage.getItem(LS_EMAIL_LEMBRADO);
-    localStorage.removeItem(LS_SENHA_LEMBRADA);
-    return email ? { email } : null;
+    return this.emailLembrado ? { email: this.emailLembrado } : null;
   }
 
   lembrarCredenciais(email: string): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(LS_EMAIL_LEMBRADO, email);
-      localStorage.removeItem(LS_SENHA_LEMBRADA);
-    }
+    this.emailLembrado = email;
   }
 
   esquecerCredenciais(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(LS_EMAIL_LEMBRADO);
-      localStorage.removeItem(LS_SENHA_LEMBRADA);
-    }
-  }
-
-  listarTodos(): Usuario[] {
-    if (typeof localStorage === 'undefined') {
-      return DADOS_INICIAIS_USUARIOS;
-    }
-    const usuarios = localStorage.getItem(LS_CHAVE);
-    // Se não houver usuários, salva os dados iniciais para ter com quem testar
-    if (!usuarios) {
-      localStorage.setItem(LS_CHAVE, JSON.stringify(DADOS_INICIAIS_USUARIOS));
-      return DADOS_INICIAIS_USUARIOS;
-    }
-    return JSON.parse(usuarios);
+    this.emailLembrado = null;
   }
 
   salvarUsuarioLogado(usuario: Usuario): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(LS_USUARIO_LOGADO, JSON.stringify(usuario));
-    }  
+    this.usuarioLogado = usuario;
   }
 
   obterUsuarioLogado(): Usuario | null {
-    if (typeof localStorage === 'undefined') {
-      return null;
-    }
-    const usr = localStorage.getItem(LS_USUARIO_LOGADO);
-    return usr ? JSON.parse(usr) : null;
+    return this.usuarioLogado;
   }
 
   limparUsuarioLogado(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(LS_USUARIO_LOGADO);
-    }
+    this.usuarioLogado = null;
   }
 
   validarSessao(): Observable<Usuario> {
@@ -118,11 +53,9 @@ export class UsuarioService {
   }
 
   logout(): Observable<void> {
-    const request = this.usarBackend
-      ? this.http.post<void>(this.logoutUrl, {})
-      : of(undefined);
-
-    return request.pipe(tap(() => this.limparUsuarioLogado()));
+    return this.http
+      .post<void>(this.logoutUrl, {}, { withCredentials: true })
+      .pipe(tap(() => this.limparUsuarioLogado()));
   }
 
   cadastrarCliente(cliente: Cliente): Observable<Usuario> {
@@ -167,78 +100,33 @@ export class UsuarioService {
     endereco.cidade = cidade;
     endereco.estado = estado;
 
-    if (this.usarBackend) {
-      const payload = {
-        cpf: cliente.cpf,
-        nome: cliente.nome,
-        email: cliente.email,
-        telefone: cliente.telefone,
-        senha: '', // senha é gerada no backend
-        cep: cliente.endereco?.cep,
-        logradouro: cliente.endereco?.logradouro,
-        numero: cliente.endereco?.numero,
-        complemento: cliente.endereco?.complemento || null,
-        bairro: cliente.endereco?.bairro,
-        cidade: cliente.endereco?.cidade,
-        estado: cliente.endereco?.estado
-      };
-      return this.http.post<Usuario>(this.apiUrl, payload);
-    }
-
-    const usuarios = this.listarTodos();
-    cliente.id = new Date().getTime();
-    cliente.perfil = 'CLIENTE';
-    cliente.senha = this.gerarSenhaAleatoria();
-    usuarios.push(cliente);
-
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(LS_CHAVE, JSON.stringify(usuarios));
-    }
-
-    console.log(`[SIMULAÇÃO DE E-MAIL] Para: ${cliente.email} | Sua senha temporária é: ${cliente.senha}`);
-    return of(cliente);
+    const payload = {
+      cpf: cliente.cpf,
+      nome: cliente.nome,
+      email: cliente.email,
+      telefone: cliente.telefone,
+      senha: '',
+      cep: cliente.endereco?.cep,
+      logradouro: cliente.endereco?.logradouro,
+      numero: cliente.endereco?.numero,
+      complemento: cliente.endereco?.complemento || null,
+      bairro: cliente.endereco?.bairro,
+      cidade: cliente.endereco?.cidade,
+      estado: cliente.endereco?.estado
+    };
+    return this.http.post<Usuario>(this.apiUrl, payload);
   }
 
   autenticar(email: string, senha: string): Observable<Usuario> {
-    if (this.usarBackend) {
-      return this.http.post<Usuario>(
-        this.loginUrl,
-        { email, senha },
-        { withCredentials: true }
-      );
-    }
-
-    const usuario = this.buscarPorEmail(email);
-    if (!usuario || usuario.senha !== senha) {
-      return throwError(() => new Error('E-mail ou senha inválidos.'));
-    }
-    return of(usuario);
-  }
-
-  buscarPorEmail(email: string): Usuario | undefined {
-    const normalizado = email?.trim().toLowerCase() ?? '';
-    if (!normalizado) {
-      return undefined;
-    }
-    const usuarios = this.listarTodos();
-    return usuarios.find((usuario: Usuario) => usuario.email.toLowerCase() === normalizado);
-  }
-
-  buscarPorCpf(cpf: string): Cliente | undefined {
-    const cpfLimpo = (cpf ?? '').replace(/\D/g, ''); // Limpa o cpf que veio por parâmetro
-    if (!cpfLimpo) {
-      return undefined;
-    }
-    const usuarios = this.listarTodos();
-    return usuarios.find((usuario: Usuario) => (usuario as Cliente).cpf?.replace(/\D/g, '') === cpfLimpo) as Cliente; // Retorna o Cliente Usuário que encontrar com o mesmo cpf
+    return this.http.post<Usuario>(
+      this.loginUrl,
+      { email, senha },
+      { withCredentials: true }
+    );
   }
 
   remover(id: number): Observable<void> {
     return this.http.delete<void>(`${this.funcionariosUrl}/${id}`);
-  }
-
-  gerarSenhaAleatoria(): string {
-    return Math.floor(1000 + Math.random() * 9000).toString();
   }
 
   listarFuncionarios(): Observable<Funcionario[]> {
