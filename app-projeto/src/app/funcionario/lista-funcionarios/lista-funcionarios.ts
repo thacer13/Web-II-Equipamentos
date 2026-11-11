@@ -41,6 +41,9 @@ export class ListaFuncionariosComponent implements OnInit {
   mensagemErroConfirmacao = '';
   mensagemSucesso = '';
   funcionarioLogadoId?: number;
+  salvando = false;
+  redefinindoSenha = false;
+  removendo = false;
 
   constructor(private usuarioService: UsuarioService) {}
 
@@ -102,13 +105,18 @@ export class ListaFuncionariosComponent implements OnInit {
   }
 
   salvarFuncionario(): void {
-    this.mensagemErro = '';
-
-    if (!this.nome || this.nome.trim().length < 3) {
-      this.mensagemErro = 'O nome deve ter pelo menos 3 caracteres.';
+    if (this.salvando) {
       return;
     }
-    if (!this.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+    this.mensagemErro = '';
+    const nomeNormalizado = this.nome.trim().replace(/\s+/g, ' ');
+    const emailNormalizado = this.email.trim().toLowerCase();
+
+    if (nomeNormalizado.length < 3 || nomeNormalizado.length > 150) {
+      this.mensagemErro = 'O nome deve ter entre 3 e 150 caracteres.';
+      return;
+    }
+    if (emailNormalizado.length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
       this.mensagemErro = 'E-mail inválido.';
       return;
     }
@@ -123,13 +131,14 @@ export class ListaFuncionariosComponent implements OnInit {
 
     const funcionarioParaSalvar: Funcionario = {
       id: this.editandoId !== null ? this.editandoId : undefined,
-      nome: this.nome.trim().replace(/\s+/g, ' '),
-      email: this.email.trim().toLowerCase(),
+      nome: nomeNormalizado,
+      email: emailNormalizado,
       dataNascimento: paraIso(this.dataNascimento),
       perfil: 'FUNCIONARIO',
       ativo: true
     };
 
+    this.salvando = true;
     this.usuarioService.salvarFuncionario(funcionarioParaSalvar).subscribe({
       next: funcionarioSalvo => {
         const usuarioLogado = this.usuarioService.obterUsuarioLogado();
@@ -143,9 +152,11 @@ export class ListaFuncionariosComponent implements OnInit {
         }
         this.showFormulario = false;
         this.carregarFuncionarios();
+        this.salvando = false;
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível salvar o funcionário.');
+        this.salvando = false;
       }
     });
   }
@@ -156,12 +167,18 @@ export class ListaFuncionariosComponent implements OnInit {
     }
     this.mensagemErro = '';
     this.mensagemSucesso = '';
+    if (this.redefinindoSenha) {
+      return;
+    }
+    this.redefinindoSenha = true;
     this.usuarioService.redefinirSenhaFuncionario(this.editandoId).subscribe({
       next: () => {
         this.mensagemSucesso = 'Uma nova senha temporária foi enviada para o e-mail do funcionário.';
+        this.redefinindoSenha = false;
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível redefinir a senha.');
+        this.redefinindoSenha = false;
       }
     });
   }
@@ -184,15 +201,21 @@ export class ListaFuncionariosComponent implements OnInit {
   }
 
   confirmarRemocao(): void {
+    if (this.removendo || !this.funcionarioSelecionado || this.funcionarioSelecionado.id === undefined) {
+      return;
+    }
     if (this.funcionarioSelecionado && this.funcionarioSelecionado.id !== undefined) {
+      this.removendo = true;
       this.usuarioService.remover(this.funcionarioSelecionado.id).subscribe({
         next: () => {
           this.carregarFuncionarios();
           this.showConfirmacao = false;
           this.funcionarioSelecionado = null;
+          this.removendo = false;
         },
         error: erro => {
           this.mensagemErroConfirmacao = this.mensagemErroApi(erro, 'Não foi possível desativar o funcionário.');
+          this.removendo = false;
         }
       });
     }

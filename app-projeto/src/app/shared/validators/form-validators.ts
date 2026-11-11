@@ -46,7 +46,8 @@ export function validarTelefone(): ValidatorFn {
     if (digitos.length === 0) {
       return null;
     }
-    return digitos.length === 10 || digitos.length === 11 ? null : { telefoneInvalido: true };
+    const telefoneValido = /^(?:[1-9]\d[2-5]\d{7}|[1-9]\d9\d{8})$/.test(digitos);
+    return telefoneValido ? null : { telefoneInvalido: true };
   };
 }
 
@@ -56,7 +57,7 @@ export function validarCep(): ValidatorFn {
     if (digitos.length === 0) {
       return null;
     }
-    return digitos.length === 8 ? null : { cepInvalido: true };
+    return /^(?!0{8})\d{8}$/.test(digitos) ? null : { cepInvalido: true };
   };
 }
 

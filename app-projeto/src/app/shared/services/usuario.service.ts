@@ -148,10 +148,10 @@ export class UsuarioService {
     if (cpf.length !== 11) {
       throw new Error('CPF inválido.');
     }
-    if (telefone.length < 10 || telefone.length > 11) {
+    if (!/^(?:[1-9]\d[2-5]\d{7}|[1-9]\d9\d{8})$/.test(telefone)) {
       throw new Error('Telefone inválido.');
     }
-    if (cep.length !== 8 || !logradouro || logradouro.length > 150 || !numero || numero.length > 10 || complemento.length > 100 || !bairro || bairro.length > 100 || !cidade || cidade.length > 100 || !/^[A-Z]{2}$/.test(estado)) {
+    if (!/^(?!0{8})\d{8}$/.test(cep) || !logradouro || logradouro.length > 150 || !numero || numero.length > 10 || complemento.length > 100 || !bairro || bairro.length > 100 || !cidade || cidade.length > 100 || !/^[A-Z]{2}$/.test(estado)) {
       throw new Error('Endereço inválido.');
     }
 

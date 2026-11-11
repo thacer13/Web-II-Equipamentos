@@ -80,7 +80,7 @@
   </div>
   <ng-template #footer>
     <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (click)="showFormulario = false"></p-button>
-    <p-button type="button" label="Salvar" (click)="salvarCategoria()"></p-button>
+    <p-button type="button" label="Salvar" [loading]="salvando" [disabled]="salvando" (click)="salvarCategoria()"></p-button>
   </ng-template>
 </p-dialog>
 
@@ -99,6 +99,6 @@
   }
   <ng-template #footer>
     <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (click)="showConfirmacao = false"></p-button>
-    <p-button type="button" label="Desativar" severity="danger" (click)="confirmarRemocao()"></p-button>
+    <p-button type="button" label="Desativar" severity="danger" [loading]="desativando" [disabled]="desativando" (click)="confirmarRemocao()"></p-button>
   </ng-template>
 </p-dialog>

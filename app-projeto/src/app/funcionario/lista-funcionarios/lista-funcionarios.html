@@ -101,6 +101,8 @@
           severity="secondary" 
           [outlined]="true" 
           size="small"
+          [loading]="redefinindoSenha"
+          [disabled]="redefinindoSenha"
           (click)="gerarNovaSenhaManual()">
         </p-button>
       }
@@ -115,7 +117,7 @@
   </div>
   <ng-template #footer>
     <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (click)="showFormulario = false"></p-button>
-    <p-button type="button" label="Salvar" (click)="salvarFuncionario()"></p-button>
+    <p-button type="button" label="Salvar" [loading]="salvando" [disabled]="salvando" (click)="salvarFuncionario()"></p-button>
   </ng-template>
 </p-dialog>
 
@@ -134,6 +136,6 @@
   }
   <ng-template #footer>
     <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true" (click)="showConfirmacao = false"></p-button>
-    <p-button type="button" label="Desativar" severity="danger" (click)="confirmarRemocao()"></p-button>
+    <p-button type="button" label="Desativar" severity="danger" [loading]="removendo" [disabled]="removendo" (click)="confirmarRemocao()"></p-button>
   </ng-template>
 </p-dialog>
