@@ -28,6 +28,7 @@
           <p-select
             inputId="filtro"
             [(ngModel)]="filtro"
+            (ngModelChange)="filtroAlterado()"
             [options]="opcoesFiltro"
             optionLabel="label"
             optionValue="value"
@@ -47,6 +48,7 @@
             <p-datepicker
               inputId="dataInicio"
               [(ngModel)]="dataInicio"
+              (ngModelChange)="filtroAlterado()"
               [minDate]="dataMinima"
               [maxDate]="dataFim || dataHoje"
               dateFormat="dd/mm/yy"
@@ -67,6 +69,7 @@
             <p-datepicker
               inputId="dataFim"
               [(ngModel)]="dataFim"
+              (ngModelChange)="filtroAlterado()"
               [minDate]="dataInicio || dataMinima"
               [maxDate]="dataHoje"
               dateFormat="dd/mm/yy"
