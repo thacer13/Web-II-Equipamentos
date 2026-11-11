@@ -6,7 +6,7 @@ Este projeto implementa um sistema web para gestão de solicitações de manuten
 
 O objetivo principal é permitir que clientes registrem solicitações de manutenção, acompanhem o andamento do serviço e paguem o orçamento aprovado, enquanto funcionários gerenciam orçamentos, manutenção, redirecionamento, categorias, funcionários e relatórios financeiros.
 
-A solução foi desenvolvida em duas camadas:
+A solução está separada em frontend, backend e persistência:
 
 - Frontend em Angular
 - Backend em Spring Boot
@@ -92,11 +92,11 @@ Local: `app-projeto/`
 
 Local: `webprojeto/`
 
-- Spring Boot
-- Java
+- Spring Boot 4.1.2
+- Java 17
 - Spring Web MVC
 - Spring Security
-- JDBC para PostgreSQL
+- Spring JDBC (`JdbcTemplate`) para PostgreSQL
 - APIs REST para autenticação, categorias, funcionários, solicitações e relatórios
 
 ### Banco de dados
@@ -130,40 +130,21 @@ A documentação específica do sistema está organizada em arquivos dedicados:
 
 - [`docs/como-executar.md`](docs/como-executar.md) — instruções de execução
 - [`docs/contratos-api.md`](docs/contratos-api.md) — contratos e regras de transição da API
-- [`docs/suposicoes.md`](docs/suposicoes.md) — decisões de negócio e suposições
+- [`docs/suposicoes.md`](docs/suposicoes.md) e [`docs/suposicoes.odt`](docs/suposicoes.odt) — decisões de negócio e suposições
+- [`docs/integrantes.txt`](docs/integrantes.txt) — integrantes, GRRs e e-mails (conferir preenchimento antes de entregar)
+- [`docs/validacao.md`](docs/validacao.md) — evidências de compilação e validações pendentes
 - [`app-projeto/README.md`](app-projeto/README.md) — visão do frontend e do fluxo da aplicação
 
 ## Como executar o projeto
 
-### Opção recomendada: Docker
+A execução sem Docker é suportada e foi a alternativa escolhida para os testes locais. São necessários Java 17, Node.js 24, npm e PostgreSQL funcionando. O banco padrão é `manutencao_db` e a API utiliza a porta 8080.
 
-```bash
-docker compose up -d --build
-```
+Para iniciar o sistema e preparar um banco **de testes**, veja o passo a passo completo em [`docs/como-executar.md`](docs/como-executar.md). O documento também explica como configurar variáveis de ambiente sem expor senhas e como executar a alternativa opcional com Docker.
 
-Depois, inicie a API e o frontend em contêineres separados conforme descrito em [`docs/como-executar.md`](docs/como-executar.md).
-
-### Execução local
-
-#### Backend
-
-```bash
-cd webprojeto
-./mvnw spring-boot:run
-```
-
-#### Frontend
-
-```bash
-cd app-projeto
-npm install
-npx ng serve --host 0.0.0.0
-```
-
-A aplicação fica disponível em:
+Endereços padrão:
 
 - Frontend: `http://localhost:4200`
-- Backend: `http://localhost:8080`
+- Backend: `http://localhost:8080/api`
 
 ## Dados de teste e ambiente padrão
 
@@ -178,7 +159,7 @@ A senha padrão para contas de teste é:
 
 - `1234`
 
-## Main features
+## Funcionalidades principais
 
 - Cadastro de clientes
 - Login e sessão por perfil
@@ -194,17 +175,12 @@ A senha padrão para contas de teste é:
 
 ## Validação e testes
 
-O projeto contempla testes para API e frontend, além de consultas de integridade do banco.
+Em 11/11/2026, a equipe executou `mvnw.cmd clean test`, com **118 testes Java aprovados e nenhuma falha**, e os builds Angular de desenvolvimento e produção, ambos concluídos. Essas verificações **não comprovam os testes completos de interface e banco**, que precisam ser realizados com a aplicação em execução no Firefox.
 
-```bash
-cd webprojeto && ./mvnw test
-cd app-projeto && npx ng test
-```
-
-Também é possível verificar a consistência das solicitações e do histórico por meio do script SQL em [`docs/verificar-integridade.sql`](docs/verificar-integridade.sql).
+A relação dos testes efetuados, verificações pendentes e precauções está em [`docs/validacao.md`](docs/validacao.md). A integridade dos registros de histórico pode ser conferida pelo script [`docs/verificar-integridade.sql`](docs/verificar-integridade.sql) em um banco de testes funcional.
 
 ## Observações finais
 
-Este projeto representa um sistema completo de manutenção de equipamentos com regras de negócio bem definidas, controle de acessos por perfil e fluxo de operação voltado à operação real de uma assistente técnica ou empresa de manutenção.
+Este projeto representa um sistema completo de manutenção de equipamentos com regras de negócio bem definidas, controle de acessos por perfil e fluxo de operação voltado à operação real de uma assistência técnica ou empresa de manutenção.
 
 A estrutura adotada mantém separação clara entre cliente, funcionário, backend e banco de dados, permitindo evolutividade, manutenção e integração com novos módulos.

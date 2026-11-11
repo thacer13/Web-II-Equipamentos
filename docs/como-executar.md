@@ -1,111 +1,113 @@
-# Como executar o sistema
+# Como executar o sistema de Manutenção de Equipamentos
 
-O sistema tem três partes: banco PostgreSQL 18, API Spring Boot (Java 21) na porta 8080 e
-frontend Angular 21 na porta 4200. Abra o navegador em `http://localhost:4200`.
+## 1. Tecnologias e requisitos
 
-## Opção 1: Docker (recomendada)
+- Frontend: Angular 21, TypeScript, PrimeNG e Tailwind CSS.
+- Backend: Spring Boot 4.1.2, Java 17 e Spring JDBC (`JdbcTemplate`).
+- Banco: PostgreSQL 18. O projeto também pode funcionar com uma versão compatível, após validação.
+- Ferramentas utilizadas na execução e nos testes: PowerShell, Maven Wrapper, Node.js 24 e npm 11.
+- Portas padrão: PostgreSQL 5432, API 8080 e Angular 4200.
+- Docker é opcional. O projeto também pode ser executado diretamente no Windows.
 
-Pré-requisito: Docker com Docker Compose.
+## 2. Executar diretamente no Windows (sem Docker)
 
-Copie `.env.example` para `.env` na raiz do repositório, ao lado do `docker-compose.yml`, e
-preencha as credenciais da conta remetente:
+### 2.1 Preparar o PostgreSQL
 
-```dotenv
-MAIL_USER=seu-email-remetente@gmail.com
-MAIL_PASS=sua-senha-de-app-do-gmail
-```
+1. Verificar se o serviço PostgreSQL está iniciado e aceita conexões.
+2. Criar, caso ainda não existam, o banco `manutencao_db` e um usuário com permissão sobre esse banco.
+3. Guardar a senha do banco apenas no ambiente local. A instalação e a recuperação do PostgreSQL não fazem parte do código da aplicação.
+4. Em um banco de testes novo e vazio, a primeira execução da API pode aplicar `schema.sql` e `data.sql` com a opção `SPRING_SQL_INIT_MODE=always`.
+5. Em um banco com dados que precisam ser preservados, usar `SPRING_SQL_INIT_MODE=never` até conferir os scripts e o conteúdo existente. Não apagar nem recriar a instância por causa de erros de conexão.
 
-O arquivo `.env` é ignorado pelo Git e não deve ser incluído na entrega.
+Arquivos de inicialização: `webprojeto/src/main/resources/schema.sql` e `webprojeto/src/main/resources/data.sql`.
 
-```bash
-docker compose up -d --build
-docker exec -it manutencao_app bash
+### 2.2 Iniciar o backend
 
-# dentro do container
-cd webprojeto && ./mvnw spring-boot:run          # API em http://localhost:8080
-# em outro terminal: docker exec -it manutencao_app bash
-cd app-projeto && npm install && npx ng serve --host 0.0.0.0   # http://localhost:4200
-```
-
-No Docker a API roda com `SPRING_SQL_INIT_MODE=always`, então ao iniciar ela cria as tabelas
-(`schema.sql`) e carrega os dados de teste (`data.sql`). Os dois scripts podem ser executados
-várias vezes sem duplicar dados.
-
-## Opção 2: na máquina
-
-Pré-requisitos: Java 21, Node.js 24 e PostgreSQL 18 (ou só o banco pelo Docker:
-`docker compose up -d database`).
-
-1. Crie o banco `manutencao_db` com o usuário `dev_user` / senha `dev_password`
-   (o `docker compose up -d database` já faz isso).
-2. Suba a API aplicando o schema e os dados de teste:
-
-   ```bash
-   cd webprojeto
-   SPRING_SQL_INIT_MODE=always ./mvnw spring-boot:run
-   ```
-
-   Nas execuções seguintes `./mvnw spring-boot:run` basta, mas usar `SPRING_SQL_INIT_MODE=always`
-   sempre é seguro e mantém o banco atualizado quando o schema muda.
-3. Suba o frontend:
-
-   ```bash
-   cd app-projeto
-   npm install
-   npx ng serve
-   ```
-
-### Variáveis de ambiente da API
-
-| Variável | Padrão | Uso |
-|---|---|---|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/manutencao_db` | conexão com o banco |
-| `DB_USER` / `DB_PASS` | `dev_user` / `dev_password` | usuário do banco |
-| `SPRING_SQL_INIT_MODE` | `never` | `always` aplica `schema.sql` e `data.sql` ao iniciar |
-| `MAIL_USER` / `MAIL_PASS` | vazio | conta Gmail e senha de app para o SMTP; obrigatórias para enviar e-mails |
-
-O envio usa Gmail SMTP com SSL na porta 465. O cadastro de cliente depende do envio do e-mail:
-se o SMTP não estiver acessível ou a autenticação falhar, o cadastro também falha e é revertido.
-No Docker, o Compose lê as variáveis do arquivo `.env` descrito acima. Ao executar a API
-diretamente na máquina, defina `MAIL_USER` e `MAIL_PASS` no ambiente antes de iniciá-la. No
-PowerShell, por exemplo:
+Na pasta `webprojeto`, executar no PowerShell:
 
 ```powershell
-$env:MAIL_USER = "seu-email-remetente@gmail.com"
-$env:MAIL_PASS = "sua-senha-de-app-do-gmail"
-$env:SPRING_SQL_INIT_MODE = "always"
+$env:DB_URL = 'jdbc:postgresql://localhost:5432/manutencao_db'
+$env:DB_USER = 'dev_user'
+$env:DB_PASS = Read-Host 'Senha do PostgreSQL'
+$env:SPRING_SQL_INIT_MODE = 'always'
 .\mvnw.cmd spring-boot:run
 ```
 
-Essas variáveis valem para o terminal atual. Se estiverem vazias ou ausentes, a aplicação pode
-iniciar, mas o envio falhará quando uma operação tentar enviar e-mail.
+A opção `always` acima é destinada **somente à primeira carga de um banco de testes apropriado**. Nas demais execuções, substituí-la por `never`, quando a estrutura e os dados já estiverem configurados.
 
-O script `scripts/gerar-entrega.sh` inclui apenas as referências às variáveis de ambiente no
-Compose, nunca seus valores. A pessoa que executar a cópia de entrega deve fornecer as
-variáveis `MAIL_USER` e `MAIL_PASS` em um arquivo `.env` local ou no ambiente.
+Para um PostgreSQL instalado em outra porta, alterar apenas a porta na variável `DB_URL` (por exemplo, 5433). `DB_USER` deve ser um usuário existente no banco.
 
-## Dados de teste
+A API estará disponível em `http://localhost:8080/api` após iniciar sem erros.
 
-Todas as contas usam a senha `1234`.
+### 2.3 Iniciar o frontend
 
-| Perfil | E-mails |
-|---|---|
-| Funcionário | `maria.funcionario@example.com`, `mario.funcionario@example.com` |
-| Cliente | `joao.cliente@example.com`, `jose.cliente@example.com`, `joana.cliente@example.com`, `joaquina.cliente@example.com` |
+Abrir outro PowerShell na pasta `app-projeto` e executar:
 
-Categorias iniciais: Notebook, Desktop, Impressora, Mouse e Teclado.
-
-## Testes
-
-```bash
-cd webprojeto && ./mvnw test        # testes da API
-cd app-projeto && npx ng test       # testes do Angular
+```powershell
+npm ci
+npm start
 ```
 
-Para conferir se estados e histórico das solicitações estão consistentes no banco:
+Abrir `http://localhost:4200`. O frontend precisa da API na porta 8080 para acessar as funcionalidades integradas.
 
-```bash
-psql -h localhost -U dev_user -d manutencao_db -f docs/verificar-integridade.sql
+### 2.4 Envio de e-mail
+
+O requisito RF001 prevê envio de senha de quatro números por e-mail. Para testá-lo, configurar `MAIL_USER` e `MAIL_PASS` na sessão do terminal que inicia o backend, com uma credencial válida de aplicativo da conta de envio. Não colocar senha de e-mail em arquivos versionados, documentação ou ZIP.
+
+Sem uma configuração SMTP funcional, o requisito RF001 não está validado integralmente, mesmo que os formulários e o banco funcionem.
+
+## 3. Execução usando Docker (opcional)
+
+A raiz do repositório contém `docker-compose.yml` e `Dockerfile`. Essa alternativa exige Docker Desktop e variáveis de banco e e-mail corretamente configuradas. Não é necessária para a execução local descrita acima. Antes de utilizar ou publicar o Compose, remover credenciais reais do arquivo de configuração e revogar quaisquer senhas expostas anteriormente.
+
+## 4. Dados iniciais de demonstração
+
+O `data.sql` possui 2 funcionários (Maria e Mário), 4 clientes (João, José, Joana e Joaquina), 5 categorias iniciais (Notebook, Desktop, Impressora, Mouse e Teclado) e 24 solicitações demonstrativas distribuídas entre diferentes estados, com históricos.
+
+Usuários de demonstração:
+
+- Funcionários: `maria.funcionario@example.com`, `mario.funcionario@example.com`.
+- Clientes: `joao.cliente@example.com`, `jose.cliente@example.com`, `joana.cliente@example.com`, `joaquina.cliente@example.com`.
+- Senha das contas demonstrativas: `1234`.
+
+Essas contas são fictícias e destinadas a ambiente de teste. Não devem ser utilizadas em ambiente público.
+
+## 5. Compilação, testes e conferência
+
+### Backend
+
+Na pasta `webprojeto`:
+
+```powershell
+.\mvnw.cmd clean test
 ```
 
-Todas as colunas, exceto `solicitacoes`, devem dar 0.
+### Frontend
+
+Na pasta `app-projeto`:
+
+```powershell
+npm ci
+npm run build -- --configuration development
+npm run build
+```
+
+### Integridade do banco
+
+Na raiz do repositório, com PostgreSQL funcionando e as tabelas carregadas:
+
+```powershell
+& 'C:\Program Files\PostgreSQL\18\bin\psql.exe' -h localhost -p 5432 -U dev_user -d manutencao_db -f 'docs/verificar-integridade.sql'
+```
+
+Todos os campos de problemas de integridade devem estar em zero; a coluna `solicitacoes` deve mostrar a quantidade de solicitações cadastradas. Para outra porta, modificar `-p`.
+
+**Importante:** passar nos builds e testes automatizados não substitui testar os 10 requisitos mínimos no navegador Firefox, da tela até o PostgreSQL.
+
+## 6. Documentação complementar
+
+- `README.md`: visão geral e arquitetura.
+- `docs/contratos-api.md`: endpoints, estados e regras da API.
+- `docs/suposicoes.md` e `docs/suposicoes.odt`: decisões adotadas quando o enunciado não detalha o comportamento.
+- `docs/integrantes.txt`: relação dos integrantes com GRR e e-mail.
+- `docs/validacao.md`: evidências de compilação e o que ainda precisa de testes funcionais.
