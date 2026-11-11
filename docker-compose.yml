@@ -36,8 +36,8 @@ services:
       DB_USER: dev_user
       DB_PASS: dev_password
       SPRING_SQL_INIT_MODE: always
-      MAIL_USER: manutencaoequipamentosweb@gmail.com
-      MAIL_PASS: cdlsazacrgrgazen
+      MAIL_USER: ${MAIL_USER:-}
+      MAIL_PASS: ${MAIL_PASS:-}
     depends_on:
       database:
         condition: service_healthy

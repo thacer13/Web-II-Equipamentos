@@ -30,14 +30,8 @@ mkdir -p "$PASTA/Fontes" "$PASTA/Documentacao"
 # Fontes: exatamente o que está no último commit (git archive ignora node_modules, target etc.)
 git archive HEAD | tar -x -C "$PASTA/Fontes"
 
-# Sem credenciais: a senha do e-mail é configurada por variável de ambiente (docs/como-executar.md)
-sed -i -E 's/^([[:space:]]*MAIL_PASS:).*/\1 "" # configure a senha de app do Gmail/' \
-    "$PASTA/Fontes/docker-compose.yml"
-sed -i -E 's/^([[:space:]]*MAIL_USER:).*/\1 "" # configure o e-mail remetente/' \
-    "$PASTA/Fontes/docker-compose.yml"
-
-# Confere se nenhuma senha de app do Gmail (16 letras minúsculas) ficou nos arquivos de configuração
-if grep -rIEn "MAIL_PASS.*[a-z]{16}" "$PASTA/Fontes" --include=*.yml --include=*.properties --include=*.env; then
+# O Compose lê as credenciais do ambiente; verifica que nenhum segredo literal foi commitado.
+if grep -rIlE "MAIL_PASS.*[a-z]{16}" "$PASTA/Fontes" --include=*.yml --include=*.properties --include=*.env; then
     echo "Erro: credencial de e-mail encontrada nos fontes. Entrega não gerada." >&2
     exit 1
 fi

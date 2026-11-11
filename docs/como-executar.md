@@ -7,6 +7,16 @@ frontend Angular 21 na porta 4200. Abra o navegador em `http://localhost:4200`.
 
 Pré-requisito: Docker com Docker Compose.
 
+Copie `.env.example` para `.env` na raiz do repositório, ao lado do `docker-compose.yml`, e
+preencha as credenciais da conta remetente:
+
+```dotenv
+MAIL_USER=seu-email-remetente@gmail.com
+MAIL_PASS=sua-senha-de-app-do-gmail
+```
+
+O arquivo `.env` é ignorado pelo Git e não deve ser incluído na entrega.
+
 ```bash
 docker compose up -d --build
 docker exec -it manutencao_app bash
@@ -52,9 +62,27 @@ Pré-requisitos: Java 21, Node.js 24 e PostgreSQL 18 (ou só o banco pelo Docker
 | `DB_URL` | `jdbc:postgresql://localhost:5432/manutencao_db` | conexão com o banco |
 | `DB_USER` / `DB_PASS` | `dev_user` / `dev_password` | usuário do banco |
 | `SPRING_SQL_INIT_MODE` | `never` | `always` aplica `schema.sql` e `data.sql` ao iniciar |
-| `MAIL_USER` / `MAIL_PASS` | — | conta Gmail (senha de app) que envia a senha do autocadastro |
+| `MAIL_USER` / `MAIL_PASS` | vazio | conta Gmail e senha de app para o SMTP; obrigatórias para enviar e-mails |
 
-Sem `MAIL_USER`/`MAIL_PASS` o sistema funciona, mas o e-mail com a senha do autocadastro não é enviado.
+O envio usa Gmail SMTP com SSL na porta 465. O cadastro de cliente depende do envio do e-mail:
+se o SMTP não estiver acessível ou a autenticação falhar, o cadastro também falha e é revertido.
+No Docker, o Compose lê as variáveis do arquivo `.env` descrito acima. Ao executar a API
+diretamente na máquina, defina `MAIL_USER` e `MAIL_PASS` no ambiente antes de iniciá-la. No
+PowerShell, por exemplo:
+
+```powershell
+$env:MAIL_USER = "seu-email-remetente@gmail.com"
+$env:MAIL_PASS = "sua-senha-de-app-do-gmail"
+$env:SPRING_SQL_INIT_MODE = "always"
+.\mvnw.cmd spring-boot:run
+```
+
+Essas variáveis valem para o terminal atual. Se estiverem vazias ou ausentes, a aplicação pode
+iniciar, mas o envio falhará quando uma operação tentar enviar e-mail.
+
+O script `scripts/gerar-entrega.sh` inclui apenas as referências às variáveis de ambiente no
+Compose, nunca seus valores. A pessoa que executar a cópia de entrega deve fornecer as
+variáveis `MAIL_USER` e `MAIL_PASS` em um arquivo `.env` local ou no ambiente.
 
 ## Dados de teste
 

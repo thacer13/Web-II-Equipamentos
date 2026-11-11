@@ -14,6 +14,11 @@ Pontos que o enunciado não define e a forma como a equipe decidiu tratá-los.
 
 - A senha de quatro dígitos é gerada pelo servidor, enviada por e-mail e armazenada como
   SHA-256 com salt. A tela nunca mostra a senha.
+- As credenciais SMTP são fornecidas por `MAIL_USER` e `MAIL_PASS` no ambiente, não ficam
+  gravadas nos arquivos versionados. No Docker Compose, podem ser definidas em um `.env` local,
+  ignorado pelo Git.
+- O cadastro depende do envio do e-mail. Se o SMTP falhar, a operação transacional é revertida
+  e o cliente não é cadastrado.
 - CPF, telefone e CEP são guardados só com dígitos; o e-mail é guardado em minúsculas.
 - CPF ou e-mail já cadastrados impedem o cadastro.
 
