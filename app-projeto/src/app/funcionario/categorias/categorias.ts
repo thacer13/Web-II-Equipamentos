@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -21,7 +21,7 @@ import { Categoria, CategoriaService } from '../../shared/services/categoria.ser
 export class CategoriasComponent {
   private categoriaService = inject(CategoriaService);
 
-  categorias: Categoria[] = [];
+  readonly categorias = signal<Categoria[]>([]);
   showFormulario = false;
   showConfirmacao = false;
   editandoId: number | null = null;
@@ -113,7 +113,7 @@ export class CategoriasComponent {
   private carregar(): void {
     this.categoriaService.listar().subscribe({
       next: categorias => {
-        this.categorias = categorias;
+        this.categorias.set(categorias);
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível carregar as categorias.');

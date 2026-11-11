@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -24,7 +24,7 @@ import { hoje, paraIso } from '../../shared/utils/datas';
 })
 
 export class ListaFuncionariosComponent implements OnInit {
-  funcionarios: Funcionario[] = [];
+  readonly funcionarios = signal<Funcionario[]>([]);
   funcionarioSelecionado: Funcionario | null = null;
 
   showFormulario = false;
@@ -59,7 +59,7 @@ export class ListaFuncionariosComponent implements OnInit {
   carregarFuncionarios(): void {
     this.usuarioService.listarFuncionarios().subscribe({
       next: funcionarios => {
-        this.funcionarios = funcionarios;
+        this.funcionarios.set(funcionarios);
       },
       error: erro => {
         this.mensagemErro = this.mensagemErroApi(erro, 'Não foi possível carregar os funcionários.');
@@ -187,7 +187,7 @@ export class ListaFuncionariosComponent implements OnInit {
     if (funcionario.id === this.funcionarioLogadoId) {
       return false;
     } 
-    return funcionario.ativo && this.funcionarios.filter(item => item.ativo).length > 1;
+    return funcionario.ativo && this.funcionarios().filter(item => item.ativo).length > 1;
   }
 
   pedirRemocao(funcionario: Funcionario): void {

@@ -25,7 +25,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-            @for (funcionario of funcionarios; track funcionario.id) {
+            @for (funcionario of funcionarios(); track funcionario.id) {
               <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 font-medium text-gray-800">
                   {{ funcionario.nome }}

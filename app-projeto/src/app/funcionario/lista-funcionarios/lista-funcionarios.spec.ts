@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { Funcionario } from '../../shared/models/funcionario.model';
 import { UsuarioService } from '../../shared/services/usuario.service';
 import { ListaFuncionariosComponent } from './lista-funcionarios';
@@ -52,7 +52,7 @@ describe('ListaFuncionariosComponent', () => {
   });
 
   it('solicita desativação à API e fecha a confirmação após sucesso', () => {
-    const funcionario = component.funcionarios[0];
+    const funcionario = component.funcionarios()[0];
 
     component.pedirRemocao(funcionario);
     component.confirmarRemocao();
@@ -62,8 +62,8 @@ describe('ListaFuncionariosComponent', () => {
   });
 
   it('não permite desativar funcionários inativos ou o último funcionário ativo', () => {
-    const ultimoAtivo = component.funcionarios[0];
-    component.funcionarios = [ultimoAtivo];
+    const ultimoAtivo = component.funcionarios()[0];
+    component.funcionarios.set([ultimoAtivo]);
     expect(component.podeRemover(ultimoAtivo)).toBe(false);
     expect(component.podeRemover({ ...ultimoAtivo, ativo: false })).toBe(false);
   });
@@ -72,11 +72,23 @@ describe('ListaFuncionariosComponent', () => {
     usuarioService.remover.mockReturnValue(
       throwError(() => ({ error: { mensagem: 'Não foi possível desativar.' } }))
     );
-    component.pedirRemocao(component.funcionarios[0]);
+    component.pedirRemocao(component.funcionarios()[0]);
     component.confirmarRemocao();
 
     expect(component.mensagemErroConfirmacao).toBe('Não foi possível desativar.');
     expect(component.showConfirmacao).toBe(true);
+  });
+
+  it('renderiza os funcionários quando a resposta da API chega após a renderização inicial', async () => {
+    const resposta = new Subject<Funcionario[]>();
+    usuarioService.listarFuncionarios.mockReturnValue(resposta);
+
+    const fixture = TestBed.createComponent(ListaFuncionariosComponent);
+    fixture.detectChanges();
+    resposta.next(funcionarios);
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelectorAll('tbody tr')).toHaveLength(2);
   });
 
   it('rejeita data de nascimento anterior ao limite permitido', () => {
