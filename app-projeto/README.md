@@ -216,9 +216,9 @@ A interface permite:
 - Listar funcionários
 - Cadastrar funcionários
 - Editar funcionários
-- Excluir funcionários
+- Desativar funcionários
 
-O funcionário conectado e o último funcionário ativo não podem ser excluídos.
+O funcionário conectado e o último funcionário ativo não podem ser desativados.
 
 ## Relatórios de receitas
 
@@ -276,9 +276,7 @@ Entre as categorias apresentadas estão:
 - Mouse
 - Teclado
 
-No estágio atual do protótipo, os relatórios podem utilizar dados fictícios para demonstração das telas.
-
-A geração definitiva dos relatórios em PDF será integrada conforme a evolução do projeto.
+Os relatórios consultam os pagamentos registrados no backend e permitem gerar PDF pela interface. O relatório por período agrupa pela data efetiva do pagamento; o relatório por categoria agrupa pela categoria associada à solicitação.
 
 ## Rotas principais
 
@@ -304,7 +302,9 @@ As principais rotas disponíveis no projeto são:
 
 `/efetuar-orcamento/:id` - Efetuar orçamento
 
-`/manutencao` - Efetuar manutenção
+`/manutencao/:id` - Efetuar manutenção
+
+`/redirecionamento/:id` - Redirecionar solicitação
 
 ## Organização do projeto
 
@@ -364,7 +364,7 @@ O histórico permite representar as alterações ocorridas durante o processo de
 
 A pasta `shared/services` contém serviços utilizados por diferentes componentes.
 
-O serviço de solicitações é utilizado para centralizar operações relacionadas às solicitações durante o desenvolvimento do protótipo.
+O serviço de solicitações centraliza as chamadas à API relacionadas às solicitações.
 
 A utilização de services permite separar a lógica relacionada aos dados da lógica presente nas telas.
 
@@ -382,30 +382,8 @@ Mesmo utilizando o preenchimento automático, os dados completos do endereço fa
 
 ## Docker
 
-O repositório possui arquivos de configuração para utilização de Docker.
+O Compose inicia o PostgreSQL e um contêiner de desenvolvimento; a API e o Angular são iniciados separadamente. No Compose, `SPRING_SQL_INIT_MODE=always` aplica `schema.sql` e `data.sql` ao iniciar a API, então esse modo deve ser usado apenas com dados de demonstração. As instruções de ambiente, execução e configuração SMTP estão em [`docs/como-executar.md`](../docs/como-executar.md).
 
-Entre os arquivos utilizados estão:
-
-- `Dockerfile`
-- `docker-compose.yml`
-
-O ambiente Docker permite organizar os serviços utilizados pelo projeto.
-
-O banco de dados utilizado pelo projeto é PostgreSQL.
-
-A porta normalmente utilizada pelo PostgreSQL é:
-
-`5432`
-
-A aplicação Angular utiliza normalmente:
-
-`4200`
-
-A API Spring Boot utiliza normalmente:
-
-`8080`
-
-No ambiente Docker, o Spring aplica `schema.sql` e `data.sql` ao iniciar a API.
 As contas de demonstração usam a senha `1234`:
 
 - Funcionários: `maria.funcionario@example.com`, `mario.funcionario@example.com`
@@ -414,71 +392,17 @@ As contas de demonstração usam a senha `1234`:
 
 ## Como rodar o projeto
 
-### Pré-requisitos
+Consulte [`docs/como-executar.md`](../docs/como-executar.md) para os pré-requisitos, configuração do PostgreSQL e SMTP e instruções completas para execução local ou com Docker.
 
-Para executar o projeto é necessário possuir:
-
-- Node.js
-- npm
-- Angular CLI
-- Git
-- Docker, caso seja utilizado o ambiente com containers
-
-Para instalar o Angular CLI globalmente:
-
-```bash
-npm install -g @angular/cli
-```
-
-## Instalação
-
-Entre na pasta da aplicação:
+Para validar as aplicações:
 
 ```bash
 cd app-projeto
+npm ci
+npm run build
 ```
 
-Instale as dependências:
-
-```bash
-npm install
-```
-
-## Servidor de desenvolvimento
-
-Execute:
-
-```bash
-ng serve
-```
-
-Depois acesse no navegador:
-
-`http://localhost:4200/`
-
-A aplicação recarrega automaticamente quando alterações são realizadas e salvas durante o desenvolvimento.
-
-## Build de produção
-
-Para gerar uma versão de produção:
-
-```bash
-ng build
-```
-
-O Angular realizará a compilação da aplicação e criará os arquivos necessários para distribuição.
-
-## Verificação do projeto
-
-Antes de enviar alterações para o repositório, é recomendado executar:
-
-```bash
-ng serve
-```
-
-É importante verificar se o projeto compila sem erros.
-
-Também devem ser testadas manualmente as telas e rotas relacionadas às alterações realizadas.
+Para os testes automatizados do backend, use `.\mvnw.cmd clean test` em `webprojeto` no Windows ou `./mvnw clean test` em ambiente Unix.
 
 ## Git
 
@@ -504,13 +428,7 @@ Antes de enviar alterações, a equipe deve verificar se o código local está s
 
 ## Status atual
 
-O projeto encontra-se em desenvolvimento.
-
-As funcionalidades estão sendo implementadas de forma incremental de acordo com os requisitos definidos para o sistema.
-
-Algumas partes da aplicação ainda utilizam dados fictícios para demonstração do protótipo.
-
-A integração completa entre frontend, backend e banco de dados será realizada durante as próximas etapas do desenvolvimento.
+O projeto integra interface Angular, API Spring Boot e banco PostgreSQL. Os resultados de build, testes automatizados e validação funcional registrados pela equipe estão documentados em [`docs/validacao.md`](../docs/validacao.md); consulte esse documento para distinguir testes automatizados dos resultados funcionais informados pela equipe.
 
 ## Equipe 7
 

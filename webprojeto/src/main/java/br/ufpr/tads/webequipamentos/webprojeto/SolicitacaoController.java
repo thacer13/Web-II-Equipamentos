@@ -17,7 +17,6 @@ import br.ufpr.tads.webequipamentos.dto.ManutencaoRequest;
 import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RedirecionamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
-import br.ufpr.tads.webequipamentos.dto.RedirecionamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoParaFuncionario;

@@ -7,7 +7,7 @@
 
 ## 1. Objetivo
 
-Registrar os resultados das verificações de compilação, dos testes automatizados e da validação funcional do sistema. Os resultados dos testes funcionais apresentados neste documento foram informados pela equipe responsável pelo projeto.
+Registrar os resultados das verificações de compilação, dos testes automatizados e da validação funcional do sistema. Os resultados de compilação, testes e auditoria abaixo correspondem à execução registrada em 11/11/2026; não foram reexecutados durante a revisão documental. Os resultados funcionais foram informados pela equipe responsável pelo projeto e não constituem uma verificação independente nesta revisão.
 
 ## 2. Ambiente e tecnologias
 
@@ -27,7 +27,7 @@ A compilação de produção do Angular apresentou avisos de compatibilidade de 
 
 ## 4. Validação funcional
 
- Os requisitos funcionais abaixo foram testados e aprovados na aplicação integrada.
+Os requisitos funcionais abaixo foram testados e aprovados na aplicação integrada, conforme informado pela equipe.
 
 | Requisito | Funcionalidade validada | Resultado informado |
 | --- | --- | --- |

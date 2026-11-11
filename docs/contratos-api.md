@@ -36,19 +36,21 @@ ABERTA → ORÇADA → APROVADA → ARRUMADA → PAGA → FINALIZADA
 
 As transições permitidas são definidas em `model/EstadoSolicitacao.java`. As operações de mudança de estado são validadas no backend antes da atualização.
 
-| De → Para | Quem | Dados obrigatórios | Atualiza em `solicitacao` | Grava em `historico_solicitacao` | RF |
-|---|---|---|---|---|---|
-| (nova) → ABERTA | Cliente | equipamento 3–150, categoria ativa, defeito 10–2000 | todos os dados iniciais | estado_novo | RF004 |
-| ABERTA → ORÇADA | Funcionário | `valor` > 0 | valor_orcamento, funcionario_orcamento_id, data_hora_orcamento | funcionario_id, valor | RF012 |
-| ORÇADA → APROVADA | Cliente dono | — | — | valor | RF006 |
-| ORÇADA → REJEITADA | Cliente dono | `motivo` 3–1000 | — | motivo | RF007 |
-| REJEITADA → APROVADA | Cliente dono | — | — | (resgate) | RF009 |
-| APROVADA → ARRUMADA | Funcionário responsável | `descricaoManutencao` e `orientacoesCliente` com 3–2000 caracteres cada | funcionario_atual_id | funcionario_id, descricao_manutencao, orientacoes_cliente | RF014 |
-| APROVADA → REDIRECIONADA | Funcionário responsável | `funcionarioDestinoId` ativo e diferente de si | funcionario_atual_id = destino | funcionario_id (origem), funcionario_destino_id | RF015 |
-| REDIRECIONADA → REDIRECIONADA | Funcionário destino atual | idem acima | funcionario_atual_id = novo destino | idem acima | RF015 |
-| REDIRECIONADA → ARRUMADA | Funcionário destino atual | idem APROVADA → ARRUMADA | funcionario_atual_id | idem | RF014 |
-| ARRUMADA → PAGA | Cliente dono | — | data_hora_pagamento | valor | RF010 |
-| PAGA → FINALIZADA | Funcionário | — | funcionario_finalizacao_id, data_hora_finalizacao | funcionario_id | RF016 |
+| De → Para | Quem | Dados obrigatórios | RF |
+|---|---|---|---|
+| (nova) → ABERTA | Cliente | equipamento 3–150 caracteres, categoria ativa, defeito 10–2000 caracteres | RF004 |
+| ABERTA → ORÇADA | Funcionário | `valor` positivo, até duas casas decimais | RF012 |
+| ORÇADA → APROVADA | Cliente dono | — | RF006 |
+| ORÇADA → REJEITADA | Cliente dono | `motivo` 3–1000 caracteres | RF007 |
+| REJEITADA → APROVADA | Cliente dono | — | RF009 |
+| APROVADA → ARRUMADA | Funcionário responsável | `descricaoManutencao` e `orientacoesCliente`, cada uma com 3–2000 caracteres | RF014 |
+| APROVADA → REDIRECIONADA | Funcionário responsável | `funcionarioDestinoId` ativo e diferente de si | RF015 |
+| REDIRECIONADA → REDIRECIONADA | Funcionário destino atual | `funcionarioDestinoId` ativo e diferente de si | RF015 |
+| REDIRECIONADA → ARRUMADA | Funcionário destino atual | mesmos dados da manutenção | RF014 |
+| ARRUMADA → PAGA | Cliente dono | — | RF010 |
+| PAGA → FINALIZADA | Funcionário responsável | — | RF016 |
+
+Cada transição persiste os dados pertinentes na solicitação e no histórico. O histórico identifica o funcionário responsável nas ações de funcionário e registra os dados específicos de orçamento, manutenção ou redirecionamento.
 
 **Funcionário responsável por uma ação** = `funcionario_atual_id` se preenchido; senão `funcionario_orcamento_id`. A listagem RF013 não é limitada ao responsável: inclui todas as solicitações, exceto as `REDIRECIONADA` cujo destino (`funcionario_atual_id`) não seja o funcionário logado. A API valida separadamente a responsabilidade para cada ação. Os filtros HOJE, PERÍODO e TODAS são realizados no componente Angular da listagem.
 
@@ -69,98 +71,72 @@ As transições permitidas são definidas em `model/EstadoSolicitacao.java`. As 
 
 | Método e rota | Perfil | Corpo | Resposta | RF |
 |---|---|---|---|---|
-| `POST /auth/login` | público | `{ email, senha }` | `UsuarioResponse { id, nome, email, perfil }` |  |
-| `POST /auth/logout` | logado | — | 204 |  |
-| `GET /auth/session` | logado/sessão | — | estado da sessão |  |
-| `GET /auth/csrf` | público/sessão | — | token CSRF |  |
-| `POST /clientes` | público | `{ cpf, nome, email, telefone, cep, logradouro, numero, complemento?, bairro, cidade, estado }` | 201 `UsuarioResponse` | RF001 |
+| `POST /auth/login` | Público | `{ email, senha }` | `UsuarioResponse { id, nome, email, perfil }` | — |
+| `POST /auth/logout` | Logado | — | 204 | — |
+| `GET /auth/session` | Logado | — | `UsuarioResponse` da sessão | — |
+| `GET /auth/csrf` | Público | — | Token CSRF | — |
+| `POST /clientes` | Público | `{ cpf, nome, email, telefone, cep, logradouro, numero, complemento?, bairro, cidade, estado }` | 201 `UsuarioResponse` | RF001 |
 
 O cadastro normaliza CPF, telefone e CEP para dígitos e o e-mail para minúsculas.
 
-CPF e e-mail já cadastrados retornam `409`. A senha de quatro dígitos é gerada
-
-no servidor, armazenada como SHA-256 com salt e enviada ao e-mail informado.
-
-`complemento` é opcional e limitado a 100 caracteres; quando informado pelo
-
-ViaCEP ou pelo cliente, é persistido junto ao endereço.
+CPF e e-mail já cadastrados retornam `409`. A senha temporária de quatro dígitos é gerada no servidor, armazenada como SHA-256 com salt e enviada ao e-mail informado. `complemento` é opcional e limitado a 100 caracteres; quando informado pelo ViaCEP ou pelo cliente, é persistido junto ao endereço.
 
 ### Usuários
 
 | Método e rota | Perfil | Regra |
 |---|---|---|
-| `GET /usuarios`, `GET /usuarios/{id}` | Funcionário | Retorna somente dados de identificação; nunca hash, salt ou senha |
-| `POST /usuarios` | Funcionário | Cadastro administrativo; o cadastro público é `POST /clientes` |
-| `POST /usuarios/login` | Público | Alias legado de autenticação |
-| `PUT /usuarios/{id}` | Logado | Só permite atualizar a própria conta; outro titular recebe `404` |
-| `DELETE /usuarios/{id}` | Funcionário | Desativa logicamente; não permite desativar a própria conta |
+| `GET /usuarios`, `GET /usuarios/{id}` | Funcionário | Retorna dados de identificação; nunca hash, salt ou senha |
+| `POST /usuarios` | Funcionário | Cadastro administrativo; cadastro público é `POST /clientes` |
+| `POST /usuarios/login` | Público | Alias de autenticação |
+| `PUT /usuarios/{id}` | Logado | Atualiza somente a própria conta; outro titular recebe `404` |
+| `DELETE /usuarios/{id}` | Funcionário | Desativa logicamente o cliente; não permite desativar a própria conta |
 
-O `DELETE` marca `cliente.ativo = FALSE`; não remove cliente, usuário, endereço,
-
-solicitações nem histórico. Contas desativadas não podem autenticar nem criar ou
-
-consultar solicitações como cliente. O esquema inclui `cliente.ativo`, com
-
-migração idempotente em `webprojeto/src/main/resources/schema.sql`.
+O `DELETE` marca `cliente.ativo = FALSE`; não remove cliente, usuário, endereço, solicitações nem histórico. Contas desativadas não podem autenticar nem criar ou consultar solicitações como cliente. O esquema inclui `cliente.ativo`, com migração idempotente em `webprojeto/src/main/resources/schema.sql`.
 
 ### Solicitações — cliente
 
-| Método e rota | Corpo | Resposta | RF | Tarefa |
-|---|---|---|---|---|
-| `GET /solicitacoes/cliente` | — | `SolicitacaoResumo[]` por data/hora crescente | RF003 |  |
-| `GET /solicitacoes/cliente/{id}` | — | `SolicitacaoDetalhe` | RF005, RF008 |  |
-| `POST /solicitacoes` | `{ descricaoEquipamento, categoriaId, descricaoDefeito }` | 201 `SolicitacaoResumo` | RF004 |  |
-| `POST /solicitacoes/{id}/aprovacao` | — | `SolicitacaoResumo` | RF006 | T19 |
-| `POST /solicitacoes/{id}/rejeicao` | `{ motivo }` | `SolicitacaoResumo` | RF007 |  T26 |
-| `POST /solicitacoes/{id}/resgate` | — | `SolicitacaoResumo` | RF009 |  T28 |
-| `POST /solicitacoes/{id}/pagamento` | — | `SolicitacaoResumo` | RF010 |  T29 |
+| Método e rota | Corpo | Resposta | RF |
+|---|---|---|---|
+| `GET /solicitacoes/cliente` | — | `SolicitacaoResumo[]` por data/hora crescente | RF003 |
+| `GET /solicitacoes/cliente/{id}` | — | `SolicitacaoDetalhe` | RF005, RF008 |
+| `POST /solicitacoes` | `{ descricaoEquipamento, categoriaId, descricaoDefeito }` | 201 `SolicitacaoResumo` | RF004 |
+| `POST /solicitacoes/{id}/aprovacao` | — | `SolicitacaoResumo` | RF006 |
+| `POST /solicitacoes/{id}/rejeicao` | `{ motivo }` | `SolicitacaoResumo` | RF007 |
+| `POST /solicitacoes/{id}/resgate` | — | `SolicitacaoResumo` | RF009 |
+| `POST /solicitacoes/{id}/pagamento` | — | `SolicitacaoResumo` | RF010 |
 
 ### Solicitações — funcionário
 
-| Método e rota | Corpo | Resposta | RF | Tarefa |
-|---|---|---|---|---|
-| `GET /solicitacoes/abertas` | — | `SolicitacaoAberta[]`: todas em ABERTA, por data/hora crescente | RF011 |  T13 |
-| `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]`: todas, exceto redirecionadas para outro funcionário | RF013 | T30, T31; filtros HOJE, PERÍODO e TODAS aplicados na interface Angular |
-| `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoParaFuncionario`: detalhes completos, exceto redirecionadas para outro funcionário | RF012, RF014 |  T15 |
-| `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 |  T15 |
-| `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 |  T32 |
-| `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 |  T33 |
-| `POST /solicitacoes/{id}/finalizacao` | — | `SolicitacaoResumo` | RF016 |  T34 |
+| Método e rota | Corpo | Resposta | RF |
+|---|---|---|---|
+| `GET /solicitacoes/abertas` | — | `SolicitacaoAberta[]`: todas em `ABERTA`, por data/hora crescente | RF011 |
+| `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]`: todas, exceto redirecionadas para outro funcionário | RF013 |
+| `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoParaFuncionario`; não permite abrir solicitação redirecionada a outro funcionário | RF012, RF014 |
+| `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 |
+| `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 |
+| `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 |
+| `POST /solicitacoes/{id}/finalizacao` | — | `SolicitacaoResumo` | RF016 |
 
-### Cadastros e relatórios (funcionário)
+Na página inicial RF011, a interface apresenta data/hora de abertura, cliente e descrição do equipamento (limitada a 30 caracteres), com ação para efetuar orçamento. A API retorna todas as solicitações abertas aos funcionários autenticados.
+
+Na listagem RF013, os filtros `HOJE`, `PERÍODO` e `TODAS` são aplicados no Angular e os resultados são exibidos em ordem crescente de data/hora. A visibilidade não é restrita às solicitações vinculadas ao funcionário, exceto que uma solicitação `REDIRECIONADA` só é listada e detalhada pelo funcionário de destino. As cores de estado na interface são: `ABERTA` cinza, `ORÇADA` marrom, `REJEITADA` vermelho, `APROVADA` amarelo, `REDIRECIONADA` roxo, `ARRUMADA` azul, `PAGA` alaranjado e `FINALIZADA` verde. As ações disponíveis dependem do estado: orçamento em `ABERTA`, manutenção em `APROVADA`/`REDIRECIONADA` e finalização em `PAGA`.
+
+### Cadastros e relatórios
 As rotas abaixo estão implementadas no backend. A validação integrada no navegador permanece separada da verificação do código.
 
-| Método e rota | Uso | RF | Tarefa |
+| Método e rota | Perfil | Uso | RF |
 |---|---|---|---|
-| `GET /categorias` | Lista categorias; o cliente recebe só as ativas | RF004, RF017 |  T21 |
-| `POST /categorias`, `PUT /categorias/{id}`, `DELETE /categorias/{id}` | CRUD; `DELETE` só desativa | RF017 | T21 |
-| `GET /funcionarios`, `GET /funcionarios/{id}` | Listagem e consulta de funcionários | RF018 |  T23 |
-| `POST /funcionarios`, `PUT /funcionarios/{id}`, `DELETE /funcionarios/{id}` | Cadastro, edição e desativação lógica (com proteção contra autoexclusão e remoção do último funcionário ativo) | RF018 |  T23 |
-| `POST /funcionarios/{id}/redefinir-senha` | Redefine e envia senha temporária ao funcionário | RF018 |  |
-| `GET /relatorios/receitas?inicio=&fim=` | Funcionário; datas opcionais `aaaa-mm-dd`; retorna pagamentos agrupados pela data efetiva de pagamento | RF019 |  T35 |
-| `GET /relatorios/receitas-categoria` | Funcionário; pagamentos efetivos agrupados por categoria de equipamento | RF020 | T36 |
+| `GET /categorias` | Cliente ou funcionário autenticado | Lista categorias; o Angular oferece somente categorias ativas para abertura de solicitação | RF004, RF017 |
+| `POST /categorias`, `PUT /categorias/{id}`, `DELETE /categorias/{id}` | Funcionário | Cadastro, edição e desativação lógica | RF017 |
+| `GET /funcionarios`, `GET /funcionarios/{id}` | Funcionário | Listagem e consulta de funcionários | RF018 |
+| `POST /funcionarios`, `PUT /funcionarios/{id}`, `DELETE /funcionarios/{id}` | Funcionário | Cadastro, edição e desativação lógica; protege contra autoexclusão e desativação do último funcionário ativo | RF018 |
+| `POST /funcionarios/{id}/redefinir-senha` | Funcionário | Redefine e envia senha temporária ao funcionário | RF018 |
+| `GET /relatorios/receitas?inicio=&fim=` | Funcionário | Datas opcionais `aaaa-mm-dd`; retorna pagamentos agrupados pela data efetiva de pagamento | RF019 |
+| `GET /relatorios/receitas-categoria` | Funcionário | Pagamentos efetivos agrupados por categoria de equipamento | RF020 |
 
-O relatório RF019 soma `valor_orcamento` uma vez para cada solicitação com
+O relatório RF019 soma `valor_orcamento` uma vez para cada solicitação com `data_hora_pagamento` preenchida e agrupa pela data desse timestamp. Pagamentos continuam contabilizados após a solicitação passar de `PAGA` para `FINALIZADA`; solicitações apenas orçadas ou marcadas como pagas sem timestamp não entram no resultado. `inicio` é inclusivo e `fim` inclui o dia inteiro. Sem datas, retorna todo o histórico de pagamentos. Quando somente um limite é informado, aplica-se apenas esse limite.
 
-`data_hora_pagamento` preenchida e agrupa pela data desse timestamp. Assim,
-
-pagamentos continuam contabilizados após a solicitação passar de `PAGA` para
-
-`FINALIZADA`; solicitações apenas orçadas ou marcadas como pagas sem timestamp
-
-não entram no resultado. `inicio` é inclusivo e `fim` inclui o dia inteiro.
-
-Sem datas, retorna todo o histórico de pagamentos. Quando somente `inicio` ou somente `fim` é informado, aplica-se apenas o limite correspondente.
-
-O relatório RF020 usa os mesmos critérios de pagamento e agrupa cada solicitação
-
-paga pela categoria associada no banco, somando seu orçamento uma única vez.
-
-Categorias sem pagamentos efetivos não aparecem; categorias inativas com
-
-pagamentos históricos permanecem no relatório. A tabela e o PDF consomem os
-
-mesmos agregados retornados pela API.
+O relatório RF020 usa os mesmos critérios de pagamento e agrupa cada solicitação pela categoria associada no banco, somando seu orçamento uma única vez. Categorias sem pagamentos efetivos não aparecem; categorias inativas com pagamentos históricos permanecem no relatório. A tabela e o PDF consomem os mesmos agregados retornados pela API.
 
 ## Formatos de resposta
 

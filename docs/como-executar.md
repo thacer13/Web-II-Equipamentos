@@ -52,13 +52,52 @@ Abrir `http://localhost:4200`. O frontend precisa da API na porta 8080 para aces
 
 ### 2.4 Envio de e-mail
 
-O requisito RF001 prevê envio de senha de quatro números por e-mail. Para testá-lo, configurar `MAIL_USER` e `MAIL_PASS` na sessão do terminal que inicia o backend, com uma credencial válida de aplicativo da conta de envio. Não colocar senha de e-mail em arquivos versionados, documentação ou ZIP.
+O requisito RF001 prevê o envio da senha temporária por e-mail. Para testá-lo, configure as variáveis na mesma sessão do PowerShell que inicia o backend:
+
+```powershell
+$env:MAIL_USER = 'seu-email-remetente@gmail.com'
+$env:MAIL_PASS = Read-Host 'Senha de aplicativo do e-mail'
+```
+
+Use uma credencial válida de aplicativo da conta remetente. Não grave a senha em arquivos versionados ou no ZIP.
 
 Sem uma configuração SMTP funcional, o requisito RF001 não está validado integralmente, mesmo que os formulários e o banco funcionem.
 
 ## 3. Execução usando Docker (opcional)
 
-A raiz do repositório contém `docker-compose.yml` e `Dockerfile`. Essa alternativa exige Docker Desktop e variáveis de banco e e-mail corretamente configuradas. Não é necessária para a execução local descrita acima. Antes de utilizar ou publicar o Compose, remover credenciais reais do arquivo de configuração e revogar quaisquer senhas expostas anteriormente.
+A raiz do repositório contém `docker-compose.yml` e `Dockerfile`. O Compose inicia o PostgreSQL e o contêiner de desenvolvimento; não inicia automaticamente a API nem o Angular.
+
+1. Na raiz do projeto, crie o arquivo local de variáveis:
+
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. Edite `.env` e substitua os valores de exemplo pelas credenciais SMTP válidas para testar o cadastro com envio de e-mail. Se não for testar esse fluxo, deixe `MAIL_USER` e `MAIL_PASS` vazios. O arquivo `.env` é ignorado pelo Git e não deve ser enviado no ZIP.
+3. Inicie os contêineres:
+
+   ```powershell
+   docker compose up -d --build
+   ```
+
+4. Em um terminal, abra o shell do contêiner e inicie a API:
+
+   ```powershell
+   docker compose exec app bash
+   cd /workspace/webprojeto
+   ./mvnw spring-boot:run
+   ```
+
+5. Em outro terminal, abra um novo shell do contêiner e inicie o Angular:
+
+   ```powershell
+   docker compose exec app bash
+   cd /workspace/app-projeto
+   npm install
+   npm start
+   ```
+
+A aplicação fica disponível em `http://localhost:4200` e a API em `http://localhost:8080`. Como o Compose define `SPRING_SQL_INIT_MODE=always`, use esse banco apenas para desenvolvimento e demonstração; para preservar um banco local existente, prefira a execução sem Docker e confira a configuração de inicialização antes de iniciar a API.
 
 ## 4. Dados iniciais de demonstração
 
@@ -106,8 +145,9 @@ Todos os campos de problemas de integridade devem estar em zero; a coluna `solic
 
 ## 6. Documentação complementar
 
-- `README.md`: visão geral e arquitetura.
+- `app-projeto/README.md`: visão geral do projeto.
 - `docs/contratos-api.md`: endpoints, estados e regras da API.
-- `docs/suposicoes.md` e `docs/suposicoes.odt`: decisões adotadas quando o enunciado não detalha o comportamento.
+- `docs/suposicoes.md`: decisões adotadas quando o enunciado não detalha o comportamento; o script de entrega gera também `suposicoes.odt`.
 - `docs/integrantes.txt`: relação dos integrantes com GRR e e-mail.
-- `docs/validacao.md`: evidências de compilação e o que ainda precisa de testes funcionais.
+- `docs/validacao.md`: resultados registrados e procedência da validação funcional.
+- `docs/conferencia-entrega.md`: checklist e conteúdo do pacote de entrega.
