@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -8,6 +8,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SolicitacaoService } from '../../shared/services/solicitacao.service';
 import { Solicitacao } from '../../shared/models/solicitacao.model';
 import { UsuarioService } from '../../shared/services/usuario.service';
+
+export interface FuncionarioOpcao {
+  id: number;
+  nome: string;
+}
 
 @Component({
   selector: 'app-redirecionamento',
@@ -19,40 +24,32 @@ import { UsuarioService } from '../../shared/services/usuario.service';
     SelectModule
   ],
   templateUrl: './redirecionamento.html',
+  host: { 'ngSkipHydration': 'true' },
 })
-export class RedirecionamentoComponent {
+export class RedirecionamentoComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private solicitacaoService = inject(SolicitacaoService);
   private usuarioService = inject(UsuarioService);
-  private platformId = inject(PLATFORM_ID); // Identificador de plataforma (SSR vs Browser)
+  private platformId = inject(PLATFORM_ID);
   private location = inject(Location); 
 
   solicitacao: Solicitacao | null = null;
 
-  funcionarioOrigem: string = 'Funcionário Exemplo';
-  funcionariosNomes: string[] = [];
+  funcionarioOrigemId: number | null = null;
+  funcionarioOrigemNome: string = 'Funcionário';
+  funcionariosDisponiveis: FuncionarioOpcao[] = [];
 
-  funcionarioDestino: string = '';
+  funcionarioDestinoId: number | null = null;
   mensagemErro = '';
+  carregando = true;
+  salvando = false;
 
- ngOnInit(): void {
-    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
-    if (usuarioLogado) {
-      this.funcionarioOrigem = usuarioLogado.nome;
-    }
+  get podeRedirecionar(): boolean {
+    return this.solicitacao?.estado === 'APROVADA' || this.solicitacao?.estado === 'REDIRECIONADA';
+  }
 
-    this.usuarioService.listarFuncionarios().subscribe({
-      next: funcionarios => {
-        this.funcionariosNomes = funcionarios
-          .filter(funcionario => funcionario.ativo)
-          .map(funcionario => funcionario.nome);
-      },
-      error: () => {
-        this.mensagemErro = 'Não foi possível carregar os funcionários disponíveis.';
-      }
-    });
-
+  ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
 
     if (!idParam) {
@@ -63,64 +60,86 @@ export class RedirecionamentoComponent {
     }
 
     const id = Number(idParam);
-    let solicitacaoRecebida: Solicitacao | null = null;
-
-    // Tenta capturar do history.state APENAS se estiver rodando no navegador
-    if (isPlatformBrowser(this.platformId)) {
-      solicitacaoRecebida = history.state?.solicitacao as Solicitacao;
-    }
-
-    // Cenário 1: Chegou via navegação com state no navegador
-    if (solicitacaoRecebida && solicitacaoRecebida.id === id) {
-      this.solicitacao = solicitacaoRecebida;
-    } 
-    // Cenário 2: SSR ou F5 (busca no serviço)
-    else {
-      const listagem = this.solicitacaoService.listar();
-      const solicitacaoEncontrada = listagem.find(s => s.id === id);
-
-      if (solicitacaoEncontrada) {
-        this.solicitacao = solicitacaoEncontrada;
-      } else if (isPlatformBrowser(this.platformId)) {
-        // Redireciona somente no browser se o item realmente não existir no serviço
-        this.router.navigate(['/funcionario/solicitacoes']);
-      }
-    }
-  }
-
-  
-  get funcionariosDisponiveis(): string[] {
-    return this.funcionariosNomes.filter((f) => f !== this.funcionarioOrigem);
-  }
-
-  
-
-  onConfirmarRedirecionamento() {
-    if (!this.solicitacao) return;
-
-    const destino = this.funcionarioDestino.trim();
-
-    if (!destino) {
-      this.mensagemErro = 'Selecione um funcionário.';
+    if (!Number.isInteger(id) || id <= 0) {
+      this.carregando = false;
+      this.mensagemErro = 'Identificador de solicitação inválido.';
       return;
     }
 
-    if (destino === this.funcionarioOrigem || !this.funcionariosDisponiveis.includes(destino)) {
-      this.mensagemErro = 'Selecione um funcionário válido.';
+    if (!isPlatformBrowser(this.platformId)) {
+      this.carregando = false;
+      return;
+    }
+
+    const usuarioLogado = this.usuarioService.obterUsuarioLogado();
+    if (usuarioLogado) {
+      this.funcionarioOrigemId = usuarioLogado.id ?? null;
+      this.funcionarioOrigemNome = usuarioLogado.nome;
+    }
+
+    this.carregarFuncionarios(usuarioLogado?.id, usuarioLogado?.email);
+
+    this.solicitacaoService.detalharParaFuncionario(id).subscribe({
+      next: (solicitacao) => {
+        this.solicitacao = solicitacao;
+        this.carregando = false;
+      },
+      error: (erro: { error?: { mensagem?: string } }) => {
+        this.carregando = false;
+        this.mensagemErro =
+          erro?.error?.mensagem ||
+          'Não foi possível carregar a solicitação. Verifique sua conexão e tente novamente.';
+      },
+    });
+  }
+
+  private carregarFuncionarios(logadoId?: number, logadoEmail?: string): void {
+    this.usuarioService.listarFuncionarios().subscribe({
+      next: (funcionarios) => {
+        this.funcionariosDisponiveis = funcionarios
+          .filter((f) => f.ativo && f.id !== logadoId && (!logadoEmail || f.email.toLowerCase() !== logadoEmail.toLowerCase()))
+          .map((f) => ({ id: f.id!, nome: f.nome }));
+      },
+      error: (erro: { error?: { mensagem?: string } }) => {
+        this.mensagemErro =
+          erro?.error?.mensagem ||
+          'Não foi possível carregar a lista de funcionários disponíveis.';
+      },
+    });
+  }
+
+  onConfirmarRedirecionamento(): void {
+    if (!this.solicitacao || this.salvando) return;
+
+    if (!this.podeRedirecionar) {
+      this.mensagemErro = `A solicitação está no estado ${this.solicitacao.estado} e não permite redirecionamento.`;
+      return;
+    }
+
+    if (!this.funcionarioDestinoId || this.funcionarioDestinoId <= 0) {
+      this.mensagemErro = 'Selecione um funcionário de destino.';
+      return;
+    }
+
+    if (this.funcionarioDestinoId === this.funcionarioOrigemId) {
+      this.mensagemErro = 'Não é permitido redirecionar para si mesmo.';
       return;
     }
 
     this.mensagemErro = '';
+    this.salvando = true;
 
-    const observacao = `Redirecionado de ${this.funcionarioOrigem} para ${destino}`;
-    this.solicitacaoService.atualizarEstado(
-      this.solicitacao,
-      'REDIRECIONADA',
-      destino,
-      observacao
-    );
-
-    this.router.navigate(['/funcionario/solicitacoes']);
+    this.solicitacaoService.redirecionar(this.solicitacao.id, this.funcionarioDestinoId).subscribe({
+      next: () => {
+        this.router.navigate(['/funcionario/solicitacoes']);
+      },
+      error: (erro: { error?: { mensagem?: string } }) => {
+        this.salvando = false;
+        this.mensagemErro =
+          erro?.error?.mensagem ||
+          'Não foi possível redirecionar a solicitação. Atualize os dados e tente novamente.';
+      },
+    });
   }
 
   voltar(): void {

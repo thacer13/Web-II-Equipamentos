@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import br.ufpr.tads.webequipamentos.dto.NovaSolicitacaoRequest;
 import br.ufpr.tads.webequipamentos.dto.ManutencaoRequest;
 import br.ufpr.tads.webequipamentos.dto.OrcamentoRequest;
+import br.ufpr.tads.webequipamentos.dto.RedirecionamentoRequest;
 import br.ufpr.tads.webequipamentos.dto.RejeicaoRequest;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoDetalhe;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoAberta;
@@ -22,6 +23,7 @@ import br.ufpr.tads.webequipamentos.dto.SolicitacaoParaFuncionario;
 import br.ufpr.tads.webequipamentos.dto.SolicitacaoResumo;
 import br.ufpr.tads.webequipamentos.services.SolicitacaoService;
 import br.ufpr.tads.webequipamentos.services.ManutencaoService;
+import br.ufpr.tads.webequipamentos.services.RedirecionamentoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -31,10 +33,15 @@ public class SolicitacaoController {
 
     private final SolicitacaoService service;
     private final ManutencaoService manutencaoService;
+    private final RedirecionamentoService redirecionamentoService;
 
-    public SolicitacaoController(SolicitacaoService service, ManutencaoService manutencaoService) {
+    public SolicitacaoController(
+            SolicitacaoService service,
+            ManutencaoService manutencaoService,
+            RedirecionamentoService redirecionamentoService) {
         this.service = service;
         this.manutencaoService = manutencaoService;
+        this.redirecionamentoService = redirecionamentoService;
     }
 
     @GetMapping("/funcionario")
@@ -90,6 +97,20 @@ public class SolicitacaoController {
             HttpServletRequest request) {
 
         return manutencaoService.concluir(
+            emailDaSessao(request, "FUNCIONARIO"),
+            id,
+            req
+        );
+    }
+
+    // RF015: somente o funcionário responsável pela solicitação redireciona para outro funcionário ativo.
+    @PostMapping("/{id}/redirecionamento")
+    public SolicitacaoResumo redirecionar(
+            @PathVariable Integer id,
+            @RequestBody RedirecionamentoRequest req,
+            HttpServletRequest request) {
+
+        return redirecionamentoService.redirecionar(
             emailDaSessao(request, "FUNCIONARIO"),
             id,
             req

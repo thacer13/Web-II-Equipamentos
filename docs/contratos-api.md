@@ -109,7 +109,7 @@ migração idempotente em `webprojeto/src/main/resources/schema.sql`.
 | `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoParaFuncionario`: `SolicitacaoDetalhe` + `cliente` (nome, cpf, email, telefone, endereço) | RF012, RF014 | ✅ T15 |
 | `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 | ✅ T15 |
 | `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 | ✅ T32 |
-| `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 | ⬜ |
+| `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 | ✅ T33 |
 | `POST /solicitacoes/{id}/finalizacao` | — | `SolicitacaoResumo` | RF016 | ⬜ |
 
 ### Cadastros e relatórios (funcionário)

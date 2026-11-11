@@ -133,11 +133,12 @@ export class ListaFuncionariosComponent implements OnInit {
     this.usuarioService.salvarFuncionario(funcionarioParaSalvar).subscribe({
       next: funcionarioSalvo => {
         const usuarioLogado = this.usuarioService.obterUsuarioLogado();
-        if (usuarioLogado?.id === funcionarioSalvo.id) {
+        if (usuarioLogado && usuarioLogado.id === funcionarioSalvo.id) {
           this.usuarioService.salvarUsuarioLogado({
             ...usuarioLogado,
             nome: funcionarioSalvo.nome,
-            email: funcionarioSalvo.email
+            email: funcionarioSalvo.email,
+            perfil: usuarioLogado.perfil
           });
         }
         this.showFormulario = false;

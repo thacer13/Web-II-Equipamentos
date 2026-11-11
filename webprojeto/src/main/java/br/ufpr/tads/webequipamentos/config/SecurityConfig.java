@@ -59,7 +59,8 @@ public class SecurityConfig {
                     "/api/solicitacoes/funcionario/**", "/api/solicitacoes/abertas")
                     .hasRole("FUNCIONARIO")
                 .requestMatchers(HttpMethod.POST, "/api/solicitacoes/*/orcamento",
-                    "/api/solicitacoes/*/finalizacao", "/api/solicitacoes/*/manutencao")
+                    "/api/solicitacoes/*/finalizacao", "/api/solicitacoes/*/manutencao",
+                    "/api/solicitacoes/*/redirecionamento")
                     .hasRole("FUNCIONARIO")
                 .requestMatchers(HttpMethod.GET, "/api/solicitacoes/cliente",
                     "/api/solicitacoes/cliente/**")

@@ -363,6 +363,17 @@ export class SolicitacaoService {
       .pipe(map((resumo) => paraSolicitacao(resumo)));
   }
 
+  // RF015: redirecionamento de manutenção para outro funcionário ativo.
+  redirecionar(id: number, funcionarioDestinoId: number): Observable<Solicitacao> {
+    return this.http
+      .post<SolicitacaoResumoApi>(
+        `${this.apiUrl}/${id}/redirecionamento`,
+        { funcionarioDestinoId },
+        { withCredentials: true }
+      )
+      .pipe(map((resumo) => paraSolicitacao(resumo)));
+  }
+
   // RF006
   aprovar(id: number): Observable<Solicitacao> {
     return this.http

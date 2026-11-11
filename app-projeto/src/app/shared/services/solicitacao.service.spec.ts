@@ -43,4 +43,27 @@ describe('SolicitacaoService', () => {
     });
     expect(estado).toBe('ARRUMADA');
   });
+
+  it('redireciona manutenção via API com destino e credenciais', () => {
+    let estado: string | undefined;
+    service.redirecionar(7, 2).subscribe((solicitacao) => (estado = solicitacao.estado));
+
+    const request = httpTestingController.expectOne(
+      'http://localhost:8080/api/solicitacoes/7/redirecionamento'
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ funcionarioDestinoId: 2 });
+    expect(request.request.withCredentials).toBe(true);
+
+    request.flush({
+      id: 7,
+      dataHora: '2026-11-09T15:30:00',
+      descricaoEquipamento: 'Notebook',
+      descricaoDefeito: 'Tela quebrada',
+      categoriaEquipamento: 'Notebook',
+      estado: 'REDIRECIONADA',
+      precoOrcado: null,
+    });
+    expect(estado).toBe('REDIRECIONADA');
+  });
 });
