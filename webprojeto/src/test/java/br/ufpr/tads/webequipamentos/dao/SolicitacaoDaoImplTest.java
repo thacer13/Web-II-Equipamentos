@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -20,10 +21,10 @@ class SolicitacaoDaoImplTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
     private final SolicitacaoDaoImpl dao = new SolicitacaoDaoImpl(jdbc);
 
-    // RF013: o detalhe usa a mesma regra da listagem, então trocar o id na URL não expõe nada.
+    // RF013: o detalhe usa a mesma regra da listagem, inclusive a exceção de redirecionamento.
     @Test
     @SuppressWarnings("unchecked")
-    void detalheDoFuncionarioUsaARegraDeVisibilidadeDaListagem() {
+    void funcionarioVeTodasAsSolicitacoesExcetoRedirecionamentosParaOutros() {
         when(jdbc.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
 
         dao.listarVisiveis("maria@teste.com");
@@ -36,9 +37,12 @@ class SolicitacaoDaoImplTest {
         verify(jdbc).query(sql.capture(), any(RowMapper.class), eq("maria@teste.com"), eq(7));
         String detalhe = sql.getValue();
 
-        String regra = listagem.substring(listagem.indexOf("WHERE ((s.estado"), listagem.indexOf("ORDER BY"));
-        assertTrue(detalhe.contains(regra.strip()));
-        assertTrue(detalhe.contains("AND s.id = ?"));
-        assertTrue(regra.contains("WHEN s.estado = 'REDIRECIONADA' THEN s.funcionario_atual_id"));
+        String listagemNormalizada = listagem.replaceAll("\\s+", " ");
+        String detalheNormalizado = detalhe.replaceAll("\\s+", " ");
+        String regra = "WHERE (s.estado <> 'REDIRECIONADA' OR s.funcionario_atual_id = f.id)";
+        assertTrue(listagemNormalizada.contains(regra));
+        assertTrue(detalheNormalizado.contains(regra));
+        assertTrue(detalheNormalizado.contains("AND s.id = ?"));
+        assertFalse(listagemNormalizada.contains("COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)"));
     }
 }

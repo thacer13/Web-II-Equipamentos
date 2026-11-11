@@ -47,7 +47,7 @@ A tabela abaixo está implementada em `model/EstadoSolicitacao.java`. Todo endpo
 | ARRUMADA → PAGA | Cliente dono | — | data_hora_pagamento | valor | RF010 |
 | PAGA → FINALIZADA | Funcionário | — | funcionario_finalizacao_id, data_hora_finalizacao | funcionario_id | RF016 |
 
-**Funcionário responsável** = `funcionario_atual_id` se preenchido; senão `funcionario_orcamento_id`. É a mesma regra da listagem do funcionário (`SolicitacaoDaoImpl.SELECT_VISIVEIS`).
+**Funcionário responsável por uma ação** = `funcionario_atual_id` se preenchido; senão `funcionario_orcamento_id`. A listagem RF013 não é limitada ao responsável: inclui todas as solicitações, exceto as `REDIRECIONADA` cujo destino (`funcionario_atual_id`) não seja o funcionário logado. A API valida separadamente a responsabilidade para cada ação.
 
 ### Regras para toda transição
 
@@ -105,8 +105,8 @@ migração idempotente em `webprojeto/src/main/resources/schema.sql`.
 | Método e rota | Corpo | Resposta | RF | Status |
 |---|---|---|---|---|
 | `GET /solicitacoes/abertas` | — | `SolicitacaoAberta[]`: todas em ABERTA, por data/hora crescente | RF011 | ✅ T13 |
-| `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]` visíveis ao funcionário | RF013 | ✅ (filtros de período ⬜ T30/T31) |
-| `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoParaFuncionario`: `SolicitacaoDetalhe` + `cliente` (nome, cpf, email, telefone, endereço) | RF012, RF014 | ✅ T15 |
+| `GET /solicitacoes/funcionario` | — | `SolicitacaoResumo[]`: todas, exceto redirecionadas para outro funcionário | RF013 | ✅ (filtros de período ⬜ T30/T31) |
+| `GET /solicitacoes/funcionario/{id}` | — | `SolicitacaoParaFuncionario`: detalhes completos, exceto redirecionadas para outro funcionário | RF012, RF014 | ✅ T15 |
 | `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 | ✅ T15 |
 | `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 | ⬜ |
 | `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 | ⬜ |

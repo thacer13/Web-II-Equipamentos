@@ -47,7 +47,7 @@ public class SolicitacaoService {
     }
 
     // RF012 / RF014: dados completos para o funcionário, incluindo o cliente.
-    // Usa a mesma regra de visibilidade da listagem (RF013): fora dela responde 404, sem revelar que existe.
+    // Usa a mesma regra de visibilidade da listagem (RF013); redirecionamentos para outro funcionário respondem 404.
     @Transactional(readOnly = true)
     public SolicitacaoParaFuncionario detalharParaFuncionario(String emailFuncionario, Integer id) {
         if (emailFuncionario == null || emailFuncionario.isBlank()) {

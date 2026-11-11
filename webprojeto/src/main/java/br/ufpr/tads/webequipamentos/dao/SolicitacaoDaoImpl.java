@@ -15,9 +15,8 @@ import java.util.Optional;
 @Repository
 public class SolicitacaoDaoImpl implements SolicitacaoDao {
 
-    // RF013: abertas sem responsável aparecem para todos; as demais só para o responsável.
-    // REDIRECIONADA vale só para o funcionário de destino (funcionario_atual_id), como pede o enunciado.
-    // A mesma regra serve para a listagem e para o detalhe, para trocar o id na URL não expor nada.
+    // RF013: todas as solicitações aparecem, exceto REDIRECIONADA para outro funcionário.
+    // A mesma regra serve para a listagem e para o detalhe.
     private static final String FROM_VISIVEIS = """
         WITH funcionario_logado AS (
             SELECT f.id
@@ -31,13 +30,8 @@ public class SolicitacaoDaoImpl implements SolicitacaoDao {
         FROM solicitacao s
         JOIN categoria_equipamento c ON c.id = s.categoria_id
         CROSS JOIN funcionario_logado f
-        WHERE ((s.estado = 'ABERTA'
-                AND s.funcionario_atual_id IS NULL
-                AND s.funcionario_orcamento_id IS NULL)
-            OR (CASE
-                  WHEN s.estado = 'REDIRECIONADA' THEN s.funcionario_atual_id
-                  ELSE COALESCE(s.funcionario_atual_id, s.funcionario_orcamento_id)
-                END) = f.id)
+        WHERE (s.estado <> 'REDIRECIONADA'
+            OR s.funcionario_atual_id = f.id)
         """;
 
     private static final String SELECT_VISIVEIS = FROM_VISIVEIS + """

@@ -30,13 +30,14 @@ Pontos que o enunciado não define e a forma como a equipe decidiu tratá-los.
 
 ## Visibilidade para funcionários (RF013)
 
-- Solicitações ABERTA ainda sem responsável aparecem para todos os funcionários, para que
-  qualquer um possa orçar.
-- Depois do orçamento, a solicitação aparece somente para o funcionário responsável: quem
-  orçou ou, após um redirecionamento, o funcionário de destino.
-- Uma solicitação REDIRECIONADA aparece apenas para o funcionário de destino, como exige o enunciado.
-- A mesma regra vale para abrir a solicitação diretamente pelo endereço: fora dela a API
-  responde "registro não encontrado".
+- A listagem inclui todas as solicitações, independentemente do estado, exceto as
+  REDIRECIONADAS para outro funcionário, conforme o RF013.
+- Uma solicitação REDIRECIONADA aparece apenas para o funcionário indicado como destino.
+- A mesma regra vale para abrir os detalhes diretamente pelo endereço: um redirecionamento
+  para outro funcionário responde "registro não encontrado".
+- A visibilidade na listagem e nos detalhes não concede permissão para executar ações.
+  Orçamento, manutenção, redirecionamento e finalização continuam sujeitos às validações
+  de estado e de responsabilidade no backend.
 
 ## Concorrência e histórico
 
