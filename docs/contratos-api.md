@@ -98,7 +98,7 @@ migração idempotente em `webprojeto/src/main/resources/schema.sql`.
 | `POST /solicitacoes/{id}/aprovacao` | — | `SolicitacaoResumo` | RF006 | ✅ T19 |
 | `POST /solicitacoes/{id}/rejeicao` | `{ motivo }` | `SolicitacaoResumo` | RF007 | ✅ T26 |
 | `POST /solicitacoes/{id}/resgate` | — | `SolicitacaoResumo` | RF009 | ✅ T28 |
-| `POST /solicitacoes/{id}/pagamento` | — | `SolicitacaoResumo` | RF010 | ⬜ |
+| `POST /solicitacoes/{id}/pagamento` | — | `SolicitacaoResumo` | RF010 | ✅ T29 |
 
 ### Solicitações — funcionário
 
@@ -110,7 +110,7 @@ migração idempotente em `webprojeto/src/main/resources/schema.sql`.
 | `POST /solicitacoes/{id}/orcamento` | `{ valor }` | `SolicitacaoResumo` | RF012 | ✅ T15 |
 | `POST /solicitacoes/{id}/manutencao` | `{ descricaoManutencao, orientacoesCliente }` | `SolicitacaoResumo` | RF014 | ✅ T32 |
 | `POST /solicitacoes/{id}/redirecionamento` | `{ funcionarioDestinoId }` | `SolicitacaoResumo` | RF015 | ✅ T33 |
-| `POST /solicitacoes/{id}/finalizacao` | — | `SolicitacaoResumo` | RF016 | ⬜ |
+| `POST /solicitacoes/{id}/finalizacao` | — | `SolicitacaoResumo` | RF016 | ✅ T34 |
 
 ### Cadastros e relatórios (funcionário)
 
