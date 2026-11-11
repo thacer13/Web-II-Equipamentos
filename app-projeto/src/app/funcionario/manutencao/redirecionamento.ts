@@ -59,13 +59,6 @@ export class RedirecionamentoComponent implements OnInit {
       return;
     }
 
-    const id = Number(idParam);
-    if (!Number.isInteger(id) || id <= 0) {
-      this.carregando = false;
-      this.mensagemErro = 'Identificador de solicitação inválido.';
-      return;
-    }
-
     if (!isPlatformBrowser(this.platformId)) {
       this.carregando = false;
       return;

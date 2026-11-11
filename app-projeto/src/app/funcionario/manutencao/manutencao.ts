@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -47,18 +47,6 @@ export class ManutencaoComponent implements OnInit {
     const id = Number(idParam);
     if (!idParam || !Number.isInteger(id) || id <= 0) {
       this.router.navigate(['/funcionario/solicitacoes']);
-      return;
-    }
-
-    const id = Number(idParam);
-    if (!Number.isInteger(id) || id <= 0) {
-      this.carregando = false;
-      this.mensagemErro = 'Identificador de solicitação inválido.';
-      return;
-    }
-
-    if (!isPlatformBrowser(this.platformId)) {
-      this.carregando = false;
       return;
     }
 

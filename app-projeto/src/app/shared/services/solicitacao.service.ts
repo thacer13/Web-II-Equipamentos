@@ -213,16 +213,6 @@ export class SolicitacaoService {
       .pipe(map((resumo) => paraSolicitacao(resumo)));
   }
 
-  redirecionar(id: number, funcionarioDestinoId: number): Observable<Solicitacao> {
-    return this.http
-      .post<SolicitacaoResumoApi>(
-        `${this.apiUrl}/${id}/redirecionamento`,
-        { funcionarioDestinoId },
-        { withCredentials: true }
-      )
-      .pipe(map((resumo) => paraSolicitacao(resumo)));
-  }
-
   // RF012
   orcar(id: number, valor: number): Observable<Solicitacao> {
     return this.http
