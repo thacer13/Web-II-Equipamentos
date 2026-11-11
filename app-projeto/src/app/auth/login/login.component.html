@@ -12,6 +12,11 @@
           {{ mensagemErro }}
         </div>
       }
+      @if (mensagemSucesso) {
+        <div class="text-sm font-semibold mb-4 text-green-700" role="status">
+          {{ mensagemSucesso }}
+        </div>
+      }
       
       <div class="login-fields">
         <p-floatLabel>

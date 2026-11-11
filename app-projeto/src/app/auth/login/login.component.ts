@@ -5,7 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UsuarioService } from '../../shared/services/usuario.service';
 
 @Component({
@@ -20,13 +20,25 @@ export class LoginComponent {
   password = '';
   loading = false;
   mensagemErro = '';
+  mensagemSucesso = '';
   lembrarCredenciais = false;
 
   private usuarioService = inject(UsuarioService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   constructor() {
+    if (this.route.snapshot.queryParamMap.get('cadastro') === 'sucesso') {
+      this.mensagemSucesso = 'Cadastro realizado com sucesso. A senha de acesso foi enviada para o e-mail informado.';
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { cadastro: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
+    }
+
     const credenciais = this.usuarioService.obterCredenciaisLembradas();
     if (credenciais) {
       this.username = credenciais.email;
@@ -37,6 +49,7 @@ export class LoginComponent {
   onSubmit(): void {
     const email = this.username.trim().toLowerCase();
     const senha = this.password;
+    this.mensagemSucesso = '';
 
     if (!email || !senha) {
       this.mensagemErro = 'Informe e-mail e senha.';

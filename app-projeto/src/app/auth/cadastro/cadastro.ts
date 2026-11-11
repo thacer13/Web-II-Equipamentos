@@ -129,7 +129,7 @@ export class CadastroComponent implements OnInit {
     this.enviando = true;
     this.usuarioService.cadastrarCliente(novoCliente).subscribe({
       next: () => {
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/auth/login'], { queryParams: { cadastro: 'sucesso' } });
       },
       error: (err) => {
         this.enviando = false;
