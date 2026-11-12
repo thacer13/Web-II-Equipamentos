@@ -150,4 +150,18 @@ describe('UsuarioService', () => {
     expect(request.request.method).toBe('POST');
     request.flush(null);
   });
+
+  it('solicita recuperação de senha pelo e-mail sem enviar a senha ao frontend', () => {
+    let response: { mensagem: string } | undefined;
+    service.recuperarSenha('maria@example.com').subscribe(resultado => (response = resultado));
+
+    const request = httpTestingController.expectOne(
+      'http://localhost:8080/api/auth/recuperar-senha'
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ email: 'maria@example.com' });
+    request.flush({ mensagem: 'Se o e-mail estiver cadastrado, enviaremos uma senha temporária.' });
+
+    expect(response?.mensagem).toContain('senha temporária');
+  });
 });

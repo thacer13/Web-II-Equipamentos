@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/usuarios/login",
-                    "/api/clientes").permitAll()
+                    "/api/auth/recuperar-senha", "/api/clientes").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categorias").authenticated()
                 .requestMatchers("/api/funcionarios", "/api/funcionarios/**",
                     "/api/categorias", "/api/categorias/**")

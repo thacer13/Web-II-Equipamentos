@@ -2,6 +2,7 @@ package br.ufpr.tads.webequipamentos.services;
 
 import br.ufpr.tads.webequipamentos.config.SecurityConfig;
 import br.ufpr.tads.webequipamentos.dto.UsuarioResponse;
+import br.ufpr.tads.webequipamentos.webprojeto.UsuarioController;
 import br.ufpr.tads.webequipamentos.webprojeto.WebprojetoApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = UsuarioREST.class)
+@WebMvcTest(controllers = { UsuarioREST.class, UsuarioController.class })
 @Import(SecurityConfig.class)
 @ContextConfiguration(classes = WebprojetoApplication.class)
 class UsuarioRestSecurityTest {
@@ -60,6 +61,22 @@ class UsuarioRestSecurityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void recuperacaoDeSenhaPodeSerSolicitadaSemLogin() throws Exception {
+        mockMvc.perform(post("/api/auth/recuperar-senha")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"email":"maria@example.com"}
+                    """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.mensagem").value(
+                "Se o e-mail estiver cadastrado, uma senha temporária será enviada para ele."
+            ));
+
+        verify(usuarioService).recuperarSenha("maria@example.com");
     }
 
     @Test

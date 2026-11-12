@@ -78,6 +78,30 @@ public class UsuarioService {
         return new UsuarioResponse(u.id(), u.nome(), u.email(), u.perfil());
     }
 
+    @Transactional
+    public void recuperarSenha(String email) {
+        if (email == null || email.isBlank()) {
+            return;
+        }
+
+        UsuarioLogin usuario = dao.buscarParaLogin(email.trim().toLowerCase())
+            .filter(u -> "CLIENTE".equals(u.perfil()) || "FUNCIONARIO".equals(u.perfil()))
+            .orElse(null);
+        if (usuario == null) {
+            return;
+        }
+
+        String senha = senhaHash.gerarSenhaNumerica();
+        String salt = senhaHash.gerarSalt();
+        if (!dao.atualizarSenhaRecuperacao(
+                usuario.id(),
+                senhaHash.hash(salt, senha),
+                salt)) {
+            return;
+        }
+        emailService.enviarSenhaTemporaria(usuario.email(), senha);
+    }
+
     @Transactional(readOnly = true)
     public UsuarioResponse buscarAutenticado(String email) {
         return dao.buscarParaLogin(email.trim().toLowerCase())

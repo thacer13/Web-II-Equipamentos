@@ -2,6 +2,7 @@ package br.ufpr.tads.webequipamentos.webprojeto;
 
 import br.ufpr.tads.webequipamentos.dto.CadastroRequest;
 import br.ufpr.tads.webequipamentos.dto.LoginRequest;
+import br.ufpr.tads.webequipamentos.dto.RecuperarSenhaRequest;
 import br.ufpr.tads.webequipamentos.dto.UsuarioResponse;
 import br.ufpr.tads.webequipamentos.services.AutenticacaoService;
 import br.ufpr.tads.webequipamentos.services.UsuarioService;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -59,6 +62,15 @@ public class UsuarioController {
             HttpServletRequest request,
             HttpServletResponse response) {
         return autenticacaoService.login(req, request, response);
+    }
+
+    @PostMapping("/auth/recuperar-senha")
+    public Map<String, String> recuperarSenha(@RequestBody RecuperarSenhaRequest req) {
+        service.recuperarSenha(req == null ? null : req.email());
+        return Map.of(
+            "mensagem",
+            "Se o e-mail estiver cadastrado, uma senha temporária será enviada para ele."
+        );
     }
 
     @PostMapping("/auth/logout")

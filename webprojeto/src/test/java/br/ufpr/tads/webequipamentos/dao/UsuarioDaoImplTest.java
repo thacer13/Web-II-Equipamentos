@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,5 +28,14 @@ class UsuarioDaoImplTest {
             "UPDATE cliente SET ativo = FALSE WHERE id = ? AND ativo = TRUE",
             42
         );
+    }
+
+    @Test
+    void atualizaSenhaSomenteParaContaAtivaDeClienteOuFuncionario() {
+        when(jdbc.update(anyString(), eq("hash"), eq("salt"), eq(42))).thenReturn(1);
+
+        assertTrue(dao.atualizarSenhaRecuperacao(42, "hash", "salt"));
+
+        verify(jdbc).update(anyString(), eq("hash"), eq("salt"), eq(42));
     }
 }

@@ -75,11 +75,14 @@ Cada transição persiste os dados pertinentes na solicitação e no histórico.
 | `POST /auth/logout` | Logado | — | 204 | — |
 | `GET /auth/session` | Logado | — | `UsuarioResponse` da sessão | — |
 | `GET /auth/csrf` | Público | — | Token CSRF | — |
+| `POST /auth/recuperar-senha` | Público | `{ email }` | Mensagem genérica, sem confirmar se a conta existe | — |
 | `POST /clientes` | Público | `{ cpf, nome, email, telefone, cep, logradouro, numero, complemento?, bairro, cidade, estado }` | 201 `UsuarioResponse` | RF001 |
 
 O cadastro normaliza CPF, telefone e CEP para dígitos e o e-mail para minúsculas.
 
 CPF e e-mail já cadastrados retornam `409`. A senha temporária de quatro dígitos é gerada no servidor, armazenada como SHA-256 com salt e enviada ao e-mail informado. `complemento` é opcional e limitado a 100 caracteres; quando informado pelo ViaCEP ou pelo cliente, é persistido junto ao endereço.
+
+A recuperação aceita contas ativas de cliente e funcionário. Para e-mail existente, gera uma nova senha temporária, atualiza o hash e envia a senha ao endereço cadastrado; para e-mail inexistente ou conta inativa, não altera dados. A resposta é idêntica nos dois casos para não revelar se o e-mail possui cadastro. Se o envio falhar, a alteração da senha é revertida e a API retorna erro.
 
 ### Usuários
 

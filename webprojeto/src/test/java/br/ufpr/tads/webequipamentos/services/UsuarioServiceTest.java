@@ -79,6 +79,42 @@ class UsuarioServiceTest {
     }
 
     @Test
+    void recuperaSenhaAtivaEnviandoUmaNovaSenhaTemporaria() {
+        when(dao.buscarParaLogin("maria@example.com")).thenReturn(Optional.of(
+            new UsuarioLogin(42, "Maria Souza", "Maria@Example.com", "hash-antigo", "salt-antigo", "CLIENTE")
+        ));
+        when(dao.atualizarSenhaRecuperacao(any(Integer.class), any(), any())).thenReturn(true);
+
+        service.recuperarSenha(" Maria@Example.com ");
+
+        ArgumentCaptor<String> hashCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> saltCaptor = ArgumentCaptor.forClass(String.class);
+        verify(dao).atualizarSenhaRecuperacao(
+            org.mockito.ArgumentMatchers.eq(42),
+            hashCaptor.capture(),
+            saltCaptor.capture()
+        );
+        ArgumentCaptor<String> senhaCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService).enviarSenhaTemporaria(
+            org.mockito.ArgumentMatchers.eq("Maria@Example.com"),
+            senhaCaptor.capture()
+        );
+
+        assertTrue(senhaCaptor.getValue().matches("\\d{4}"));
+        assertTrue(senhaHash.confere(senhaCaptor.getValue(), saltCaptor.getValue(), hashCaptor.getValue()));
+    }
+
+    @Test
+    void naoRevelaSeEmailNaoPossuiContaAtiva() {
+        when(dao.buscarParaLogin("inexistente@example.com")).thenReturn(Optional.empty());
+
+        service.recuperarSenha("inexistente@example.com");
+
+        verify(dao, org.mockito.Mockito.never()).atualizarSenhaRecuperacao(any(Integer.class), any(), any());
+        verify(emailService, org.mockito.Mockito.never()).enviarSenhaTemporaria(any(), any());
+    }
+
+    @Test
     void naoPermiteAlterarDadosDeOutroUsuario() {
         when(dao.buscarPorId(42)).thenReturn(Optional.of(usuarioExistente()));
 

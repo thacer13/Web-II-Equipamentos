@@ -45,6 +45,23 @@
   gap: 1.5rem;
 }
 
+.feedback {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.feedback-erro {
+  color: #b91c1c;
+  background-color: #fef2f2;
+}
+
+.feedback-sucesso {
+  color: #166534;
+  background-color: #f0fdf4;
+}
+
 .login-fields {
   display: flex;
   flex-direction: column;

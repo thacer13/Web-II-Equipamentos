@@ -52,7 +52,7 @@ Abrir `http://localhost:4200`. O frontend precisa da API na porta 8080 para aces
 
 ### 2.4 Envio de e-mail
 
-O requisito RF001 prevê o envio da senha temporária por e-mail. Para testá-lo, configure as variáveis na mesma sessão do PowerShell que inicia o backend:
+O cadastro e a recuperação de senha enviam uma senha temporária por e-mail. Para testar esses fluxos e o envio de senha inicial a funcionários, configure as variáveis na mesma sessão do PowerShell que inicia o backend:
 
 ```powershell
 $env:MAIL_USER = 'seu-email-remetente@gmail.com'
@@ -73,7 +73,7 @@ A raiz do repositório contém `docker-compose.yml` e `Dockerfile`. O Compose in
    Copy-Item .env.example .env
    ```
 
-2. Edite `.env` e substitua os valores de exemplo pelas credenciais SMTP válidas para testar o cadastro com envio de e-mail. Se não for testar esse fluxo, deixe `MAIL_USER` e `MAIL_PASS` vazios. O arquivo `.env` é ignorado pelo Git e não deve ser enviado no ZIP.
+2. Edite `.env` e substitua os valores de exemplo pelas credenciais SMTP válidas para testar cadastro e recuperação de senha. Se não for testar envio de e-mail, deixe `MAIL_USER` e `MAIL_PASS` vazios. O arquivo `.env` é ignorado pelo Git e não deve ser enviado no ZIP.
 3. Inicie os contêineres:
 
    ```powershell

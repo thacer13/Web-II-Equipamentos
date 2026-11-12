@@ -19,6 +19,7 @@ export class UsuarioService {
   private apiUrl = 'http://localhost:8080/api/clientes'; 
   private funcionariosUrl = 'http://localhost:8080/api/funcionarios';
   private loginUrl = 'http://localhost:8080/api/auth/login';
+  private recuperarSenhaUrl = 'http://localhost:8080/api/auth/recuperar-senha';
   private sessionUrl = 'http://localhost:8080/api/auth/session';
   private logoutUrl = 'http://localhost:8080/api/auth/logout';
 
@@ -123,6 +124,10 @@ export class UsuarioService {
       { email, senha },
       { withCredentials: true }
     );
+  }
+
+  recuperarSenha(email: string): Observable<{ mensagem: string }> {
+    return this.http.post<{ mensagem: string }>(this.recuperarSenhaUrl, { email });
   }
 
   remover(id: number): Observable<void> {

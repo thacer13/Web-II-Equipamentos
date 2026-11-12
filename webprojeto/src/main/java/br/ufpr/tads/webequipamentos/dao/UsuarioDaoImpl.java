@@ -74,6 +74,16 @@ public class UsuarioDaoImpl implements UsuarioDao {
          WHERE id = (SELECT endereco_id FROM cliente WHERE id = ?)
         """;
 
+    private static final String UPDATE_SENHA_RECUPERACAO = """
+        UPDATE usuario
+           SET senha_hash = ?, salt = ?
+         WHERE id = ?
+           AND (
+               EXISTS (SELECT 1 FROM cliente c WHERE c.id = usuario.id AND c.ativo = TRUE)
+               OR EXISTS (SELECT 1 FROM funcionario f WHERE f.id = usuario.id AND f.ativo = TRUE)
+           )
+        """;
+
     private static final RowMapper<Usuario> MAPPER = (rs, rowNum) -> new Usuario(
         rs.getInt("id"),
         rs.getString("cpf"),
@@ -196,6 +206,11 @@ public class UsuarioDaoImpl implements UsuarioDao {
             u.id()
         );
         return usuarioLinhas > 0 && clienteLinhas > 0 && enderecoLinhas > 0;
+    }
+
+    @Override
+    public boolean atualizarSenhaRecuperacao(int id, String senhaHash, String salt) {
+        return jdbc.update(UPDATE_SENHA_RECUPERACAO, senhaHash, salt, id) == 1;
     }
 
     @Override
